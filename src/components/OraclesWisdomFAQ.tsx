@@ -16,65 +16,65 @@ const FAQ_DATA: FAQItem[] = [
   {
     id: 'faq-1',
     category: 'equipment',
-    question: 'What sacred garments and equipment are required for Red Sea scuba diving?',
+    question: 'What diving gear is provided and what do I need to bring?',
     glyph: '𓆛',
-    answer: 'For all deep sea excursions (such as the Thistlegorm wreck or Ras Mohamed coral walls), we provide premium high-end modern scuba gear: regulatory 12L aluminum tanks, balanced regulators, high-buoyancy BCDs, and 3mm to 5mm neoprene wet suits. You only need to bring personal swimwear and your diving certification parchment. If you possess prescription masks, we highly recommend bringing them to observe the deep reef clearly.',
-    loreQuote: 'The ocean depths house the secret currents of Nun. Gird yourself in strong garments before sinking below.',
-    highlights: ['All core dive gear included', '3-5mm suits recommended', 'Bring your certification card']
+    answer: 'We provide all your main scuba diving equipment, including 12L tanks, high-quality regulators, BCD vests, and wetsuits (3mm or 5mm thickness). All you need to bring is your swimsuit and your physical or digital diving certification card. If you use a prescription diving mask, we highly recommend bringing yours so you can enjoy the reefs to the fullest!',
+    loreQuote: 'The Red Sea is stunningly clear, but having the right gear ensures a safe and comfortable dive.',
+    highlights: ['All core dive gear included', '3mm & 5mm wetsuits available', 'Just bring swimwear & certification']
   },
   {
     id: 'faq-2',
     category: 'equipment',
-    question: 'How should one dress for hot desert safaris and night stargazing?',
+    question: 'What should I wear for desert safaris and stargazing?',
     glyph: '𓅓',
-    answer: 'The desert sand is dynamic and the sun is intense during daylight, whereas nighttime temperatures drop precipitously. We command all travelers to wear breathable, long-sleeve linen or cotton garments to deflect the rays of Ra. Avoid open shoes; solid trail runners or hiking boots are mandatory. We provide authentic cotton chequered shemagh scarves to shield your breath from sands during quad racing, along with protective wind-goggles.',
-    loreQuote: 'The desert winds of Set spare no traveler. Wrap your face and shield your sight with the traditional garments.',
-    highlights: ['Closed-toe hiking shoes mandatory', 'Long-sleeve breathable layers', 'Free shemagh scarves & goggles']
+    answer: 'The desert is very sunny and warm during the day but gets surprisingly cold once the sun goes down! We recommend wearing loose, light long-sleeve clothing to protect yourself from sunburn. Make sure to wear comfortable closed-toe shoes like sneakers or hiking boots (sandals are not allowed for safety). We will give you a free cotton headscarf and safety goggles to keep dust out of your face during quad biking.',
+    loreQuote: 'Layer up for the desert. Sun protection by day, cozy layers by night.',
+    highlights: ['Closed-toe sneakers or boots required', 'Wear light long-sleeve clothes', 'Free headscarf & safety goggles']
   },
   {
     id: 'faq-3',
     category: 'seasons',
-    question: 'When does the Red Sea offer the highest clarity and best diving seasons?',
+    question: 'When is the best time of year to go diving in the Red Sea?',
     glyph: '𓊟',
-    answer: 'The waters are divine year-round, but distinct windows offer different experiences. For maximum water clarity (exceeding 30 meters) and comfortable temperatures (26°C to 29°C), visit during the High Nile Season from late September to November, or Spring from April to June. If you seek encounters with schools of Hammerhead Sharks, the hot summer months of July and August are optimal, though the sun above burns intensely.',
-    loreQuote: 'Observe the seasonal shifts of the celestial skies to witness the marine spirits rise in clarity.',
-    highlights: ['September–November: Best clarity & climate', 'July–August: Hammerhead shark season', 'Water temp range: 21°C (Winter) to 29°C (Summer)']
+    answer: 'Diving here is great all year round! However, if you want the absolute best visibility (often over 30 meters) and lovely warm water temperatures (between 26°C and 29°C), we recommend visiting from late September to November, or in spring from April to June. If you specifically want to see schools of Hammerhead Sharks, the hot summer months of July and August are the absolute best times.',
+    loreQuote: 'Spring and autumn offer the clearest water and the most comfortable weather.',
+    highlights: ['September–November: Best visibility', 'July–August: Hammerhead shark season', 'Water temp: 21°C (Winter) to 29°C (Summer)']
   },
   {
     id: 'faq-4',
     category: 'seasons',
-    question: 'Is the Nile cruise excursion pleasant during the high-heat summer months?',
+    question: 'Is the Nile cruise comfortable during the hot summer months?',
     glyph: '𓊡',
-    answer: 'Our royal river vessels are heavily fortified with premium climate-control systems and offer expansive shaded canopies and swimming pools on the upper decks. While the midday temperature in Luxor can exceed 40°C, all historical land explorations of temples are conducted at the crack of dawn (5:30 AM) or near sunset, when the stones are cooled and illuminated by gentle golden rays.',
-    loreQuote: 'The sacred river flows endlessly. Even under the peak of Ra’s summer heat, the morning breeze brings relief.',
-    highlights: ['Air-conditioned luxury suites', 'Early-morning temple explorations', 'Midday relaxation by the upper deck pool']
+    answer: 'Yes! Our cruise boats have excellent, modern air conditioning throughout, along with nice shaded outdoor decks and swimming pools to help you cool off. While it can get over 40°C at noon in Luxor, we schedule all temple sightseeing tours for early in the morning (around 5:30 AM) or late in the afternoon. This way, you avoid the midday heat and get to see the monuments in beautiful golden light.',
+    loreQuote: 'We skip the midday heat with smart scheduling, leaving your afternoons free to relax by the pool.',
+    highlights: ['Full air conditioning on board', 'Early-morning cool temple tours', 'Relax by the pool during peak heat']
   },
   {
     id: 'faq-5',
     category: 'history',
-    question: 'What are the official entry requirements and camera permits for Pharaonic Tombs?',
+    question: 'Do I need tickets or permits to take photos inside the tombs?',
     glyph: '𓉐',
-    answer: 'All high-level historical sites (including the Valley of the Kings, Karnak, and Abu Simbel) require pre-booked sacred passes. Standard passes permit entry into three major tombs. Select high-tier tombs, such as King Tutankhamun or Seti I, require premium supplemental tickets which must be arranged 48 hours in advance. Smartphone photography is now permitted for free in most tombs, but heavy tripod equipment and professional cameras require expensive Imperial permits.',
-    loreQuote: 'Speak softly and step gently in the chambers of the ancestors. Leave their rest undisturbed.',
-    highlights: ['Supplemental tickets needed for Tutankhamun', 'Smartphone photos are free', 'No flash photography permitted']
+    answer: 'Yes, we take care of pre-booking your standard entry tickets, which cover access to three major tombs in places like the Valley of the Kings. Some famous tombs, like King Tutankhamun or Seti I, require extra individual tickets—just let us know 48 hours before your tour and we will get them sorted for you. You can take photos with your smartphone for free in almost all tombs, but professional cameras and tripods are not allowed without an expensive commercial permit.',
+    loreQuote: 'Smartphones are great for capturing memories for free, but please turn off your flash to protect the ancient paintings.',
+    highlights: ['Standard passes booked for you', 'Tutankhamun requires extra ticket', 'Free smartphone photos (no flash)']
   },
   {
     id: 'faq-6',
     category: 'history',
-    question: 'Are there strict dress codes or cultural expectations when entering temples?',
+    question: 'Is there a dress code for visiting temples and ancient sites?',
     glyph: '𓋹',
-    answer: 'Yes. While the ancient structures are open-air archaeological parks, they remain sacred monuments of human heritage. We kindly request that both noble gentlemen and ladies wear respectful clothing covering their shoulders and knees. Light scarves are highly useful for covering up from the scorching sun and paying respect. When visiting active religious structures inside modern cities, head coverings may be requested for ladies.',
-    loreQuote: 'Approach the sanctuaries of the gods with clean minds and humble vestments.',
-    highlights: ['Shoulders and knees must be covered', 'Comfortable walking shoes needed', 'Light scarves are highly recommended']
+    answer: 'Yes. Even though these are outdoor historic sites, they are still highly respected cultural landmarks. We kindly ask both men and women to wear respectful clothing that covers shoulders and knees. Bringing a light scarf is super handy for sun protection, and comfortable walking shoes are absolutely essential for uneven stone pathways.',
+    loreQuote: 'Dress respectfully to honor local culture, and protect yourself from the hot sun.',
+    highlights: ['Cover shoulders and knees', 'Sturdy walking shoes are a must', 'Bring a light scarf for sun cover']
   },
   {
     id: 'faq-7',
     category: 'general',
-    question: 'What is the policy regarding hydration, Nile water, and physical wellness?',
+    question: 'Is the tap water safe to drink, and how do I stay hydrated?',
     glyph: '𓎬',
-    answer: 'Never consume tap water or untreated river water from the Nile. We provide unlimited chilled, double-filtered bottled mineral water in all our transport vehicles, boats, and luxury caravans free of charge. We recommend drinking at least 3-4 liters daily to prevent dehydration. If you experience heat exhaustion, our guides travel with complete trauma kits and rapid hydration salts authorized by the Royal Physicians.',
-    loreQuote: 'Water is the blood of Kemet, but drink only of the sealed wells to maintain thy strength.',
-    highlights: ['Never drink tap or river water', 'Unlimited free bottled water provided', 'Electrolyte hydration salts available']
+    answer: 'Please do not drink tap water or river water from the Nile. We provide unlimited, ice-cold bottled mineral water in all of our tour vans, transfer cars, boats, and desert camps completely free of charge. We recommend drinking 3 to 4 liters of water a day to stay healthy in the desert. Our tour guides also carry first-aid kits and rehydration salts just in case you feel dehydrated.',
+    loreQuote: 'Drink plenty of bottled water to keep your energy up under the Egyptian sun.',
+    highlights: ['Do not drink tap or river water', 'Unlimited free bottled water provided', 'Rehydration kits carried on all tours']
   }
 ];
 
@@ -99,10 +99,10 @@ export default function OraclesWisdomFAQ() {
   };
 
   const categories = [
-    { value: 'all', label: '𓆃 All Lore', count: FAQ_DATA.length },
-    { value: 'equipment', label: '𓅓 Equipment & Gear', count: FAQ_DATA.filter(f => f.category === 'equipment').length },
-    { value: 'seasons', label: '𓊟 Divine Seasons', count: FAQ_DATA.filter(f => f.category === 'seasons').length },
-    { value: 'history', label: '𓉐 Temple Entry & Laws', count: FAQ_DATA.filter(f => f.category === 'history').length },
+    { value: 'all', label: '𓆃 All Help', count: FAQ_DATA.length },
+    { value: 'equipment', label: '𓅓 Clothing & Gear', count: FAQ_DATA.filter(f => f.category === 'equipment').length },
+    { value: 'seasons', label: '𓊟 Best Seasons', count: FAQ_DATA.filter(f => f.category === 'seasons').length },
+    { value: 'history', label: '𓉐 Temple Rules', count: FAQ_DATA.filter(f => f.category === 'history').length },
     { value: 'general', label: '𓎬 Hydration & Health', count: FAQ_DATA.filter(f => f.category === 'general').length }
   ];
 
@@ -123,13 +123,13 @@ export default function OraclesWisdomFAQ() {
         <div className="text-center space-y-2">
           <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.3em] flex items-center justify-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-            Imperial Travel Scrolls
+            Travel Help & Tips
           </span>
           <h3 className="font-serif text-2xl md:text-3xl font-black text-[#e6c280] uppercase tracking-wide">
-            The Oracle's Wisdom FAQ
+            Frequently Asked Questions
           </h3>
           <p className="text-stone-400 text-xs max-w-lg mx-auto leading-relaxed">
-            Inquire about necessary sand gear, divine diving tides, temple entry permits, and health laws enforced inside the Pharaonic kingdom.
+            Got questions about diving gear, desert clothing, temple passes, or staying hydrated? We have got you covered with simple, practical answers.
           </p>
         </div>
 
@@ -141,7 +141,7 @@ export default function OraclesWisdomFAQ() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search ancient travel scrolls..."
+              placeholder="Search help topics..."
               className="w-full bg-[#1c1611] border border-[#d4af37]/35 rounded-xl py-2.5 pl-10 pr-4 text-stone-200 text-xs focus:outline-none focus:ring-1 focus:ring-[#d4af37] placeholder:text-stone-600 transition-all"
             />
             {searchQuery && (
@@ -189,7 +189,7 @@ export default function OraclesWisdomFAQ() {
         <div className="space-y-3 pt-2">
           {filteredFAQs.length === 0 ? (
             <div className="text-center py-10 text-stone-500 italic text-xs border border-stone-800/80 rounded-xl bg-black/10">
-              𓀞 The royal archives found no matching lore for your query. Try searching another parchment.
+              𓀞 We could not find any topics matching your search. Try searching for other keywords.
             </div>
           ) : (
             <div className="space-y-2.5">
@@ -246,7 +246,7 @@ export default function OraclesWisdomFAQ() {
                               <div className="bg-[#2a1e14]/40 border border-[#d4af37]/15 rounded-xl p-3 text-[11px] text-[#e6c280]/90 italic relative overflow-hidden pl-8">
                                 <span className="absolute left-3 top-3.5 text-[#d4af37]/55 text-base select-none font-serif">𓂀</span>
                                 <strong className="not-italic block text-[9px] uppercase font-mono tracking-wider text-[#d4af37] mb-0.5">
-                                  Ancient Papyrus Proverb:
+                                  Quick Travel Tip:
                                 </strong>
                                 "{faq.loreQuote}"
                               </div>
@@ -280,7 +280,7 @@ export default function OraclesWisdomFAQ() {
         {/* Footer help note */}
         <div className="bg-[#1a140f] border border-[#d4af37]/10 rounded-xl p-3 text-center">
           <p className="text-[10px] text-stone-500 font-mono">
-            𓋹 Need additional guidance? Engage with <strong className="text-[#e6c280] font-serif uppercase">The Royal Scribe Sennedjem</strong> above for deep custom itineraries.
+            𓋹 Need more help? Ask our friendly AI Travel Assistant Sennedjem in the chat above!
           </p>
         </div>
 

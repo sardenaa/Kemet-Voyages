@@ -41,7 +41,7 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
           className="flex flex-col items-center gap-1 text-stone-400 hover:text-[#d4af37] active:text-[#d4af37] transition-all cursor-pointer flex-1"
         >
           <HelpCircle className="w-5 h-5" />
-          <span className="text-[9px] font-mono uppercase tracking-widest font-medium">FAQ Wisdom</span>
+          <span className="text-[9px] font-mono uppercase tracking-widest font-medium">FAQs</span>
         </button>
 
         {/* Ledger button */}
@@ -50,7 +50,7 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
           className="flex flex-col items-center gap-1 text-stone-400 hover:text-[#d4af37] active:text-[#d4af37] transition-all cursor-pointer flex-1"
         >
           <FileText className="w-5 h-5" />
-          <span className="text-[9px] font-mono uppercase tracking-widest font-medium">Ledger</span>
+          <span className="text-[9px] font-mono uppercase tracking-widest font-medium">Bookings</span>
         </button>
 
         {/* More/Drawer Trigger button */}
@@ -60,7 +60,7 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
         >
           <div className="absolute -top-1 right-8 w-2 h-2 rounded-full bg-[#d4af37] animate-pulse" />
           <Menu className="w-5 h-5" />
-          <span className="text-[9px] font-mono uppercase tracking-widest font-bold">Divine Menu</span>
+          <span className="text-[9px] font-mono uppercase tracking-widest font-bold">Menu</span>
         </button>
 
       </div>
@@ -94,11 +94,11 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
               <div className="w-12 h-1.5 bg-stone-800 rounded-full mx-auto" />
 
               {/* Drawer Header */}
-              <div className="flex justify-between items-center border-b border-stone-800/85 pb-4">
+                <div className="flex justify-between items-center border-b border-stone-800/85 pb-4">
                 <div className="flex items-center gap-2">
                   <span className="text-[#d4af37] text-xl font-serif">𓋹</span>
                   <h4 className="font-serif text-lg font-bold text-[#e6c280] uppercase tracking-wider">
-                    Sacred Passage Directory
+                    Travel Directory
                   </h4>
                 </div>
                 <button
@@ -128,8 +128,8 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
                   className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-[#1c1510] border border-[#d4af37]/15 hover:border-[#d4af37]/45 text-left transition-all cursor-pointer"
                 >
                   <MessageSquare className="w-5 h-5 text-[#d4af37]" />
-                  <span className="font-serif text-xs font-bold text-[#e6c280] uppercase">Royal Scribe</span>
-                  <span className="text-[9px] font-sans text-stone-500">Chat with AI Sennedjem</span>
+                  <span className="font-serif text-xs font-bold text-[#e6c280] uppercase">AI Assistant</span>
+                  <span className="text-[9px] font-sans text-stone-500">Chat with Sennedjem</span>
                 </button>
 
                 {/* 3. Immersive Galleries */}
@@ -139,7 +139,7 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
                 >
                   <Image className="w-5 h-5 text-[#d4af37]" />
                   <span className="font-serif text-xs font-bold text-[#e6c280] uppercase">Galleries</span>
-                  <span className="text-[9px] font-sans text-stone-500">Egyptology visualizers</span>
+                  <span className="text-[9px] font-sans text-stone-500">Visual Egyptology guide</span>
                 </button>
 
                 {/* 4. Cartouche Scribe */}
@@ -149,7 +149,7 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
                 >
                   <Award className="w-5 h-5 text-[#d4af37]" />
                   <span className="font-serif text-xs font-bold text-[#e6c280] uppercase">Cartouche</span>
-                  <span className="text-[9px] font-sans text-stone-500">Inscribe your name in runes</span>
+                  <span className="text-[9px] font-sans text-stone-500">Write your name in hieroglyphs</span>
                 </button>
 
                 {/* 5. FAQ Wisdom */}
@@ -158,8 +158,8 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
                   className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-[#1c1510] border border-[#d4af37]/15 hover:border-[#d4af37]/45 text-left transition-all cursor-pointer"
                 >
                   <HelpCircle className="w-5 h-5 text-[#d4af37]" />
-                  <span className="font-serif text-xs font-bold text-[#e6c280] uppercase">FAQ Wisdom</span>
-                  <span className="text-[9px] font-sans text-stone-500">Equipment, health & seasons</span>
+                  <span className="font-serif text-xs font-bold text-[#e6c280] uppercase">Help & FAQs</span>
+                  <span className="text-[9px] font-sans text-stone-500">Gear, seasons, & health tips</span>
                 </button>
 
                 {/* 6. Ledger ledger */}
@@ -168,8 +168,8 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
                   className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-[#1c1510] border border-[#d4af37]/15 hover:border-[#d4af37]/45 text-left transition-all cursor-pointer"
                 >
                   <FileText className="w-5 h-5 text-[#d4af37]" />
-                  <span className="font-serif text-xs font-bold text-[#e6c280] uppercase">Sacred Ledger</span>
-                  <span className="text-[9px] font-sans text-stone-500">Inscribed caravans & status</span>
+                  <span className="font-serif text-xs font-bold text-[#e6c280] uppercase">My Bookings</span>
+                  <span className="text-[9px] font-sans text-stone-500">View trip statuses & details</span>
                 </button>
 
               </div>
@@ -182,7 +182,7 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
                 >
                   <ShieldAlert className="w-4 h-4 text-[#d4af37]" />
                   <span>
-                    {isAdminMode ? '𓀚 Enter Explorer Mode' : '𓋹 High Priest Console (CRM)'}
+                    {isAdminMode ? '𓀚 Exit Manager Mode' : '𓋹 Manager Console (CRM)'}
                   </span>
                 </button>
               </div>
@@ -190,7 +190,7 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
               {/* Small lore quote in drawer footer */}
               <div className="text-center pt-2">
                 <p className="text-[10px] font-mono text-stone-600 italic">
-                  𓋹 Let thy footsteps on Kemet soil be ever peaceful.
+                  Have a wonderful journey through Egypt!
                 </p>
               </div>
 

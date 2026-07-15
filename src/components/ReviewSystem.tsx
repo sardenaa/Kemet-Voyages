@@ -226,7 +226,7 @@ export default function ReviewSystem({ excursionId, onReviewAdded }: ReviewSyste
         {/* Large average score */}
         <div className="md:col-span-4 text-center md:border-r border-[#d4af37]/15 py-2 md:pr-4">
           <span className="text-[10px] font-mono text-stone-500 uppercase tracking-widest block mb-1">
-            {excursionId ? "Voyage Score" : "Empire Approval"}
+            {excursionId ? "Trip Rating" : "Traveler Satisfaction"}
           </span>
           <div className="font-serif text-5xl font-black text-[#e6c280] drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
             {averageRating.toFixed(1)}
@@ -242,7 +242,7 @@ export default function ReviewSystem({ excursionId, onReviewAdded }: ReviewSyste
             ))}
           </div>
           <span className="text-xs text-stone-400 font-mono">
-            {totalCount} {totalCount === 1 ? "Inscribed Testimony" : "Inscribed Testimonies"}
+            {totalCount} {totalCount === 1 ? "Review" : "Reviews"}
           </span>
         </div>
 
@@ -280,7 +280,7 @@ export default function ReviewSystem({ excursionId, onReviewAdded }: ReviewSyste
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-[#d4af37]" />
           <span className="text-xs font-mono uppercase tracking-widest text-[#e6c280]">
-            Filter Testimonies
+            Filter Reviews
           </span>
         </div>
 
@@ -323,10 +323,10 @@ export default function ReviewSystem({ excursionId, onReviewAdded }: ReviewSyste
             >
               <ShieldCheck className="text-[#d4af37] w-14 h-14 mb-3 animate-bounce" />
               <h4 className="font-serif text-xl font-bold text-[#e6c280] uppercase tracking-wider">
-                Testimony Engraved!
+                Review Submitted!
               </h4>
               <p className="text-stone-300 text-xs mt-1 max-w-sm">
-                Your high praise has been etched into the stone pillars of the temple. The Scribes have recorded your name forever.
+                Thank you! Your feedback has been saved and shared with our traveler community.
               </p>
             </motion.div>
           )}
@@ -334,7 +334,7 @@ export default function ReviewSystem({ excursionId, onReviewAdded }: ReviewSyste
 
         <h4 className="font-serif text-sm font-semibold text-[#e6c280] uppercase tracking-widest mb-4 flex items-center gap-2">
           <PenTool className="w-4 h-4 text-[#d4af37]" /> 
-          Inscribe Thy Witness Testimony
+          Write a Review
         </h4>
 
         <form onSubmit={handleReviewSubmit} className="space-y-4">
@@ -344,7 +344,7 @@ export default function ReviewSystem({ excursionId, onReviewAdded }: ReviewSyste
             {!excursionId && (
               <div className="space-y-1 sm:col-span-2 md:col-span-1">
                 <label className="text-stone-400 text-[10px] font-mono uppercase tracking-widest block">
-                  Target Voyage
+                  Select Trip
                 </label>
                 <select
                   value={selectedExcursionId}
@@ -361,12 +361,12 @@ export default function ReviewSystem({ excursionId, onReviewAdded }: ReviewSyste
             {/* Author Name */}
             <div className={`space-y-1 ${excursionId ? 'sm:col-span-1' : ''}`}>
               <label className="text-stone-400 text-[10px] font-mono uppercase tracking-widest block">
-                Your Noble Name
+                Your Name
               </label>
               <input
                 type="text"
                 required
-                placeholder="E.g., Lord Alistair"
+                placeholder="E.g., Alex Johnson"
                 value={reviewAuthor}
                 onChange={(e) => setReviewAuthor(e.target.value)}
                 className="w-full bg-[#1c1611] border border-[#d4af37]/30 rounded-lg p-2.5 text-stone-200 text-xs focus:outline-none focus:ring-1 focus:ring-[#d4af37]"
@@ -376,7 +376,7 @@ export default function ReviewSystem({ excursionId, onReviewAdded }: ReviewSyste
             {/* Chosen Pharaoh Avatar */}
             <div className="space-y-1">
               <label className="text-stone-400 text-[10px] font-mono uppercase tracking-widest block">
-                Choose Royal Shield
+                Choose an Avatar
               </label>
               <select
                 value={selectedAvatar}
@@ -392,7 +392,7 @@ export default function ReviewSystem({ excursionId, onReviewAdded }: ReviewSyste
             {/* Satisfaction Stars */}
             <div className={`space-y-1 ${excursionId ? 'sm:col-span-2 md:col-span-1' : ''}`}>
               <label className="text-stone-400 text-[10px] font-mono uppercase tracking-widest block">
-                Divine Satisfaction
+                Your Rating
               </label>
               <div className="flex gap-2 py-2">
                 {[1, 2, 3, 4, 5].map((num) => (
@@ -423,14 +423,14 @@ export default function ReviewSystem({ excursionId, onReviewAdded }: ReviewSyste
           {/* Testimony Comment Text Area */}
           <div className="space-y-1">
             <label className="text-stone-400 text-[10px] font-mono uppercase tracking-widest block">
-              Testimonial Inscription
+              Write Your Feedback
             </label>
             <textarea
               required
               rows={3}
               value={reviewComment}
               onChange={(e) => setReviewComment(e.target.value)}
-              placeholder="Inscribe detail of the corals, dune speeds, yacht banquets, or professional guides..."
+              placeholder="Tell us what you thought about the corals, desert speed, boat trip, or your guide..."
               className="w-full bg-[#1c1611] border border-[#d4af37]/30 rounded-lg p-3 text-stone-200 text-xs focus:outline-none focus:ring-1 focus:ring-[#d4af37] leading-relaxed"
             />
           </div>
@@ -440,7 +440,7 @@ export default function ReviewSystem({ excursionId, onReviewAdded }: ReviewSyste
             className="w-full bg-gradient-to-r from-[#d4af37]/20 to-[#9a7b1c]/20 hover:from-[#d4af37]/45 hover:to-[#9a7b1c]/45 border border-[#d4af37]/40 hover:border-[#d4af37]/80 text-[#f3e5c8] rounded-xl py-2.5 text-xs font-mono uppercase tracking-widest transition-all cursor-pointer shadow-md flex items-center justify-center gap-2"
           >
             <Sparkles className="w-3.5 h-3.5 text-[#d4af37]" />
-            Engrave My Royal Witness Testimony
+            Submit My Review
           </button>
         </form>
       </div>
@@ -449,7 +449,7 @@ export default function ReviewSystem({ excursionId, onReviewAdded }: ReviewSyste
       <div className="space-y-4 max-h-[480px] overflow-y-auto pr-1">
         {displayedReviews.length === 0 ? (
           <div className="bg-[#120d09] border border-stone-800 rounded-xl p-8 text-center text-stone-500 italic text-xs">
-            No testimonies matching this search query have been inscribed. Be the first to engrave your journey!
+            No reviews match this filter yet. Be the first to share your experience!
           </div>
         ) : (
           displayedReviews.map((rev) => (
@@ -471,7 +471,7 @@ export default function ReviewSystem({ excursionId, onReviewAdded }: ReviewSyste
                     <h5 className="font-serif text-xs font-bold text-[#e6c280] flex items-center gap-1.5">
                       {rev.author}
                       <span className="text-[10px] text-[#d4af37]/60 font-mono font-normal">
-                        • Verified Explorer
+                        • Verified Traveler
                       </span>
                     </h5>
                     <span className="text-[9px] font-mono text-stone-500">

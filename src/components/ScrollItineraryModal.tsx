@@ -71,7 +71,7 @@ export default function ScrollItineraryModal({ booking, excursion, onClose }: Sc
           <div className="flex items-center gap-2">
             <span className="text-[#d4af37] text-lg">𓏞</span>
             <span className="font-serif font-black text-xs uppercase tracking-widest text-[#e6c280]">
-              Imperial Passage Scroll
+              Travel Itinerary Scroll
             </span>
           </div>
           <div className="flex items-center gap-3">
@@ -135,19 +135,19 @@ export default function ScrollItineraryModal({ booking, excursion, onClose }: Sc
                     𓋹
                   </div>
                   <span className="text-[10px] font-mono tracking-[0.25em] text-[#8e6512] uppercase font-bold block">
-                    By Decree of the High Court of Kemet
+                    Kemet Travel Expeditions
                   </span>
                   <h2 className="text-2xl md:text-3xl font-black text-[#56361a] uppercase tracking-wider print-dark">
-                    Imperial Charter of Passage
+                    Official Travel Itinerary
                   </h2>
                   <p className="text-[11px] font-mono text-[#8c6b3e] uppercase tracking-widest">
-                    Ledger Serial: #{booking.id.toUpperCase()}
+                    Booking ID: #{booking.id.toUpperCase()}
                   </p>
                 </div>
 
                 {/* Blessing intro */}
                 <div className="text-center italic text-[#563b25] text-xs max-w-md mx-auto leading-relaxed">
-                  "Let it be known across the Eastern Desert and the Great Green Sea that the gods favor the journey of the noble pilgrim named below. Their tribute is weighed, the omens are confirmed, and passage is officially sealed."
+                  "This document certifies that your booking has been successfully confirmed. We are excited to welcome you on this unforgettable journey. Please keep a copy of this itinerary with you."
                 </div>
 
                 {/* Main Details block */}
@@ -156,12 +156,12 @@ export default function ScrollItineraryModal({ booking, excursion, onClose }: Sc
                   {/* Row 1: Traveler name & Excursion Title */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4 border-b border-[#b08e23]/20">
                     <div>
-                      <span className="text-[9px] font-mono text-[#8e6512] uppercase tracking-wider block font-bold">Noble Pilgrim:</span>
+                      <span className="text-[9px] font-mono text-[#8e6512] uppercase tracking-wider block font-bold">Traveler Name:</span>
                       <span className="text-[#3b2314] font-bold text-base block">{booking.travelerName}</span>
                       <span className="text-[10px] text-[#70553d] font-mono">{booking.travelerEmail}</span>
                     </div>
                     <div>
-                      <span className="text-[9px] font-mono text-[#8e6512] uppercase tracking-wider block font-bold">Royal Expedition:</span>
+                      <span className="text-[9px] font-mono text-[#8e6512] uppercase tracking-wider block font-bold">Selected Tour:</span>
                       <span className="text-[#3b2314] font-bold text-base block uppercase tracking-wide">{booking.excursionTitle}</span>
                     </div>
                   </div>
@@ -169,16 +169,16 @@ export default function ScrollItineraryModal({ booking, excursion, onClose }: Sc
                   {/* Row 2: Date, Guest count, Gold cost */}
                   <div className="grid grid-cols-3 gap-2 text-center">
                     <div className="border-r border-[#b08e23]/20">
-                      <span className="text-[9px] font-mono text-[#8e6512] uppercase tracking-wider block font-bold">Passage Date:</span>
+                      <span className="text-[9px] font-mono text-[#8e6512] uppercase tracking-wider block font-bold">Travel Date:</span>
                       <span className="text-[#3b2314] text-xs font-bold block font-mono mt-0.5">{booking.date}</span>
                     </div>
                     <div className="border-r border-[#b08e23]/20">
-                      <span className="text-[9px] font-mono text-[#8e6512] uppercase tracking-wider block font-bold">Caravan Size:</span>
-                      <span className="text-[#3b2314] text-xs font-bold block mt-0.5">{booking.numberOfGuests} Nobles</span>
+                      <span className="text-[9px] font-mono text-[#8e6512] uppercase tracking-wider block font-bold">Group Size:</span>
+                      <span className="text-[#3b2314] text-xs font-bold block mt-0.5">{booking.numberOfGuests} {booking.numberOfGuests === 1 ? 'Person' : 'People'}</span>
                     </div>
                     <div>
-                      <span className="text-[9px] font-mono text-[#8e6512] uppercase tracking-wider block font-bold">Paid Tribute:</span>
-                      <span className="text-[#b48316] text-xs font-mono font-bold block mt-0.5">${booking.totalCost} Gold</span>
+                      <span className="text-[9px] font-mono text-[#8e6512] uppercase tracking-wider block font-bold">Total Paid:</span>
+                      <span className="text-[#b48316] text-xs font-mono font-bold block mt-0.5">${booking.totalCost}</span>
                     </div>
                   </div>
 
@@ -190,7 +190,7 @@ export default function ScrollItineraryModal({ booking, excursion, onClose }: Sc
                     
                     <div>
                       <h4 className="font-mono text-[9px] uppercase tracking-wider text-[#8e6512] font-bold mb-1">
-                        𓆛 Excursion Highlights & Sacred Lore
+                        𓆛 Tour Information & Highlights
                       </h4>
                       <p className="italic leading-relaxed text-[#5a422e] text-[11px] pl-3 border-l-2 border-[#b08e23]/40">
                         "{excursion.ancientLore}"
@@ -199,7 +199,7 @@ export default function ScrollItineraryModal({ booking, excursion, onClose }: Sc
 
                     <div className="grid grid-cols-2 gap-4 pt-1.5">
                       <div>
-                        <span className="font-mono text-[9px] uppercase tracking-wider text-[#8e6512] font-bold block mb-1">Inclusions:</span>
+                        <span className="font-mono text-[9px] uppercase tracking-wider text-[#8e6512] font-bold block mb-1">What's Included:</span>
                         <ul className="space-y-1 text-[10px] list-disc list-inside text-[#563c27]">
                           {excursion.inclusions.slice(0, 3).map((inc, i) => (
                             <li key={i}>{inc}</li>
@@ -207,7 +207,7 @@ export default function ScrollItineraryModal({ booking, excursion, onClose }: Sc
                         </ul>
                       </div>
                       <div>
-                        <span className="font-mono text-[9px] uppercase tracking-wider text-[#8e6512] font-bold block mb-1">Passage Highlights:</span>
+                        <span className="font-mono text-[9px] uppercase tracking-wider text-[#8e6512] font-bold block mb-1">Tour Highlights:</span>
                         <ul className="space-y-1 text-[10px] list-disc list-inside text-[#563c27]">
                           {excursion.highlights.slice(0, 3).map((hi, i) => (
                             <li key={i}>{hi}</li>
@@ -223,7 +223,7 @@ export default function ScrollItineraryModal({ booking, excursion, onClose }: Sc
                 {booking.specialRequests && (
                   <div className="bg-[#fbfbf8] border border-stone-300 rounded-xl p-3.5 text-[11px] text-[#563b25] italic font-sans">
                     <strong className="text-[#8e6512] not-italic uppercase font-mono block text-[8px] tracking-wider mb-0.5 font-bold">
-                      Custom Noble Decrees (Special Requests):
+                      Special Requests:
                     </strong>
                     "{booking.specialRequests}"
                   </div>
@@ -236,7 +236,7 @@ export default function ScrollItineraryModal({ booking, excursion, onClose }: Sc
                       𓂀 𓋹 𓏞
                     </div>
                     <span className="text-[8px] font-mono uppercase tracking-wider text-[#8c6b3e] block font-bold">
-                      Seal of the High Priest
+                      Authorized Registrar Seal
                     </span>
                     <span className="text-[9px] font-sans italic text-stone-500 block">
                       Confirmed & Approved
@@ -248,7 +248,7 @@ export default function ScrollItineraryModal({ booking, excursion, onClose }: Sc
                       Scribe Sennedjem
                     </div>
                     <span className="text-[8px] font-mono uppercase tracking-wider text-[#8c6b3e] block font-bold">
-                      Royal Registrar of Kemet
+                      Travel Scribe
                     </span>
                     <span className="text-[9px] font-sans text-stone-500 block">
                       Inscribed on 2026-07-14

@@ -10,22 +10,22 @@ const STATUS_CONFIG = {
     colorClass: 'bg-amber-500/10 border-amber-500/30 text-amber-400',
     barColor: 'bg-amber-500',
     icon: Clock,
-    labelText: '𓀚 Pending Approval',
-    descText: 'Awaiting high priest confirmation seals.',
+    labelText: '𓀚 Reviewing',
+    descText: 'Our team is reviewing your request and will approve it soon.',
   },
   'Confirmed by High Priest': {
     colorClass: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400',
     barColor: 'bg-emerald-500',
     icon: CheckCircle,
     labelText: '𓋹 Confirmed',
-    descText: 'The Nile current is favorable. Thy passage is sealed.',
+    descText: 'Your spot is officially booked and ready to go!',
   },
   'Completed': {
     colorClass: 'bg-sky-500/10 border-sky-500/30 text-sky-400',
     barColor: 'bg-sky-500',
     icon: Sparkles,
     labelText: '𓁠 Completed',
-    descText: 'The gods smile upon thy journey. Welcome home.',
+    descText: 'We hope you had an amazing experience on your adventure!',
   }
 };
 
@@ -46,14 +46,14 @@ export default function BookingManager({ bookings, excursions, onCancelBooking }
         <div className="flex items-center gap-2 border-b border-[#d4af37]/20 pb-3">
           <FileText className="text-[#d4af37] w-5 h-5" />
           <h3 className="font-serif text-xl font-bold text-[#e6c280] uppercase tracking-wider">
-            Scribe's Sacred Booking Ledger
+            Your Booked Expeditions
           </h3>
         </div>
 
         <div className="space-y-4">
           {bookings.length === 0 ? (
             <div className="text-center py-12 bg-[#1a1410] border border-[#d4af37]/15 rounded-2xl text-stone-500 italic text-sm">
-              𓀞 No expeditions are inscribed in the ledger yet. Seek the catalog above.
+              𓀞 You haven't booked any trips yet. Browse our tours above to plan your adventure!
             </div>
           ) : (
             <AnimatePresence>
@@ -75,7 +75,7 @@ export default function BookingManager({ bookings, excursions, onCancelBooking }
                     <div className="flex justify-between items-start">
                       <div>
                         <span className="text-[10px] font-mono text-stone-500 uppercase tracking-widest block">
-                          Ledger Entry #{booking.id.slice(-6)}
+                          Booking ID #{booking.id.slice(-6)}
                         </span>
                         <h4 className="font-serif text-base font-bold text-[#e6c280] uppercase mt-0.5">
                           {booking.excursionTitle}
@@ -90,19 +90,19 @@ export default function BookingManager({ bookings, excursions, onCancelBooking }
 
                     <div className="grid grid-cols-2 gap-2 text-xs text-stone-400 pt-2 border-t border-stone-800/60 font-sans">
                       <div>
-                        <span className="text-stone-500 block text-[10px] uppercase font-mono tracking-wider">Traveler Noble:</span>
+                        <span className="text-stone-500 block text-[10px] uppercase font-mono tracking-wider">Traveler Name:</span>
                         <span className="text-stone-200">{booking.travelerName}</span>
                       </div>
                       <div>
-                        <span className="text-stone-500 block text-[10px] uppercase font-mono tracking-wider">Passage Date:</span>
+                        <span className="text-stone-500 block text-[10px] uppercase font-mono tracking-wider">Travel Date:</span>
                         <span className="text-stone-200">{booking.date}</span>
                       </div>
                       <div>
-                        <span className="text-stone-500 block text-[10px] uppercase font-mono tracking-wider">Caravan Size:</span>
-                        <span className="text-stone-200">{booking.numberOfGuests} Nobles</span>
+                        <span className="text-stone-500 block text-[10px] uppercase font-mono tracking-wider">Group Size:</span>
+                        <span className="text-stone-200">{booking.numberOfGuests} {booking.numberOfGuests === 1 ? 'Person' : 'People'}</span>
                       </div>
                       <div>
-                        <span className="text-stone-500 block text-[10px] uppercase font-mono tracking-wider">Tribute Cost:</span>
+                        <span className="text-stone-500 block text-[10px] uppercase font-mono tracking-wider">Total Price:</span>
                         <span className="text-[#d4af37] font-mono font-semibold">${booking.totalCost}</span>
                       </div>
                     </div>
@@ -110,7 +110,7 @@ export default function BookingManager({ bookings, excursions, onCancelBooking }
                     {booking.specialRequests && (
                       <div className="bg-[#191410] rounded-lg p-2.5 text-[11px] text-stone-400 italic">
                         <strong className="text-stone-500 not-italic uppercase font-mono block text-[9px] tracking-wider mb-0.5">
-                          Inscribed Wishes:
+                          Special Requests:
                         </strong>
                         "{booking.specialRequests}"
                       </div>
@@ -128,16 +128,16 @@ export default function BookingManager({ bookings, excursions, onCancelBooking }
                           className="text-[#d4af37] hover:text-[#fbf5e6] px-3 py-1 bg-[#d4af37]/10 hover:bg-[#d4af37]/25 border border-[#d4af37]/35 rounded-md transition-all cursor-pointer flex items-center gap-1.5 font-bold text-[10px] uppercase tracking-wider"
                         >
                           <Printer className="w-3 h-3" />
-                          <span>𓏞 Print Scroll</span>
+                          <span>𓏞 View Itinerary</span>
                         </button>
                       )}
 
                       {onCancelBooking && booking.status === 'Pending Oracle Approval' && (
                         <button
                           onClick={() => onCancelBooking(booking.id)}
-                          className="text-red-400 hover:text-red-300 px-3 py-1 bg-red-500/10 hover:bg-red-500/20 rounded-md transition-all cursor-pointer"
+                          className="text-red-400 hover:text-red-300 px-3 py-1 bg-red-500/10 hover:bg-red-500/20 rounded-md transition-all cursor-pointer text-[10px] uppercase font-bold font-mono tracking-wider"
                         >
-                          Revoke Petition
+                          Cancel Booking
                         </button>
                       )}
                     </div>
@@ -154,7 +154,7 @@ export default function BookingManager({ bookings, excursions, onCancelBooking }
         <div className="flex items-center gap-2 border-b border-[#d4af37]/20 pb-3">
           <MessageSquare className="text-[#d4af37] w-5 h-5" />
           <h3 className="font-serif text-xl font-bold text-[#e6c280] uppercase tracking-wider">
-            Pharaoh's Review & Testimony Board
+            Traveler Reviews & Testimonials
           </h3>
         </div>
 
