@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, Calendar, Compass, User, Zap, Send, MessageCircle, HelpCircle, Loader2, BookOpen } from 'lucide-react';
+import { Sparkles, Calendar, Compass, User, Zap, Send, MessageCircle, HelpCircle, Loader2, BookOpen, Printer, X } from 'lucide-react';
 import { CustomItinerary, ScribeMessage } from '../types';
 
-export default function ScribeOracle() {
+interface ScribeOracleProps {
+  onScribeSuccess?: () => void;
+}
+
+export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
   // Tabs: 'planner' or 'chat'
   const [activeTab, setActiveTab] = useState<'planner' | 'chat'>('planner');
 
@@ -16,6 +20,44 @@ export default function ScribeOracle() {
   const [itinerary, setItinerary] = useState<CustomItinerary | null>(null);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [plannerError, setPlannerError] = useState<string | null>(null);
+  const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
+  
+  // Custom Activity Builder States & Methods
+  const [newActivityInputs, setNewActivityInputs] = useState<{[key: number]: string}>({});
+
+  const removeActivity = (dayNumber: number, activityIndex: number) => {
+    if (!itinerary) return;
+    const updatedDays = itinerary.days.map(day => {
+      if (day.dayNumber === dayNumber) {
+        return {
+          ...day,
+          activities: day.activities.filter((_, idx) => idx !== activityIndex)
+        };
+      }
+      return day;
+    });
+    setItinerary({
+      ...itinerary,
+      days: updatedDays
+    });
+  };
+
+  const addActivity = (dayNumber: number, activityText: string) => {
+    if (!itinerary || !activityText.trim()) return;
+    const updatedDays = itinerary.days.map(day => {
+      if (day.dayNumber === dayNumber) {
+        return {
+          ...day,
+          activities: [...day.activities, activityText.trim()]
+        };
+      }
+      return day;
+    });
+    setItinerary({
+      ...itinerary,
+      days: updatedDays
+    });
+  };
 
   // Chat States
   const [chatMessages, setChatMessages] = useState<ScribeMessage[]>([
@@ -76,11 +118,13 @@ export default function ScribeOracle() {
 
       const data = await response.json();
       setItinerary(data);
+      onScribeSuccess?.();
     } catch (err: any) {
       console.warn("Express endpoint failed or unconfigured, utilizing royal scribe fallback: ", err);
       // Fallback elegant customized simulated itinerary based on user inputs
       const simulated: CustomItinerary = generateFallbackItinerary(duration, interest, intensity);
       setItinerary(simulated);
+      onScribeSuccess?.();
     } finally {
       setIsGenerating(false);
     }
@@ -149,6 +193,7 @@ export default function ScribeOracle() {
         text: data.response || "My apologies, the cosmic inkwells of Kemet have run dry for a moment. Ask again, noble voyager.",
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }]);
+      onScribeSuccess?.();
     } catch (err) {
       console.warn("Express chat failed, utilizing offline scribe response.");
       // Simulated wise responses
@@ -160,6 +205,7 @@ export default function ScribeOracle() {
           text: reply,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }]);
+        onScribeSuccess?.();
       }, 800);
     } finally {
       setIsChatLoading(false);
@@ -335,75 +381,321 @@ export default function ScribeOracle() {
             </div>
 
             {/* Generated Itinerary Display */}
-            <AnimatePresence>
-              {itinerary && (
+            <AnimatePresence mode="wait">
+              {isGenerating ? (
                 <motion.div
+                  key="itinerary-skeleton"
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.98 }}
                   className="bg-[#faf3e0] border-8 border-double border-[#8b6508] rounded-2xl p-6 md:p-8 text-[#2b1f0d] relative shadow-[0_0_50px_rgba(0,0,0,0.6)] font-sans max-w-4xl mx-auto overflow-hidden mt-8"
-                  id="parchment-itinerary"
+                  id="parchment-itinerary-skeleton"
                 >
                   {/* Parchment Background Texture Accent */}
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_30%,_rgba(139,101,8,0.06)_100%)] pointer-events-none"></div>
 
+                  {/* Golden glowing shimmer effect overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#8b6508]/15 to-transparent -translate-x-full animate-[shimmer_2.5s_infinite] pointer-events-none"></div>
+
                   <div className="text-center border-b-2 border-[#8b6508]/20 pb-6 mb-6">
-                    <span className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#8b6508] font-bold">
-                      Decree of Sennedjem, Royal Scribe
+                    <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-[#8b6508] font-bold block animate-pulse">
+                      Consulting Ancient Star Maps...
                     </span>
-                    <h3 className="font-serif text-3xl font-black text-[#5c4001] tracking-wide mt-1 uppercase">
-                      {itinerary.title}
+                    <h3 className="font-serif text-2xl font-black text-[#5c4001] tracking-wide mt-2 uppercase">
+                      Drafting Thy Custom Charter
                     </h3>
+                    
+                    {/* Animated Golden Hieroglyphs pulsing in sequence */}
+                    <div className="flex justify-center gap-3.5 text-[#8b6508] text-2xl font-serif py-3 mt-1.5">
+                      {[
+                        { glyph: '𓋹', delay: 0 },
+                        { glyph: '𓂀', delay: 0.2 },
+                        { glyph: '𓅃', delay: 0.4 },
+                        { glyph: '𓏞', delay: 0.6 },
+                        { glyph: '𓎬', delay: 0.8 },
+                        { glyph: '𓆛', delay: 1.0 },
+                        { glyph: '𓊟', delay: 1.2 }
+                      ].map((item, index) => (
+                        <motion.span
+                          key={index}
+                          animate={{ 
+                            opacity: [0.25, 1, 0.25], 
+                            scale: [0.95, 1.15, 0.95],
+                            y: [0, -3, 0] 
+                          }}
+                          transition={{ 
+                            repeat: Infinity, 
+                            duration: 1.6, 
+                            delay: item.delay,
+                            ease: "easeInOut"
+                          }}
+                          className="filter drop-shadow-[0_0_4px_rgba(139,101,8,0.35)] select-none"
+                        >
+                          {item.glyph}
+                        </motion.span>
+                      ))}
+                    </div>
                   </div>
 
-                  {/* Poetic Greeting */}
-                  <div className="bg-[#f0e4c6] border-l-4 border-[#8b6508] p-4 rounded-r-lg mb-8 italic text-stone-800 text-sm leading-relaxed shadow-sm">
-                    "{itinerary.royalGreeting}"
-                  </div>
+                  {/* Scribe greeting skeleton */}
+                  <motion.div 
+                    animate={{ opacity: [0.6, 1, 0.6] }}
+                    transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }}
+                    className="bg-[#f0e4c6] border-l-4 border-[#8b6508] p-4 rounded-r-lg mb-8 space-y-2.5"
+                  >
+                    <div className="w-full h-3 bg-[#8b6508]/15 rounded-md" />
+                    <div className="w-4/5 h-3 bg-[#8b6508]/15 rounded-md" />
+                  </motion.div>
 
-                  {/* Days Timeline */}
-                  <div className="space-y-8 relative before:absolute before:left-6 before:top-2 before:bottom-2 before:w-[2px] before:bg-[#8b6508]/20">
-                    {itinerary.days.map((day) => (
-                      <div key={day.dayNumber} className="relative pl-12 group">
+                  {/* 3 Days Timeline Skeleton */}
+                  <div className="space-y-8 relative before:absolute before:left-6 before:top-2 before:bottom-2 before:w-[2px] before:bg-[#8b6508]/15">
+                    {[1, 2, 3].map((dayNum) => (
+                      <div key={dayNum} className="relative pl-12">
                         {/* Bullet Circle */}
-                        <div className="absolute left-[14px] top-1.5 w-5 h-5 rounded-full border-4 border-[#faf3e0] bg-[#8b6508] shadow-[0_0_10px_rgba(139,101,8,0.4)] flex items-center justify-center text-[10px] font-bold text-white font-mono group-hover:scale-110 transition-transform">
-                          {day.dayNumber}
+                        <div className="absolute left-[14px] top-1.5 w-5 h-5 rounded-full border-2 border-[#faf3e0] bg-[#8b6508]/40 shadow-[0_0_8px_rgba(139,101,8,0.25)] flex items-center justify-center text-[10px] font-bold text-[#faf3e0] font-mono animate-pulse">
+                          {dayNum}
                         </div>
 
-                        <div className="space-y-2">
-                          <h4 className="font-serif text-lg font-bold text-[#5c4001] uppercase flex items-center gap-2">
-                            Day {day.dayNumber}: {day.theme}
-                          </h4>
+                        <div className="space-y-3">
+                          <motion.div 
+                            animate={{ opacity: [0.5, 0.9, 0.5] }}
+                            transition={{ repeat: Infinity, duration: 1.5, delay: dayNum * 0.2 }}
+                            className="w-1/3 h-5 bg-[#8b6508]/20 rounded-md"
+                          />
                           
-                          <ul className="list-disc list-inside space-y-1.5 text-stone-700 text-sm">
-                            {day.activities.map((act, i) => (
-                              <li key={i} className="leading-relaxed pl-1">{act}</li>
-                            ))}
-                          </ul>
+                          <div className="space-y-2">
+                            <motion.div 
+                              animate={{ opacity: [0.4, 0.8, 0.4] }}
+                              transition={{ repeat: Infinity, duration: 1.5, delay: dayNum * 0.2 + 0.1 }}
+                              className="w-full h-3 bg-[#8b6508]/10 rounded-md"
+                            />
+                            <motion.div 
+                              animate={{ opacity: [0.4, 0.8, 0.4] }}
+                              transition={{ repeat: Infinity, duration: 1.5, delay: dayNum * 0.2 + 0.2 }}
+                              className="w-5/6 h-3 bg-[#8b6508]/10 rounded-md"
+                            />
+                          </div>
 
-                          {/* Scribe Wisdom Box */}
-                          <div className="mt-3 bg-[#f2e7c9] border border-[#8b6508]/15 rounded-lg p-3 text-xs text-stone-600 italic">
-                            <span className="font-serif font-bold text-[#8b6508] block not-italic mb-1 uppercase tracking-wider">
-                              𓋹 Scribe's Ancient Wisdom:
-                            </span>
-                            {day.scribeWisdom}
+                          {/* Scribe Wisdom Box Skeleton */}
+                          <div className="mt-3 bg-[#f2e7c9] border border-[#8b6508]/15 rounded-lg p-3 space-y-2">
+                            <div className="w-24 h-3 bg-[#8b6508]/25 rounded-md animate-pulse" />
+                            <div className="w-11/12 h-2.5 bg-[#8b6508]/10 rounded-md animate-pulse" />
                           </div>
                         </div>
                       </div>
                     ))}
                   </div>
 
-                  {/* Royal Blessing Conclution */}
-                  <div className="mt-8 pt-6 border-t-2 border-[#8b6508]/25 text-center">
-                    <p className="text-sm font-serif italic text-stone-800 leading-relaxed">
-                      "{itinerary.blessing}"
-                    </p>
-                    <div className="mt-4 flex justify-center text-[#8b6508] text-4xl select-none">
+                  {/* Royal Blessing Conclusion Skeleton */}
+                  <div className="mt-8 pt-6 border-t-2 border-[#8b6508]/20 text-center space-y-2">
+                    <div className="w-1/2 h-3.5 bg-[#8b6508]/15 mx-auto rounded-md animate-pulse" />
+                    <div className="mt-4 flex justify-center gap-2 text-[#8b6508]/30 text-2xl select-none animate-pulse">
                       𓋹 𓎬 𓅃
                     </div>
                   </div>
                 </motion.div>
-              )}
+              ) : itinerary ? (() => {
+                const totalActivities = itinerary.days.reduce((sum, d) => sum + d.activities.length, 0);
+                const targetActivities = itinerary.days.length * 3;
+                const progressPercent = targetActivities > 0 ? Math.min(100, Math.round((totalActivities / targetActivities) * 100)) : 0;
+
+                return (
+                  <motion.div
+                    key="itinerary-parchment"
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    className="bg-[#faf3e0] border-8 border-double border-[#8b6508] rounded-2xl p-6 md:p-8 text-[#2b1f0d] relative shadow-[0_0_50px_rgba(0,0,0,0.6)] font-sans max-w-4xl mx-auto overflow-hidden mt-8"
+                    id="parchment-itinerary"
+                  >
+                    {/* Parchment Background Texture Accent */}
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_30%,_rgba(139,101,8,0.06)_100%)] pointer-events-none"></div>
+
+                    {/* Actions bar */}
+                    <div className="md:absolute md:top-6 md:right-6 mb-6 md:mb-0 flex justify-center z-10">
+                      <button
+                        onClick={() => setShowPrintModal(true)}
+                        className="bg-[#8b6508] hover:bg-[#6e4e03] text-white px-4 py-2 rounded-xl text-xs font-serif font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer active:scale-95 group/btn border border-yellow-600/30"
+                        title="Inscribe into a Papyrus Scroll (PDF)"
+                      >
+                        <Printer className="w-3.5 h-3.5 text-yellow-200 group-hover/btn:scale-110 transition-transform" />
+                        <span>Generate Papyrus Scroll</span>
+                      </button>
+                    </div>
+
+                    <div className="text-center border-b-2 border-[#8b6508]/20 pb-6 mb-6 md:pr-48">
+                      <span className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#8b6508] font-bold">
+                        Decree of Sennedjem, Royal Scribe
+                      </span>
+                      <h3 className="font-serif text-3xl font-black text-[#5c4001] tracking-wide mt-1 uppercase">
+                        {itinerary.title}
+                      </h3>
+                    </div>
+
+                    {/* Voyage Progress Banner */}
+                    <div className="bg-[#f3e6c3] border-2 border-dashed border-[#8b6508]/40 rounded-xl p-4 mb-6 shadow-inner relative overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#8b6508]/5 to-transparent -translate-x-full animate-[shimmer_3s_infinite] pointer-events-none"></div>
+                      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-2.5">
+                        <div>
+                          <h4 className="font-serif text-sm font-bold text-[#5c4001] uppercase flex items-center gap-2">
+                            <span className="text-[#8b6508] text-base">𓊟</span>
+                            Scribe's Planning Manifest
+                          </h4>
+                          <p className="text-[11px] text-stone-600 mt-0.5">
+                            {progressPercent < 35 ? (
+                              <span>𓀚 A sparse manifest. Add more rites and excursions to satisfy the Scribes.</span>
+                            ) : progressPercent < 75 ? (
+                              <span>𓂀 The stars align. Thy caravan is growing robust and complete!</span>
+                            ) : progressPercent < 100 ? (
+                              <span>𓅃 Almost perfect! Just a few more touches to fully seal thy destiny.</span>
+                            ) : (
+                              <span className="text-[#5c4001] font-semibold">𓋹 Perfect Harmony! Thy sacred charter is fully sealed by the High Scribe.</span>
+                            )}
+                          </p>
+                        </div>
+                        <div className="text-right flex md:flex-col items-baseline md:items-end gap-1.5">
+                          <span className="text-xs font-mono font-bold text-[#8b6508] bg-[#faf3e0] px-2 py-0.5 rounded border border-[#8b6508]/20 shadow-sm">
+                            {totalActivities} / {targetActivities} Rites
+                          </span>
+                          <span className="text-xs font-serif font-black text-[#5c4001]">
+                            {progressPercent}% Complete
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Modern Progress Track with Sliding Hieroglyph */}
+                      <div className="relative h-4 bg-[#e2d5b2] rounded-full overflow-visible border border-[#8b6508]/20 p-[2px]">
+                        {/* Active Fill */}
+                        <motion.div 
+                          className="h-full bg-gradient-to-r from-[#8b6508]/60 via-[#8b6508] to-[#604403] rounded-full shadow-[0_0_8px_rgba(139,101,8,0.35)] relative"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${progressPercent}%` }}
+                          transition={{ type: "spring", stiffness: 80, damping: 15 }}
+                        >
+                          {/* Glowing Tip */}
+                          {progressPercent > 0 && (
+                            <div className="absolute right-0 top-0 bottom-0 w-2 bg-yellow-200/50 rounded-r-full filter blur-[1px]"></div>
+                          )}
+                        </motion.div>
+
+                        {/* Sliding Hieroglyph Walker Icon */}
+                        <motion.div 
+                          className="absolute top-1/2 -translate-y-1/2 -ml-2 text-base select-none filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.15)] cursor-default"
+                          animate={{ left: `${progressPercent}%` }}
+                          transition={{ type: "spring", stiffness: 80, damping: 15 }}
+                          style={{ pointerEvents: 'none' }}
+                        >
+                          {progressPercent === 100 ? '𓋹' : progressPercent > 60 ? '𓅃' : '𓀚'}
+                        </motion.div>
+                      </div>
+
+                      {/* Progress Marks */}
+                      <div className="flex justify-between text-[9px] font-mono text-stone-500 mt-1.5 px-1">
+                        <span>Sparse (0%)</span>
+                        <span className={`${progressPercent >= 50 ? 'text-[#8b6508] font-bold' : ''}`}>Balanced (50%)</span>
+                        <span className={`${progressPercent === 100 ? 'text-[#8b6508] font-bold' : ''}`}>Divine Feast (100%+)</span>
+                      </div>
+                    </div>
+
+                    {/* Poetic Greeting */}
+                    <div className="bg-[#f0e4c6] border-l-4 border-[#8b6508] p-4 rounded-r-lg mb-8 italic text-stone-800 text-sm leading-relaxed shadow-sm">
+                      "{itinerary.royalGreeting}"
+                    </div>
+
+                    {/* Days Timeline */}
+                    <div className="space-y-8 relative before:absolute before:left-6 before:top-2 before:bottom-2 before:w-[2px] before:bg-[#8b6508]/20">
+                      {itinerary.days.map((day) => (
+                        <div key={day.dayNumber} className="relative pl-12 group/day">
+                          {/* Bullet Circle */}
+                          <div className="absolute left-[14px] top-1.5 w-5 h-5 rounded-full border-4 border-[#faf3e0] bg-[#8b6508] shadow-[0_0_10px_rgba(139,101,8,0.4)] flex items-center justify-center text-[10px] font-bold text-white font-mono group-hover/day:scale-110 transition-transform">
+                            {day.dayNumber}
+                          </div>
+
+                          <div className="space-y-2">
+                            <h4 className="font-serif text-lg font-bold text-[#5c4001] uppercase flex items-center gap-2">
+                              Day {day.dayNumber}: {day.theme}
+                            </h4>
+                            
+                            {/* Interactive Activities list */}
+                            <ul className="space-y-2 text-stone-700 text-sm">
+                              {day.activities.map((act, i) => (
+                                <motion.li 
+                                  key={i} 
+                                  layout
+                                  initial={{ opacity: 0, x: -10 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  exit={{ opacity: 0, x: 10 }}
+                                  className="group/item flex items-start justify-between gap-3 bg-[#faf3e0]/40 hover:bg-[#faf3e0]/90 p-2 rounded-lg border border-transparent hover:border-[#8b6508]/15 transition-all"
+                                >
+                                  <div className="flex items-start gap-2">
+                                    <span className="text-[#8b6508] mt-1 select-none text-xs">𓎬</span>
+                                    <span className="leading-relaxed text-stone-800">{act}</span>
+                                  </div>
+                                  <button
+                                    onClick={() => removeActivity(day.dayNumber, i)}
+                                    className="text-stone-400 hover:text-red-700 p-1 rounded-md hover:bg-red-50 transition-colors opacity-0 group-hover/item:opacity-100 focus:opacity-100 cursor-pointer"
+                                    title="Remove this activity"
+                                  >
+                                    <span className="text-xs font-bold font-mono">✕</span>
+                                  </button>
+                                </motion.li>
+                              ))}
+                            </ul>
+
+                            {/* Add Custom Activity Form */}
+                            <div className="mt-3 bg-[#fbf8ee]/60 border border-dashed border-[#8b6508]/20 rounded-xl p-2.5">
+                              <form 
+                                onSubmit={(e) => {
+                                  e.preventDefault();
+                                  const val = newActivityInputs[day.dayNumber] || "";
+                                  if (val.trim()) {
+                                    addActivity(day.dayNumber, val);
+                                    setNewActivityInputs(prev => ({ ...prev, [day.dayNumber]: "" }));
+                                  }
+                                }}
+                                className="flex gap-2"
+                              >
+                                <input
+                                  type="text"
+                                  placeholder="Inscribe custom activity..."
+                                  value={newActivityInputs[day.dayNumber] || ""}
+                                  onChange={(e) => setNewActivityInputs(prev => ({ ...prev, [day.dayNumber]: e.target.value }))}
+                                  className="flex-1 bg-[#fcfaf4] border border-[#8b6508]/25 rounded-lg px-3 py-1.5 text-xs text-stone-800 focus:outline-none focus:ring-1 focus:ring-[#8b6508] placeholder-stone-400"
+                                />
+                                <button
+                                  type="submit"
+                                  className="bg-[#8b6508] hover:bg-[#6e4e03] text-white px-3 py-1.5 rounded-lg text-xs font-serif font-bold transition-all shadow-sm flex items-center gap-1 cursor-pointer active:scale-95"
+                                >
+                                  <span>+</span>
+                                  <span>Add</span>
+                                </button>
+                              </form>
+                            </div>
+
+                            {/* Scribe Wisdom Box */}
+                            <div className="mt-3 bg-[#f2e7c9] border border-[#8b6508]/15 rounded-lg p-3 text-xs text-stone-600 italic">
+                              <span className="font-serif font-bold text-[#8b6508] block not-italic mb-1 uppercase tracking-wider">
+                                𓋹 Scribe's Ancient Wisdom:
+                              </span>
+                              {day.scribeWisdom}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Royal Blessing Conclusion */}
+                    <div className="mt-8 pt-6 border-t-2 border-[#8b6508]/25 text-center">
+                      <p className="text-sm font-serif italic text-stone-800 leading-relaxed">
+                        "{itinerary.blessing}"
+                      </p>
+                      <div className="mt-4 flex justify-center text-[#8b6508] text-4xl select-none">
+                        𓋹 𓎬 𓅃
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })() : null}
             </AnimatePresence>
           </motion.div>
         ) : (
@@ -445,9 +737,46 @@ export default function ScribeOracle() {
               ))}
               {isChatLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-[#241c14] border border-[#d4af37]/25 rounded-2xl rounded-tl-none px-4 py-3 flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 text-[#d4af37] animate-spin" />
-                    <span className="text-xs font-mono text-stone-400 italic">Sennedjem is drafting glyphs...</span>
+                  <div className="bg-[#241c14] border border-[#d4af37]/25 rounded-2xl rounded-tl-none px-5 py-3.5 flex flex-col gap-2.5 max-w-[80%] shadow-lg">
+                    <div className="flex items-center gap-2 text-xs font-mono text-stone-400">
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+                        className="text-[#d4af37] text-sm font-serif select-none"
+                      >
+                        𓋹
+                      </motion.div>
+                      <span className="italic tracking-wide text-[#e6c280]/95">Sennedjem is drafting glyphs on papyrus...</span>
+                    </div>
+                    {/* Floating gold hieroglyphs typing transition */}
+                    <div className="flex items-center gap-3 bg-[#1c1611] px-4 py-2 rounded-xl border border-[#d4af37]/10 w-fit">
+                      {[
+                        { symbol: '𓋹', delay: 0 },
+                        { symbol: '𓂀', delay: 0.2 },
+                        { symbol: '𓅃', delay: 0.4 },
+                        { symbol: '𓏞', delay: 0.6 },
+                        { symbol: '𓎬', delay: 0.8 }
+                      ].map((item, index) => (
+                        <motion.span
+                          key={index}
+                          initial={{ opacity: 0.25, y: 1.5 }}
+                          animate={{ 
+                            opacity: [0.25, 1, 0.25],
+                            y: [1.5, -3, 1.5],
+                            scale: [0.95, 1.15, 0.95]
+                          }}
+                          transition={{
+                            repeat: Infinity,
+                            duration: 1.4,
+                            delay: item.delay,
+                            ease: "easeInOut"
+                          }}
+                          className="text-[#d4af37] text-lg font-serif select-none filter drop-shadow-[0_0_3px_rgba(212,175,55,0.45)]"
+                        >
+                          {item.symbol}
+                        </motion.span>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
@@ -475,6 +804,152 @@ export default function ScribeOracle() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Modal Overlay for Printable Papyrus Scroll */}
+      <AnimatePresence>
+        {showPrintModal && itinerary && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[110] overflow-y-auto flex items-center justify-center p-4 md:p-8">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-[#faf3e0] border-8 border-double border-[#8b6508] rounded-2xl p-6 md:p-10 text-[#2b1f0d] relative shadow-[0_0_60px_rgba(0,0,0,0.85)] max-w-3xl w-full my-8 font-sans overflow-hidden"
+            >
+              {/* Background Subtle Texture */}
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_30%,_rgba(139,101,8,0.06)_100%)] pointer-events-none"></div>
+
+              {/* Close Button */}
+              <button
+                onClick={() => setShowPrintModal(false)}
+                className="absolute top-4 right-4 text-[#8b6508] hover:text-red-700 hover:bg-stone-200/50 p-2 rounded-full transition-colors cursor-pointer z-20"
+                title="Close Preview"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              {/* Print Utility Helper Banner */}
+              <div className="bg-[#f2e7c9] border-l-4 border-[#8b6508] p-4 rounded-r-lg mb-6 shadow-sm">
+                <h4 className="font-serif text-sm font-bold text-[#5c4001] uppercase flex items-center gap-1.5">
+                  <Printer className="w-4 h-4 text-[#8b6508]" />
+                  Papyrus Inscription Chamber
+                </h4>
+                <p className="text-xs text-stone-700 mt-1 leading-relaxed">
+                  Thy sacred Nile charter is prepared! Press <span className="font-semibold text-[#8b6508]">Inscribe Scroll</span> to trigger the browser's print utility. Select <span className="font-semibold text-[#8b6508]">Save as PDF</span> to download your stylized digital parchment or print with ink.
+                </p>
+              </div>
+
+              {/* Preview Scroll Content */}
+              <div className="border-4 border-double border-[#8b6508]/40 p-4 md:p-6 bg-[#fbf8ee]/70 rounded-xl space-y-6 max-h-[50vh] overflow-y-auto mb-6">
+                <div className="text-center border-b-2 border-[#8b6508]/20 pb-4 mb-4">
+                  <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-[#8b6508] font-bold block mb-1">
+                    Decree of Sennedjem, Royal Scribe
+                  </span>
+                  <h3 className="font-serif text-2xl font-black text-[#5c4001] uppercase">
+                    {itinerary.title}
+                  </h3>
+                </div>
+
+                <p className="italic text-stone-700 text-xs leading-relaxed border-l-2 border-[#8b6508]/30 pl-3">
+                  "{itinerary.royalGreeting}"
+                </p>
+
+                <div className="space-y-6">
+                  {itinerary.days.map((day) => (
+                    <div key={day.dayNumber} className="space-y-1.5">
+                      <h4 className="font-serif text-sm font-bold text-[#5c4001] uppercase">
+                        Day {day.dayNumber}: {day.theme}
+                      </h4>
+                      <ul className="list-disc list-inside space-y-1 text-stone-700 text-xs pl-2">
+                        {day.activities.map((act, i) => (
+                          <li key={i}>{act}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="text-center pt-4 border-t border-[#8b6508]/20">
+                  <p className="text-xs font-serif italic text-stone-600">
+                    "{itinerary.blessing}"
+                  </p>
+                </div>
+              </div>
+
+              {/* Action button */}
+              <div className="flex flex-col sm:flex-row justify-end gap-3">
+                <button
+                  onClick={() => setShowPrintModal(false)}
+                  className="px-4 py-2 border border-[#8b6508]/30 rounded-xl text-xs font-semibold hover:bg-stone-200/50 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    window.print();
+                  }}
+                  className="bg-[#8b6508] hover:bg-[#6e4e03] text-white px-5 py-2.5 rounded-xl text-xs font-serif font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95 border border-yellow-600/30"
+                >
+                  <Printer className="w-4 h-4 text-yellow-200" />
+                  <span>Inscribe Scroll (Print / PDF)</span>
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Hidden high-fidelity printing template */}
+      {itinerary && (
+        <div id="papyrus-print-area" className="hidden">
+          <div className="text-center border-b-4 border-double border-[#8b6508] pb-6 mb-8">
+            <span className="text-xs font-mono uppercase tracking-[0.4em] text-[#8b6508] font-bold block mb-2">
+              𓋹 Sacred Travel Charter of Sennedjem, Royal Scribe 𓋹
+            </span>
+            <h1 className="font-serif text-4xl font-black text-[#5c4001] tracking-wide uppercase">
+              {itinerary.title}
+            </h1>
+            <p className="text-xs text-stone-500 italic mt-2 font-serif">
+              Inscribed on the Nile Calendar, {new Date().toLocaleDateString(undefined, { dateStyle: 'full' })}
+            </p>
+          </div>
+
+          <div className="bg-[#f0e4c6]/60 border-l-4 border-[#8b6508] p-5 rounded-r-lg mb-8 italic text-stone-800 text-sm leading-relaxed">
+            "{itinerary.royalGreeting}"
+          </div>
+
+          <div className="space-y-8">
+            {itinerary.days.map((day) => (
+              <div key={day.dayNumber} className="print-avoid-break border-b border-[#8b6508]/20 pb-6 last:border-0">
+                <h3 className="font-serif text-xl font-bold text-[#5c4001] uppercase flex items-center gap-2 mb-3">
+                  <span className="text-[#8b6508]">Day {day.dayNumber}:</span> {day.theme}
+                </h3>
+                
+                <ul className="space-y-2 text-stone-800 text-sm pl-4 list-disc mb-4">
+                  {day.activities.map((act, i) => (
+                    <li key={i} className="leading-relaxed pl-1">{act}</li>
+                  ))}
+                </ul>
+
+                <div className="bg-[#f2e7c9] border border-[#8b6508]/20 rounded-lg p-4 text-xs text-stone-700 italic">
+                  <span className="font-serif font-bold text-[#8b6508] block not-italic mb-1 uppercase tracking-wider">
+                    𓋹 Scribe's Ancient Wisdom:
+                  </span>
+                  {day.scribeWisdom}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-12 pt-8 border-t-4 border-double border-[#8b6508] text-center">
+            <p className="text-base font-serif italic text-stone-800 leading-relaxed max-w-xl mx-auto">
+              "{itinerary.blessing}"
+            </p>
+            <div className="mt-6 text-[#8b6508] text-4xl select-none tracking-widest">
+              𓋹 𓎬 𓅃 𓊟 𓂀
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

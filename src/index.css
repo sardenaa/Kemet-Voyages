@@ -22,3 +22,45 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #d4af37/60;
 }
+
+@media print {
+  /* Hide absolutely everything on the web app except the dedicated printable papyrus scroll container */
+  body, html {
+    background: #faf3e0 !important;
+    color: #2b1f0d !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  #app-root,
+  #mobile-bottom-nav,
+  #parchment-itinerary,
+  header,
+  footer,
+  section,
+  div:not(#papyrus-print-area):not(#papyrus-print-area *) {
+    display: none !important;
+  }
+  #papyrus-print-area {
+    display: block !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 2.5rem !important;
+    background-color: #faf3e0 !important;
+    border: 12px double #8b6508 !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+    color: #2b1f0d !important;
+  }
+  /* Ensure page break safety inside the list */
+  .print-avoid-break {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+}
+

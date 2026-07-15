@@ -11,6 +11,7 @@ import AdminCRM from './components/AdminCRM';
 import FooterNewsletter from './components/FooterNewsletter';
 import OraclesWisdomFAQ from './components/OraclesWisdomFAQ';
 import MobileBottomNav from './components/MobileBottomNav';
+import ScarabCelebration from './components/ScarabCelebration';
 
 export default function App() {
   const [bookings, setBookings] = useState<Booking[]>(() => {
@@ -24,6 +25,23 @@ export default function App() {
   });
 
   const [isAdminMode, setIsAdminMode] = useState<boolean>(false);
+  const [scrollY, setScrollY] = useState<number>(0);
+  const [celebrationCount, setCelebrationCount] = useState<number>(0);
+
+  const triggerCelebration = () => {
+    setCelebrationCount(prev => prev + 1);
+  };
+
+  // Scroll listener for parallax background hieroglyphs
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   // Synchronize excursions dynamically when ratings or offerings are updated
   useEffect(() => {
@@ -51,6 +69,7 @@ export default function App() {
   // Handle adding a new booking from the catalog
   const handleAddBooking = (newBooking: Booking) => {
     setBookings(prev => [newBooking, ...prev]);
+    triggerCelebration();
   };
 
   // Handle cancelling/revoking a pending booking
@@ -76,18 +95,53 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#100c08] text-stone-200 font-sans selection:bg-[#d4af37]/30 selection:text-white overflow-x-hidden relative" id="app-root">
       
-      {/* Background Hieroglyphic Runes watermark elements */}
-      <div className="absolute top-20 left-4 text-stone-900 text-7xl font-serif select-none pointer-events-none opacity-20 space-y-8 hidden xl:block">
-        <div>𓋹</div>
-        <div>𓅃</div>
-        <div>𓎬</div>
-        <div>𓉐</div>
-      </div>
-      <div className="absolute top-20 right-4 text-stone-900 text-7xl font-serif select-none pointer-events-none opacity-20 space-y-8 hidden xl:block">
-        <div>𓆛</div>
-        <div>𓃠</div>
-        <div>𓆗</div>
-        <div>𓁠</div>
+      {/* Scroll-Triggered Parallax Background Hieroglyphs */}
+      <div className="absolute inset-y-0 left-0 right-0 pointer-events-none overflow-hidden select-none z-0">
+        {/* Left Side Runes */}
+        {[
+          { glyph: '𓋹', top: '10%', speed: 0.12, size: 'text-8xl', left: '1.5rem' },
+          { glyph: '𓅃', top: '25%', speed: -0.15, size: 'text-7xl', left: '2.5rem' },
+          { glyph: '𓎬', top: '40%', speed: 0.18, size: 'text-9xl', left: '0.75rem' },
+          { glyph: '𓉐', top: '55%', speed: -0.08, size: 'text-6xl', left: '2rem' },
+          { glyph: '𓆛', top: '70%', speed: 0.22, size: 'text-8xl', left: '1.5rem' },
+          { glyph: '𓃠', top: '85%', speed: -0.12, size: 'text-7xl', left: '2.5rem' },
+          { glyph: '𓁠', top: '95%', speed: 0.15, size: 'text-9xl', left: '0.75rem' },
+        ].map((item, idx) => (
+          <div
+            key={`left-rune-${idx}`}
+            className={`absolute font-serif text-[#1e1610] select-none pointer-events-none opacity-45 hidden xl:block transition-transform duration-75 ease-out ${item.size}`}
+            style={{
+              top: item.top,
+              left: item.left,
+              transform: `translateY(${scrollY * item.speed}px)`,
+            }}
+          >
+            {item.glyph}
+          </div>
+        ))}
+
+        {/* Right Side Runes */}
+        {[
+          { glyph: '𓆗', top: '12%', speed: -0.14, size: 'text-7xl', right: '1.5rem' },
+          { glyph: '𓁠', top: '28%', speed: 0.16, size: 'text-9xl', right: '2.5rem' },
+          { glyph: '𓆣', top: '43%', speed: -0.2, size: 'text-8xl', right: '0.75rem' },
+          { glyph: '𓊟', top: '58%', speed: 0.1, size: 'text-7xl', right: '2rem' },
+          { glyph: '𓂀', top: '73%', speed: -0.25, size: 'text-9xl', right: '1.5rem' },
+          { glyph: '𓎡', top: '88%', speed: 0.14, size: 'text-6xl', right: '2.5rem' },
+          { glyph: '𓋹', top: '97%', speed: -0.1, size: 'text-8xl', right: '0.75rem' },
+        ].map((item, idx) => (
+          <div
+            key={`right-rune-${idx}`}
+            className={`absolute font-serif text-[#1e1610] select-none pointer-events-none opacity-45 hidden xl:block transition-transform duration-75 ease-out ${item.size}`}
+            style={{
+              top: item.top,
+              right: item.right,
+              transform: `translateY(${scrollY * item.speed}px)`,
+            }}
+          >
+            {item.glyph}
+          </div>
+        ))}
       </div>
 
       {/* Main Container */}
@@ -258,12 +312,26 @@ export default function App() {
           ) : (
             <div className="space-y-16">
               {/* SECTION 1: EXCURSIONS CATALOG */}
-              <section id="excursions-section" className="scroll-mt-24">
+              <motion.section
+                id="excursions-section"
+                className="scroll-mt-24"
+                initial={{ opacity: 0, y: 35 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+              >
                 <ExcursionCatalog onAddBooking={handleAddBooking} excursions={excursions} />
-              </section>
+              </motion.section>
 
               {/* SECTION 2: AI SCRIBE ORACLE */}
-              <section id="scribe-section" className="scroll-mt-24 space-y-8">
+              <motion.section
+                id="scribe-section"
+                className="scroll-mt-24 space-y-8"
+                initial={{ opacity: 0, y: 35 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+              >
                 <div className="text-center">
                   <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">Artificial Intelligence</span>
                   <h2 className="font-serif text-3xl font-extrabold text-[#e6c280] uppercase mt-1">
@@ -273,16 +341,30 @@ export default function App() {
                     Converse with our Egyptologist scribe or generate an AI-curated itinerary synchronized to the Nile calendar.
                   </p>
                 </div>
-                <ScribeOracle />
-              </section>
+                <ScribeOracle onScribeSuccess={triggerCelebration} />
+              </motion.section>
 
               {/* SECTION 3: IMMERSIVE GALLERY */}
-              <section id="gallery-section" className="scroll-mt-24">
+              <motion.section
+                id="gallery-section"
+                className="scroll-mt-24"
+                initial={{ opacity: 0, y: 35 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+              >
                 <EgyptologyGallery />
-              </section>
+              </motion.section>
 
               {/* SECTION 4: HIEROGLYPHIC CARTOUCHE GENERATOR */}
-              <section id="cartouche-section" className="scroll-mt-24 space-y-8">
+              <motion.section
+                id="cartouche-section"
+                className="scroll-mt-24 space-y-8"
+                initial={{ opacity: 0, y: 35 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+              >
                 <div className="text-center">
                   <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">Personal Protection</span>
                   <h2 className="font-serif text-3xl font-extrabold text-[#e6c280] uppercase mt-1">
@@ -293,15 +375,29 @@ export default function App() {
                   </p>
                 </div>
                 <CartoucheGenerator />
-              </section>
+              </motion.section>
 
               {/* SECTION 5: ORACLE'S WISDOM FAQ */}
-              <section id="faq-section" className="scroll-mt-24">
+              <motion.section
+                id="faq-section"
+                className="scroll-mt-24"
+                initial={{ opacity: 0, y: 35 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+              >
                 <OraclesWisdomFAQ />
-              </section>
+              </motion.section>
 
               {/* SECTION 6: BOOKING LEDGER & REVIEWS */}
-              <section id="ledger-section" className="scroll-mt-24 space-y-8">
+              <motion.section
+                id="ledger-section"
+                className="scroll-mt-24 space-y-8"
+                initial={{ opacity: 0, y: 35 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+              >
                 <div className="text-center">
                   <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">Sacred Ledger</span>
                   <h2 className="font-serif text-3xl font-extrabold text-[#e6c280] uppercase mt-1">
@@ -312,10 +408,16 @@ export default function App() {
                   </p>
                 </div>
                 <BookingManager bookings={bookings} excursions={excursions} onCancelBooking={handleCancelBooking} />
-              </section>
+              </motion.section>
 
               {/* SYSTEM INFO OR NOTIFICATION */}
-              <section className="bg-[#19130e] border border-[#d4af37]/20 rounded-2xl p-6 flex flex-col md:flex-row gap-6 items-center max-w-4xl mx-auto shadow-md">
+              <motion.section
+                className="bg-[#19130e] border border-[#d4af37]/20 rounded-2xl p-6 flex flex-col md:flex-row gap-6 items-center max-w-4xl mx-auto shadow-md"
+                initial={{ opacity: 0, scale: 0.96 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.7 }}
+              >
                 <div className="bg-[#d4af37]/10 p-3 rounded-full border border-[#d4af37]/30">
                   <Info className="text-[#d4af37] w-6 h-6" />
                 </div>
@@ -327,7 +429,7 @@ export default function App() {
                     By default, this application utilizes full-stack server-side routes to proxy your requests with Gemini safely. If you do not see custom AI answers from Sennedjem, make sure you have loaded your <span className="text-[#d4af37] font-semibold">GEMINI_API_KEY</span> inside the **Settings &gt; Secrets** panel.
                   </p>
                 </div>
-              </section>
+              </motion.section>
             </div>
           )}
 
@@ -374,6 +476,9 @@ export default function App() {
           isAdminMode={isAdminMode}
           setIsAdminMode={setIsAdminMode}
         />
+
+        {/* Golden Scarab Particle Celebration Overlay */}
+        <ScarabCelebration triggerCount={celebrationCount} />
 
       </div>
     </div>

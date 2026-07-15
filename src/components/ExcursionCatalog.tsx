@@ -256,60 +256,96 @@ Please seal my booking with the High Priest approval!`;
 
       {/* Grid of Excursions */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <motion.div 
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.15
+              }
+            }
+          }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+        >
           {[1, 2, 3].map((index) => (
-            <div
+            <motion.div
               key={index}
-              className="bg-[#1a140f] border border-[#d4af37]/15 rounded-2xl overflow-hidden shadow-xl flex flex-col animate-pulse"
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+              }}
+              className="bg-[#1a140f] border border-[#d4af37]/15 rounded-2xl overflow-hidden shadow-xl flex flex-col relative group"
               id={`excursion-skeleton-${index}`}
             >
+              {/* Shimmer sweep effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#d4af37]/5 to-transparent -translate-x-full animate-[shimmer_2s_infinite] pointer-events-none" />
+
               {/* Image Thumbnail Skeleton */}
-              <div className="h-56 bg-[#211a13] relative flex items-center justify-center">
-                <span className="text-[#d4af37]/15 text-5xl font-serif">𓋹</span>
-                <div className="absolute top-4 left-4 w-20 h-5 bg-[#140f0a]/60 rounded-full border border-stone-850" />
-                <div className="absolute bottom-4 right-4 w-16 h-7 bg-[#d4af37]/5 border border-[#d4af37]/10 rounded-lg" />
+              <div className="h-56 bg-[#211a13]/80 relative flex items-center justify-center overflow-hidden">
+                {/* Floating animated hieroglyphs */}
+                <motion.span 
+                  animate={{ 
+                    scale: [0.9, 1.1, 0.9],
+                    opacity: [0.15, 0.45, 0.15],
+                    rotate: [0, 180, 360] 
+                  }}
+                  transition={{ 
+                    repeat: Infinity, 
+                    duration: 6, 
+                    ease: "easeInOut",
+                    delay: index * 0.4 
+                  }}
+                  className="text-[#d4af37] text-6xl font-serif select-none"
+                >
+                  {index % 3 === 0 ? '𓋹' : index % 3 === 1 ? '𓂀' : '𓅃'}
+                </motion.span>
+                <div className="absolute top-4 left-4 w-24 h-5 bg-[#140f0a]/60 rounded-full border border-stone-850 animate-pulse" />
+                <div className="absolute bottom-4 right-4 w-16 h-7 bg-[#d4af37]/5 border border-[#d4af37]/10 rounded-lg animate-pulse" />
               </div>
 
               {/* Content Skeleton */}
-              <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                <div className="space-y-3">
+              <div className="p-6 flex-1 flex flex-col justify-between space-y-4 bg-[#1a140f]/90">
+                <div className="space-y-3.5">
                   <div className="flex justify-between items-center text-[11px] font-mono">
-                    <div className="w-24 h-3.5 bg-[#211a13] rounded-md" />
-                    <div className="w-10 h-3.5 bg-[#211a13] rounded-md" />
+                    <div className="w-24 h-3.5 bg-[#211a13] rounded-md animate-pulse" />
+                    <div className="w-10 h-3.5 bg-[#211a13] rounded-md animate-pulse" />
                   </div>
 
-                  <div className="w-3/4 h-5 bg-[#211a13] rounded-md" />
-                  <div className="w-1/2 h-3.5 bg-[#211a13]/80 rounded-md" />
+                  <div className="w-11/12 h-5 bg-[#211a13] rounded-md animate-pulse" />
+                  <div className="w-2/3 h-3.5 bg-[#211a13]/80 rounded-md animate-pulse" />
                   
                   <div className="space-y-2 pt-2">
-                    <div className="w-full h-3 bg-[#211a13]/60 rounded-md" />
-                    <div className="w-full h-3 bg-[#211a13]/60 rounded-md" />
-                    <div className="w-5/6 h-3 bg-[#211a13]/60 rounded-md" />
+                    <div className="w-full h-3 bg-[#211a13]/60 rounded-md animate-pulse" />
+                    <div className="w-full h-3 bg-[#211a13]/60 rounded-md animate-pulse" />
+                    <div className="w-5/6 h-3 bg-[#211a13]/60 rounded-md animate-pulse" />
                   </div>
                 </div>
 
                 {/* Ancient Lore Snippet Skeleton */}
-                <div className="bg-[#211a13]/40 border border-stone-900 rounded-xl p-3.5 h-[68px] flex flex-col justify-between">
-                  <div className="w-24 h-3 bg-[#211a13] rounded-md" />
-                  <div className="w-full h-2.5 bg-[#211a13]/50 rounded-md" />
+                <div className="bg-[#211a13]/40 border border-[#d4af37]/10 rounded-xl p-3.5 h-[68px] flex flex-col justify-between relative overflow-hidden">
+                  <div className="w-28 h-3.5 bg-[#211a13] rounded-md animate-pulse" />
+                  <div className="w-full h-2.5 bg-[#211a13]/50 rounded-md animate-pulse" />
                 </div>
 
                 {/* Buttons Skeleton */}
                 <div className="flex gap-2.5 pt-2">
-                  <div className="flex-1 h-9 bg-[#211a13]/60 rounded-xl" />
-                  <div className="flex-1 h-9 bg-[#211a13]/60 rounded-xl" />
+                  <div className="flex-1 h-9 bg-[#211a13]/60 rounded-xl animate-pulse" />
+                  <div className="flex-1 h-9 bg-[#d4af37]/10 rounded-xl animate-pulse" />
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredExcursions.map((ex) => (
             <motion.div
               key={ex.id}
               layout
-              className="bg-[#1a140f] border border-[#d4af37]/25 rounded-2xl overflow-hidden shadow-xl flex flex-col group hover:border-[#d4af37]/65 transition-all duration-300"
+              className="bg-[#1a140f] border border-[#d4af37]/25 rounded-2xl overflow-hidden shadow-xl flex flex-col group hover:border-[#d4af37]/85 hover:shadow-[0_0_22px_rgba(212,175,55,0.22)] transition-all duration-300"
               id={`excursion-card-${ex.id}`}
             >
               {/* Image Thumbnail with Overlay */}
