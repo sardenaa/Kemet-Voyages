@@ -85,6 +85,7 @@ export default function ReviewSystem({ excursionId, onReviewAdded }: ReviewSyste
         return INITIAL_REVIEWS;
       }
     }
+    localStorage.setItem('kemet_reviews', JSON.stringify(INITIAL_REVIEWS));
     return INITIAL_REVIEWS;
   });
 

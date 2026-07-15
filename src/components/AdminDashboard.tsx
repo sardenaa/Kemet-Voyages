@@ -217,7 +217,7 @@ const INITIAL_CRM_PROFILES: TravelerCRMProfile[] = [
   }
 ];
 
-interface AdminCRMProps {
+interface AdminDashboardProps {
   bookings: Booking[];
   onUpdateBookingStatus: (id: string, status: Booking['status']) => void;
   onCancelBooking: (id: string) => void;
@@ -226,12 +226,12 @@ interface AdminCRMProps {
 
 type CRMTab = 'dashboard' | 'caravans' | 'nobles' | 'offerings' | 'testimonies' | 'oracle' | 'subscribers';
 
-export default function AdminCRM({
+export default function AdminDashboard({
   bookings,
   onUpdateBookingStatus,
   onCancelBooking,
   onUpdateBookingsList
-}: AdminCRMProps) {
+}: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<CRMTab>('dashboard');
 
   // Subscribers state
@@ -336,6 +336,11 @@ export default function AdminCRM({
     ];
   });
 
+  // Interactive Revenue Forecaster & Caravan Ledger Search/Filters state
+  const [targetRevenue, setTargetRevenue] = useState<number>(5000);
+  const [caravanSearch, setCaravanSearch] = useState<string>("");
+  const [caravanStatusFilter, setCaravanStatusFilter] = useState<string>("all");
+
   // Edit / Add Excursion States
   const [editingExcursion, setEditingExcursion] = useState<Excursion | null>(null);
   const [isAddOfferingOpen, setIsAddOfferingOpen] = useState<boolean>(false);
@@ -438,6 +443,16 @@ export default function AdminCRM({
 
   const conversionRate = crmProfiles.length
     ? Math.round((crmProfiles.filter((p) => p.leadStatus === 'Deposited Pilgrim' || p.leadStatus === 'Eternal Royal Traveler').length / crmProfiles.length) * 100)
+    : 0;
+
+  const avgExcursionPrice = excursions.length 
+    ? Math.round(excursions.reduce((sum, ex) => sum + ex.price, 0) / excursions.length) 
+    : 100;
+
+  const bookingsNeeded = Math.ceil(targetRevenue / (avgExcursionPrice || 1));
+
+  const progressPercentage = targetRevenue > 0 
+    ? Math.min(Math.round((totalGoldCoins / targetRevenue) * 100), 100) 
     : 0;
 
   // Review status
@@ -545,7 +560,7 @@ export default function AdminCRM({
               </span>
             </div>
             <h2 className="font-serif text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#faf5e6] via-[#d4af37] to-[#e6c280] uppercase tracking-wider mt-1">
-              Royal Scribe Command Center
+              Royal Scribe Admin Dashboard
             </h2>
           </div>
         </div>
@@ -778,6 +793,93 @@ export default function AdminCRM({
 
             </div>
 
+            {/* INTERACTIVE REVENUE FORECASTER CALCULATOR */}
+            <div className="bg-[#14100c] border border-stone-800 rounded-2xl p-6 space-y-4">
+              <div className="flex justify-between items-center border-b border-stone-900 pb-3">
+                <h4 className="font-serif text-[#e6c280] font-bold text-sm uppercase tracking-wider flex items-center gap-2">
+                  <span className="text-[#d4af37]">𓋹</span> Royal Scribe's Sacred Revenue Forecast Alignment
+                </h4>
+                <span className="text-[9px] font-mono text-stone-500 uppercase tracking-widest">Strategic Planning Tool</span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                <div className="md:col-span-4 space-y-3">
+                  <div>
+                    <label className="text-[10px] font-mono text-stone-500 uppercase tracking-widest block mb-1">Target Tribute Revenue (USD)</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2.5 text-[#d4af37] font-mono text-xs">$</span>
+                      <input
+                        type="number"
+                        min="1000"
+                        max="100000"
+                        step="500"
+                        value={targetRevenue}
+                        onChange={(e) => setTargetRevenue(Number(e.target.value))}
+                        className="w-full bg-[#1c1611] border border-stone-850 rounded-lg py-2 pl-7 pr-3 text-xs text-stone-200 font-mono focus:outline-none focus:border-[#d4af37]/60"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    {[5000, 10000, 25000].map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => setTargetRevenue(preset)}
+                        className={`flex-1 py-1.5 px-2 rounded bg-stone-950 hover:bg-stone-900 border text-[9px] font-mono transition-colors cursor-pointer ${
+                          targetRevenue === preset ? 'border-[#d4af37] text-[#d4af37]' : 'border-stone-800 text-stone-400'
+                        }`}
+                      >
+                        ${preset.toLocaleString()}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="md:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {/* Metric 1 */}
+                  <div className="bg-[#1a1410] border border-stone-900 rounded-xl p-3 text-center">
+                    <span className="text-[8px] font-mono text-stone-500 uppercase tracking-widest block">Average Voyage Price</span>
+                    <span className="text-[#d4af37] text-lg font-mono font-bold block mt-1">${avgExcursionPrice}</span>
+                    <span className="text-[9px] text-stone-400 font-sans block mt-0.5">Based on {excursions.length} offerings</span>
+                  </div>
+
+                  {/* Metric 2 */}
+                  <div className="bg-[#1a1410] border border-stone-900 rounded-xl p-3 text-center">
+                    <span className="text-[8px] font-mono text-stone-500 uppercase tracking-widest block">Bookings to Align</span>
+                    <span className="text-stone-200 text-lg font-mono font-bold block mt-1">{bookingsNeeded}</span>
+                    <span className="text-[9px] text-stone-400 font-sans block mt-0.5">Approximate voyages</span>
+                  </div>
+
+                  {/* Metric 3: Progress percentage */}
+                  <div className="bg-[#1a1410] border border-stone-900 rounded-xl p-3 text-center col-span-2 sm:col-span-1">
+                    <span className="text-[8px] font-mono text-stone-500 uppercase tracking-widest block">Treasury Progress</span>
+                    <span className="text-emerald-400 text-lg font-mono font-bold block mt-1">{progressPercentage}%</span>
+                    <span className="text-[9px] text-stone-400 font-sans block mt-0.5">Of current ${totalGoldCoins}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Progress Bar representation */}
+              <div className="space-y-1.5 pt-2">
+                <div className="flex justify-between text-[10px] font-mono text-stone-500 uppercase">
+                  <span>Current Treasury: ${totalGoldCoins}</span>
+                  <span>Target Alignment: ${targetRevenue}</span>
+                </div>
+                <div className="w-full bg-stone-950 h-3 rounded-full overflow-hidden border border-stone-850 p-0.5">
+                  <div
+                    className="bg-gradient-to-r from-emerald-500 via-[#d4af37] to-amber-500 h-full rounded-full transition-all duration-500"
+                    style={{ width: `${progressPercentage}%` }}
+                  ></div>
+                </div>
+                <p className="text-[10px] text-stone-400 leading-relaxed italic text-center">
+                  {progressPercentage >= 100 
+                    ? "𓋹 The alignment is fulfilled! Kemet's coffers overflow by the grace of the Pharaoh." 
+                    : `𓎬 We must secure ${bookingsNeeded} more bookings to completely harmonize the celestial balance.`}
+                </p>
+              </div>
+            </div>
+
             {/* Quick Scribe Guidance Box */}
             <div className="bg-[#241a10] border-l-4 border-[#d4af37] rounded-r-2xl p-5 space-y-2">
               <span className="font-serif text-xs font-bold text-[#d4af37] uppercase tracking-widest flex items-center gap-1.5">
@@ -819,15 +921,56 @@ export default function AdminCRM({
               </div>
             </div>
 
+            {/* Search and Filters for Caravans */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 bg-[#14100c] p-4 rounded-xl border border-stone-850">
+              <div className="sm:col-span-8 relative">
+                <Search className="absolute left-3 top-3 w-4 h-4 text-stone-500" />
+                <input
+                  type="text"
+                  placeholder="Search Caravans by traveler name, email, excursion title, or ledger entry number..."
+                  value={caravanSearch}
+                  onChange={(e) => setCaravanSearch(e.target.value)}
+                  className="w-full bg-[#1c1611] border border-stone-800 rounded-lg py-2 pl-9 pr-4 text-xs text-stone-200 focus:outline-none focus:border-[#d4af37]/65"
+                />
+              </div>
+
+              {/* Status filter */}
+              <div className="sm:col-span-4">
+                <select
+                  value={caravanStatusFilter}
+                  onChange={(e) => setCaravanStatusFilter(e.target.value)}
+                  className="w-full bg-[#1c1611] border border-stone-800 rounded-lg p-2 text-xs text-stone-300 focus:outline-none focus:border-[#d4af37]/60"
+                >
+                  <option value="all">All Caravan Statuses</option>
+                  <option value="Pending Oracle Approval">Pending Oracle Approval</option>
+                  <option value="Confirmed by High Priest">Confirmed by High Priest</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </div>
+            </div>
+
             {/* Bookings Ledger list */}
             <div className="space-y-4">
-              {bookings.length === 0 ? (
-                <div className="bg-[#18120d] border border-stone-850 rounded-2xl p-12 text-center text-stone-500 text-sm">
-                  <p className="italic">There are no active booking petitions loaded inside the ledger currently.</p>
-                  <p className="text-xs text-[#d4af37]/60 mt-1">Book an expedition from the catalog above to populate this ledger!</p>
-                </div>
-              ) : (
-                bookings.map((booking) => (
+              {(() => {
+                const filteredBookings = bookings.filter((b) => {
+                  const matchesSearch = b.excursionTitle.toLowerCase().includes(caravanSearch.toLowerCase()) ||
+                                        b.travelerName.toLowerCase().includes(caravanSearch.toLowerCase()) ||
+                                        b.travelerEmail.toLowerCase().includes(caravanSearch.toLowerCase()) ||
+                                        b.id.toLowerCase().includes(caravanSearch.toLowerCase());
+                  const matchesStatus = caravanStatusFilter === 'all' || b.status === caravanStatusFilter;
+                  return matchesSearch && matchesStatus;
+                });
+
+                if (filteredBookings.length === 0) {
+                  return (
+                    <div className="bg-[#18120d] border border-stone-850 rounded-2xl p-12 text-center text-stone-500 text-sm">
+                      <p className="italic">No bookings matched your criteria inside the caravan ledger.</p>
+                      <p className="text-xs text-[#d4af37]/60 mt-1">Try adjusting your search terms or status filter above!</p>
+                    </div>
+                  );
+                }
+
+                return filteredBookings.map((booking) => (
                   <div
                     key={booking.id}
                     className="bg-[#18120d] border border-stone-800 rounded-2xl p-5 space-y-4 relative overflow-hidden"
@@ -933,8 +1076,8 @@ export default function AdminCRM({
                       </div>
                     )}
                   </div>
-                ))
-              )}
+                ));
+              })()}
             </div>
           </motion.div>
         )}

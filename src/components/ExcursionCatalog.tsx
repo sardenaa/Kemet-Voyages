@@ -5,7 +5,7 @@ import { Excursion, Booking } from '../types';
 import ReviewSystem from './ReviewSystem';
 
 // Let's use our exact generated image paths!
-const EXCURSIONS_DATA: Excursion[] = [
+export const EXCURSIONS_DATA: Excursion[] = [
   {
     id: 'diving-1',
     title: "Ras Mohammed Royal Coral Diving",
@@ -153,6 +153,92 @@ export default function ExcursionCatalog({ onAddBooking, excursions }: CatalogPr
   const [guests, setGuests] = useState<number>(2);
   const [requests, setRequests] = useState<string>("");
   const [successMsg, setSuccessMsg] = useState<boolean>(false);
+
+  // Interactive Feedback & Rating States
+  const [ratingExcursion, setRatingExcursion] = useState<Excursion | null>(null);
+  const [feedbackRating, setFeedbackRating] = useState<number>(5);
+  const [feedbackAuthor, setFeedbackAuthor] = useState<string>("");
+  const [feedbackAvatar, setFeedbackAvatar] = useState<string>("𓁠 Cleopatra");
+  const [feedbackComment, setFeedbackComment] = useState<string>("");
+  const [feedbackSuccess, setFeedbackSuccess] = useState<boolean>(false);
+  const [hoveredFeedbackStar, setHoveredFeedbackStar] = useState<number | null>(null);
+
+  const handleFeedbackSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ratingExcursion || !feedbackAuthor.trim() || !feedbackComment.trim()) return;
+
+    // Map the selected avatar to its full name
+    const avatarLabels: Record<string, string> = {
+      "𓁠 Cleopatra": "Cleopatra the Diver",
+      "𓀚 Ramses": "Ramses the Nomad",
+      "𓁥 Hatshepsut": "Hatshepsut the Scribe",
+      "𓃠 Bastet": "Bastet the Explorer",
+      "𓆛 Sobek": "Sobek the Mariner",
+      "𓅃 Horus": "Horus the Speedster",
+      "𓋹 Anubis": "Anubis the Guardian"
+    };
+    const avatarFull = `${feedbackAvatar} ${avatarLabels[feedbackAvatar] || 'the Noble'}`;
+
+    const newReview = {
+      id: `rev-${Date.now()}`,
+      excursionId: ratingExcursion.id,
+      author: feedbackAuthor,
+      avatar: avatarFull,
+      rating: feedbackRating,
+      comment: feedbackComment,
+      date: new Date().toISOString().split('T')[0]
+    };
+
+    // 1. Save to kemet_reviews in localStorage
+    const savedReviewsStr = localStorage.getItem('kemet_reviews');
+    let allReviews = [];
+    if (savedReviewsStr) {
+      try {
+        allReviews = JSON.parse(savedReviewsStr);
+      } catch (err) {
+        allReviews = [];
+      }
+    }
+    allReviews = [newReview, ...allReviews];
+    localStorage.setItem('kemet_reviews', JSON.stringify(allReviews));
+
+    // 2. Recalculate average rating for this excursion
+    const excursionReviews = allReviews.filter((r: any) => r.excursionId === ratingExcursion.id);
+    const sum = excursionReviews.reduce((acc: number, r: any) => acc + r.rating, 0);
+    const average = Math.round((sum / excursionReviews.length) * 100) / 100;
+
+    // 3. Update the excursion rating in kemet_excursions
+    const savedExStr = localStorage.getItem('kemet_excursions');
+    if (savedExStr) {
+      try {
+        const localExcursions = JSON.parse(savedExStr);
+        const updatedExcursions = localExcursions.map((ex: any) => {
+          if (ex.id === ratingExcursion.id) {
+            return { ...ex, rating: average };
+          }
+          return ex;
+        });
+        localStorage.setItem('kemet_excursions', JSON.stringify(updatedExcursions));
+      } catch (err) {
+        console.error("Could not update excursion rating", err);
+      }
+    }
+
+    // 4. Dispatch events to trigger app state updates & golden scarab celebration!
+    window.dispatchEvent(new Event('kemet_reviews_updated'));
+    window.dispatchEvent(new Event('kemet_excursions_updated'));
+    window.dispatchEvent(new Event('kemet_celebrate'));
+
+    // 5. Show success overlay and close
+    setFeedbackSuccess(true);
+    setTimeout(() => {
+      setFeedbackSuccess(false);
+      setRatingExcursion(null);
+      setFeedbackAuthor("");
+      setFeedbackComment("");
+      setFeedbackRating(5);
+    }, 2200);
+  };
 
   const activeCatalog = excursions && excursions.length > 0 ? excursions : EXCURSIONS_DATA;
 
@@ -376,9 +462,41 @@ Please seal my booking with the High Priest approval!`;
                     <span className="flex items-center gap-1">
                       <Clock className="w-3.5 h-3.5 text-[#d4af37]" /> {ex.duration}
                     </span>
-                    <span className="flex items-center gap-0.5 text-amber-400">
-                      <Star className="w-3.5 h-3.5 fill-current" /> {ex.rating}
-                    </span>
+                    {/* Interactive Golden Star Rating Widget */}
+                    <div 
+                      className="flex items-center gap-1.5 cursor-pointer group/rating relative"
+                      title="Inscribe thy feedback (Click to Rate)"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setRatingExcursion(ex);
+                        setFeedbackRating(Math.round(ex.rating) || 5);
+                      }}
+                    >
+                      <div className="flex gap-0.5">
+                        {[1, 2, 3, 4, 5].map((num) => {
+                          const isFilled = num <= Math.round(ex.rating);
+                          return (
+                            <Star
+                              key={num}
+                              className={`w-3.5 h-3.5 transition-all duration-200 ${
+                                isFilled 
+                                  ? 'text-[#d4af37] fill-current group-hover/rating:text-amber-300 group-hover/rating:scale-110' 
+                                  : 'text-stone-700 group-hover/rating:text-stone-500'
+                              }`}
+                              style={{ transitionDelay: `${num * 25}ms` }}
+                            />
+                          );
+                        })}
+                      </div>
+                      <span className="text-[#d4af37] font-mono font-bold text-xs group-hover/rating:text-amber-200 ml-0.5 transition-colors">
+                        {ex.rating ? ex.rating.toFixed(1) : '0.0'}
+                      </span>
+                      
+                      {/* Floating tooltip invitation */}
+                      <span className="pointer-events-none opacity-0 group-hover/rating:opacity-100 transition-opacity duration-300 text-[9px] font-mono text-[#140f0a] uppercase tracking-widest absolute -top-8 right-0 bg-gradient-to-r from-[#d4af37] to-[#f3e5c8] px-2 py-0.5 rounded shadow-lg whitespace-nowrap z-20 border border-[#d4af37]/30">
+                        ✍ Rate Journey
+                      </span>
+                    </div>
                   </div>
 
                   <h3 className="font-serif text-xl font-bold text-[#e6c280] group-hover:text-amber-200 transition-colors uppercase tracking-wide">
@@ -493,6 +611,17 @@ Please seal my booking with the High Priest approval!`;
                         <span className="flex items-center gap-1">
                           <Clock className="w-4 h-4 text-[#d4af37]" /> {selectedExcursion.duration}
                         </span>
+                        <button
+                          onClick={() => {
+                            setRatingExcursion(selectedExcursion);
+                            setFeedbackRating(Math.round(selectedExcursion.rating) || 5);
+                          }}
+                          className="flex items-center gap-1 text-[#d4af37] hover:text-amber-300 transition-colors cursor-pointer bg-stone-900/50 border border-[#d4af37]/20 rounded-md px-2 py-0.5"
+                          title="Click to Rate this Journey"
+                        >
+                          <Star className="w-3.5 h-3.5 fill-current" />
+                          <span>{selectedExcursion.rating ? selectedExcursion.rating.toFixed(1) : '0.0'}</span>
+                        </button>
                       </div>
                       <p className="text-stone-300 text-xs leading-relaxed">
                         {selectedExcursion.description}
@@ -681,6 +810,174 @@ Please seal my booking with the High Priest approval!`;
                         id="submit-passage-btn"
                       >
                         Submit Passage Inscription
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Pharaonic Feedback Tablet (Interactive Rating Widget Modal) */}
+      <AnimatePresence>
+        {ratingExcursion && (
+          <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-[#140f0c] border-2 border-[#d4af37] rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl relative p-6 md:p-8"
+            >
+              {/* Decorative Horus Eye background */}
+              <div className="absolute top-2 right-4 text-stone-900/25 font-serif text-6xl select-none pointer-events-none">
+                𓂀
+              </div>
+
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={() => setRatingExcursion(null)}
+                className="absolute top-4 right-4 bg-stone-900 border border-stone-800 text-stone-400 hover:text-white p-2 rounded-full transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {feedbackSuccess ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="py-12 text-center space-y-4"
+                >
+                  <div className="inline-flex bg-gradient-to-br from-[#d4af37] to-amber-500 p-4 rounded-full border border-[#d4af37]/35 shadow-lg animate-bounce">
+                    <Sparkles className="w-8 h-8 text-[#140f0a]" />
+                  </div>
+                  <h4 className="font-serif text-2xl font-black text-[#e6c280] uppercase tracking-wider">
+                    Feedback Inscribed!
+                  </h4>
+                  <p className="text-stone-300 text-xs max-w-sm mx-auto leading-relaxed">
+                    By the eternal wisdom of Thoth, your sacred review has been etched onto the permanent tablets of Kemet. May the gods bless your travels!
+                  </p>
+                  <p className="text-[10px] font-mono text-emerald-400 animate-pulse uppercase tracking-widest pt-2">
+                    𓋹 Aligning Celestial Averages...
+                  </p>
+                </motion.div>
+              ) : (
+                <div className="space-y-5">
+                  <div className="text-center space-y-1">
+                    <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.2em] block">Inscribe Feedback Tablet</span>
+                    <h3 className="font-serif text-xl font-bold text-[#e6c280] uppercase tracking-wide">
+                      {ratingExcursion.title}
+                    </h3>
+                    <p className="text-stone-400 text-xs">
+                      Share your genuine traveler testimony & rate this voyage
+                    </p>
+                  </div>
+
+                  <form onSubmit={handleFeedbackSubmit} className="space-y-4">
+                    {/* Interactive Star Picker */}
+                    <div className="bg-[#1b1511] border border-[#d4af37]/20 rounded-2xl p-4 text-center space-y-2">
+                      <label className="text-stone-400 text-[10px] font-mono uppercase tracking-widest block">
+                        Select Sacred Rating
+                      </label>
+                      <div className="flex justify-center gap-3 py-1">
+                        {[1, 2, 3, 4, 5].map((num) => (
+                          <button
+                            key={num}
+                            type="button"
+                            onClick={() => setFeedbackRating(num)}
+                            onMouseEnter={() => setHoveredFeedbackStar(num)}
+                            onMouseLeave={() => setHoveredFeedbackStar(null)}
+                            className="cursor-pointer transition-transform hover:scale-125 focus:outline-none"
+                            title={`${num} Star${num > 1 ? 's' : ''}`}
+                          >
+                            <Star
+                              className={`w-8 h-8 transition-all ${
+                                num <= (hoveredFeedbackStar ?? feedbackRating) 
+                                  ? 'text-amber-400 fill-current drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]' 
+                                  : 'text-stone-800 border-stone-900'
+                              }`}
+                            />
+                          </button>
+                        ))}
+                      </div>
+                      <span className="text-stone-500 text-[11px] font-mono uppercase tracking-widest block h-4">
+                        {feedbackRating === 5 ? "👑 Worthy of the Gods!" :
+                         feedbackRating === 4 ? "✨ Splendid Caravan Journey!" :
+                         feedbackRating === 3 ? "👍 Satisfactory Alignment" :
+                         feedbackRating === 2 ? "⚠️ Deshret Dust Storms" :
+                         "❌ Lost in the Duat!"} ({feedbackRating} / 5 Stars)
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Name */}
+                      <div className="space-y-1">
+                        <label className="text-stone-400 text-[10px] font-mono uppercase tracking-widest block">
+                          Your Noble Name
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. Cleopatra Johnson"
+                          value={feedbackAuthor}
+                          onChange={(e) => setFeedbackAuthor(e.target.value)}
+                          className="w-full bg-[#1c1611] border border-[#d4af37]/35 rounded-xl p-2.5 text-stone-200 text-xs focus:outline-none focus:border-[#d4af37] transition-colors"
+                        />
+                      </div>
+
+                      {/* Avatar */}
+                      <div className="space-y-1">
+                        <label className="text-stone-400 text-[10px] font-mono uppercase tracking-widest block">
+                          Pharaonic Persona
+                        </label>
+                        <select
+                          value={feedbackAvatar}
+                          onChange={(e) => setFeedbackAvatar(e.target.value)}
+                          className="w-full bg-[#1c1611] border border-[#d4af37]/35 rounded-xl p-2.5 text-stone-200 text-xs focus:outline-none focus:border-[#d4af37] transition-colors"
+                        >
+                          <option value="𓁠 Cleopatra">𓁠 Cleopatra the Diver</option>
+                          <option value="𓀚 Ramses">𓀚 Ramses the Nomad</option>
+                          <option value="𓁥 Hatshepsut">𓁥 Hatshepsut the Scribe</option>
+                          <option value="𓃠 Bastet">𓃠 Bastet the Explorer</option>
+                          <option value="𓆛 Sobek">𓆛 Sobek the Mariner</option>
+                          <option value="𓅃 Horus">𓅃 Horus the Speedster</option>
+                          <option value="𓋹 Anubis">𓋹 Anubis the Guardian</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Comment */}
+                    <div className="space-y-1">
+                      <label className="text-stone-400 text-[10px] font-mono uppercase tracking-widest block">
+                        Witness Testimony
+                      </label>
+                      <textarea
+                        required
+                        rows={3}
+                        placeholder="Write thy feedback... (e.g., The coral reef was mindblowing, the guide was very informative!)"
+                        value={feedbackComment}
+                        onChange={(e) => setFeedbackComment(e.target.value)}
+                        className="w-full bg-[#1c1611] border border-[#d4af37]/35 rounded-xl p-3 text-stone-200 text-xs focus:outline-none focus:border-[#d4af37] transition-colors leading-relaxed"
+                      />
+                    </div>
+
+                    {/* Action buttons */}
+                    <div className="flex gap-3 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setRatingExcursion(null)}
+                        className="flex-1 bg-stone-900 hover:bg-stone-800 border border-stone-800 text-stone-400 py-2.5 rounded-xl text-[10px] font-mono uppercase tracking-widest transition-colors cursor-pointer"
+                      >
+                        Banish Tablet
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex-1 bg-gradient-to-r from-[#d4af37] to-[#b08e23] hover:from-[#e5c250] hover:to-[#c5a02e] text-[#140f0a] font-bold py-2.5 rounded-xl text-[10px] font-mono uppercase tracking-widest transition-all shadow-md cursor-pointer flex items-center justify-center gap-1.5"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        Inscribe Testimony
                       </button>
                     </div>
                   </form>

@@ -4,10 +4,10 @@ import { Compass, Sparkles, ScrollText, CalendarDays, Eye, BookOpen, Anchor, Map
 import { Booking } from './types';
 import CartoucheGenerator from './components/CartoucheGenerator';
 import ScribeOracle from './components/ScribeOracle';
-import ExcursionCatalog from './components/ExcursionCatalog';
+import ExcursionCatalog, { EXCURSIONS_DATA } from './components/ExcursionCatalog';
 import EgyptologyGallery from './components/EgyptologyGallery';
 import BookingManager from './components/BookingManager';
-import AdminCRM from './components/AdminCRM';
+import AdminDashboard from './components/AdminDashboard';
 import FooterNewsletter from './components/FooterNewsletter';
 import OraclesWisdomFAQ from './components/OraclesWisdomFAQ';
 import MobileBottomNav from './components/MobileBottomNav';
@@ -21,10 +21,24 @@ export default function App() {
 
   const [excursions, setExcursions] = useState<any[]>(() => {
     const saved = localStorage.getItem('kemet_excursions');
-    return saved ? JSON.parse(saved) : [];
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        // ignore fallback
+      }
+    }
+    // Store and return default
+    localStorage.setItem('kemet_excursions', JSON.stringify(EXCURSIONS_DATA));
+    return EXCURSIONS_DATA;
   });
 
   const [isAdminMode, setIsAdminMode] = useState<boolean>(false);
+  const [isAdminVerified, setIsAdminVerified] = useState<boolean>(() => {
+    return localStorage.getItem('kemet_admin_verified') === 'true';
+  });
+  const [passcodeInput, setPasscodeInput] = useState<string>('');
+  const [passcodeError, setPasscodeError] = useState<string>('');
   const [scrollY, setScrollY] = useState<number>(0);
   const [celebrationCount, setCelebrationCount] = useState<number>(0);
 
@@ -58,6 +72,17 @@ export default function App() {
     window.addEventListener('kemet_excursions_updated', syncExcursions);
     return () => {
       window.removeEventListener('kemet_excursions_updated', syncExcursions);
+    };
+  }, []);
+
+  // Global celebrate event listener
+  useEffect(() => {
+    const handleCelebrate = () => {
+      triggerCelebration();
+    };
+    window.addEventListener('kemet_celebrate', handleCelebrate);
+    return () => {
+      window.removeEventListener('kemet_celebrate', handleCelebrate);
     };
   }, []);
 
@@ -283,32 +308,127 @@ export default function App() {
         <main className="max-w-7xl mx-auto px-4 md:px-6 py-12 relative">
           
           {isAdminMode ? (
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="space-y-6 scroll-mt-24"
-              id="admin-dashboard-section"
-            >
-              <div className="flex justify-between items-center bg-[#15110d] border border-[#d4af37]/35 rounded-2xl p-4 mb-2">
-                <span className="text-xs font-mono text-[#e6c280] uppercase tracking-wider flex items-center gap-1.5">
-                  🛡️ Secure Administrative High Priest Overview Active
-                </span>
-                <button
-                  onClick={() => setIsAdminMode(false)}
-                  className="bg-[#2a2016] text-[#e6c280] hover:bg-[#3d2f21] border border-[#d4af37]/40 px-3 py-1.5 rounded-xl text-xs font-mono uppercase tracking-wider cursor-pointer"
-                >
-                  Return to Explorer Mode
-                </button>
-              </div>
+            !isAdminVerified ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="max-w-md mx-auto bg-[#14100c] border border-[#d4af37]/40 rounded-2xl p-8 space-y-6 text-center shadow-2xl relative overflow-hidden my-12"
+              >
+                {/* Background ambient glow */}
+                <div className="absolute top-0 left-0 w-32 h-32 bg-[#d4af37]/5 rounded-full blur-2xl pointer-events-none"></div>
+                <div className="absolute bottom-0 right-0 w-32 h-32 bg-[#d4af37]/5 rounded-full blur-2xl pointer-events-none"></div>
 
-              <AdminCRM
-                bookings={bookings}
-                onUpdateBookingStatus={handleUpdateBookingStatus}
-                onCancelBooking={handleCancelBooking}
-                onUpdateBookingsList={handleUpdateBookingsList}
-              />
-            </motion.div>
+                <div className="flex justify-center">
+                  <div className="bg-gradient-to-br from-[#d4af37] to-[#8e6b12] p-4 rounded-full border border-[#d4af37]/30 shadow-lg animate-pulse">
+                    <span className="text-[#140f0a] font-serif text-3xl">𓀚</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.25em] block">Restricted Sanctuary</span>
+                  <h3 className="font-serif text-2xl font-black text-[#e6c280] uppercase tracking-wide">
+                    High Priest Sanctuary Gate
+                  </h3>
+                  <p className="text-stone-400 text-xs leading-relaxed">
+                    Access is restricted only to Royal Scribes with designated administrative clearance. Speak the secret name of the Pharaoh to cross the threshold.
+                  </p>
+                </div>
+
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (passcodeInput.trim().toLowerCase() === 'pharaoh') {
+                      setIsAdminVerified(true);
+                      localStorage.setItem('kemet_admin_verified', 'true');
+                      setPasscodeError('');
+                      setPasscodeInput('');
+                      triggerCelebration(); // Celebrate!
+                    } else {
+                      setPasscodeError('The sands of time reject this passcode. Speak the true title.');
+                    }
+                  }}
+                  className="space-y-4 text-left"
+                >
+                  <div>
+                    <label className="text-[9px] font-mono text-stone-500 uppercase tracking-widest block mb-1">Enter Secret Title Key</label>
+                    <input
+                      type="password"
+                      placeholder="e.g. pharaoh"
+                      value={passcodeInput}
+                      onChange={(e) => setPasscodeInput(e.target.value)}
+                      className="w-full bg-[#1c1611] border border-stone-800 rounded-xl px-4 py-3 text-xs text-stone-200 font-mono text-center focus:outline-none focus:border-[#d4af37]/60 shadow-inner"
+                    />
+                    {passcodeError && (
+                      <p className="text-red-400 text-[10px] font-mono mt-1.5 text-center italic">{passcodeError}</p>
+                    )}
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsAdminMode(false)}
+                      className="flex-1 bg-[#1a1511] hover:bg-stone-900 border border-stone-800 text-stone-400 py-2.5 rounded-xl text-[10px] font-mono uppercase tracking-widest transition-colors cursor-pointer"
+                    >
+                      Banish View
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 bg-gradient-to-r from-[#d4af37] to-[#b59228] hover:from-[#e3be44] hover:to-[#cfa72d] text-[#140f0a] font-bold py-2.5 rounded-xl text-[10px] font-mono uppercase tracking-widest transition-colors shadow-md cursor-pointer"
+                    >
+                      Verify Access
+                    </button>
+                  </div>
+                </form>
+
+                <p className="text-[9px] text-stone-600 font-mono italic">
+                  Hint: The title of the ancient Egyptian monarch (lower-case)
+                </p>
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="space-y-6 scroll-mt-24"
+                id="admin-dashboard-section"
+              >
+                <div className="flex flex-col sm:flex-row gap-3 justify-between items-center bg-[#15110d] border border-[#d4af37]/35 rounded-2xl p-4 mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[#d4af37] text-lg">𓀚</span>
+                    <span className="text-xs font-mono text-[#e6c280] uppercase tracking-wider">
+                      Administrative Clearance Level: High Priest Active
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setIsAdminVerified(false);
+                        localStorage.removeItem('kemet_admin_verified');
+                        triggerCelebration();
+                      }}
+                      className="bg-red-950/40 text-red-400 hover:bg-red-900/20 border border-red-500/20 px-3 py-1.5 rounded-xl text-[10px] font-mono uppercase tracking-wider cursor-pointer"
+                      title="Lock dashboard control credentials"
+                    >
+                      Lock Sanctuary
+                    </button>
+                    <button
+                      onClick={() => setIsAdminMode(false)}
+                      className="bg-[#2a2016] text-[#e6c280] hover:bg-[#3d2f21] border border-[#d4af37]/40 px-3 py-1.5 rounded-xl text-[10px] font-mono uppercase tracking-wider cursor-pointer"
+                    >
+                      Return to Explorer Mode
+                    </button>
+                  </div>
+                </div>
+
+                <AdminDashboard
+                  bookings={bookings}
+                  onUpdateBookingStatus={handleUpdateBookingStatus}
+                  onCancelBooking={handleCancelBooking}
+                  onUpdateBookingsList={handleUpdateBookingsList}
+                />
+              </motion.div>
+            )
           ) : (
             <div className="space-y-16">
               {/* SECTION 1: EXCURSIONS CATALOG */}
