@@ -503,6 +503,178 @@ export default function AdminDashboard({
     triggerNotification("Testimony deleted from the sacred public board");
   };
 
+  const handlePurgeAllData = () => {
+    if (window.confirm("𓋹 WARNING: You are about to initiate a TOTAL PURGE of the sacred records! This will permanently delete all customer bookings, active traveler cards, user reviews, newsletter subscriptions, and chat transcripts. This action is irreversible. Proceed?")) {
+      localStorage.setItem('kemet_bookings', JSON.stringify([]));
+      localStorage.setItem('kemet_reviews', JSON.stringify([]));
+      localStorage.setItem('kemet_newsletter_signups', JSON.stringify([]));
+      localStorage.setItem('kemet_oracle_chats_logs', JSON.stringify([]));
+      localStorage.setItem('kemet_crm_profiles', JSON.stringify([]));
+      localStorage.setItem('kemet_excursions', JSON.stringify(INITIAL_EXCURSIONS_DATA));
+
+      setReviews([]);
+      setCrmProfiles([]);
+      setOracleLogs([]);
+      setSubscribers([]);
+      setExcursions(INITIAL_EXCURSIONS_DATA);
+      onUpdateBookingsList([]);
+
+      window.dispatchEvent(new Event('kemet_reviews_updated'));
+      window.dispatchEvent(new Event('kemet_excursions_updated'));
+      window.dispatchEvent(new Event('kemet_subscribers_updated'));
+
+      triggerNotification("Sacred Sanctuary Cleansed! All demo data purged.", "info");
+    }
+  };
+
+  const handleRestoreDivineSeeds = () => {
+    if (window.confirm("Do you wish to populate the sanctuary with premium pre-configured traveler data, reviews, and bookings for testing/presentation?")) {
+      const SEED_BOOKINGS: Booking[] = [
+        {
+          id: 'b-seed-1',
+          excursionId: 'diving-1',
+          excursionTitle: 'Ras Mohammed Royal Coral Diving',
+          travelerName: 'Cleopatra the Diver',
+          travelerEmail: 'cleo.ocean@royal-kemet.com',
+          date: '2026-07-20',
+          numberOfGuests: 2,
+          totalCost: 240,
+          specialRequests: 'Prefers private boat transfer and certified diving guides',
+          status: 'Confirmed by High Priest',
+          createdAt: new Date('2026-07-10').toISOString()
+        },
+        {
+          id: 'b-seed-2',
+          excursionId: 'safari-1',
+          excursionTitle: "Set's Golden Deshret Safari",
+          travelerName: 'Ramses the Nomad',
+          travelerEmail: 'ramses.great@deshret-safaris.org',
+          date: '2026-07-22',
+          numberOfGuests: 3,
+          totalCost: 225,
+          specialRequests: 'Demands premium quad bikes and heavy star alignments info',
+          status: 'Pending Oracle Approval',
+          createdAt: new Date('2026-07-12').toISOString()
+        }
+      ];
+
+      const SEED_REVIEWS: Review[] = [
+        {
+          id: 'rev-1',
+          excursionId: 'diving-1',
+          author: "Cleopatra the Diver",
+          avatar: "𓁠 Cleopatra the Diver",
+          rating: 5,
+          comment: "I plunged into Ras Mohammed and was greeted by a massive underwater statue of Osiris, surrounded by thousands of golden glassfish. Truly, Sennedjem has aligned the elements perfectly. It felt like walking through a submerged palace of the Nile!",
+          date: "2026-06-20"
+        },
+        {
+          id: 'rev-2',
+          excursionId: 'safari-1',
+          author: "Ramses the Nomad",
+          avatar: "𓀚 Ramses the Nomad",
+          rating: 5,
+          comment: "Flying across the red dunes on a quad bike was as exhilarating as racing a war chariot in Kadesh! The Bedouin flatbread baked over acacia coals is delicious, and the stargazing is a true communion with Nut.",
+          date: "2026-07-01"
+        },
+        {
+          id: 'rev-3',
+          excursionId: 'history-1',
+          author: "Hatshepsut the Explorer",
+          avatar: "𓁥 Hatshepsut the Scribe",
+          rating: 5,
+          comment: "Visiting the mortuary temple in Luxor left my royal caravan speechless. The columns of Karnak are so wide they command complete silence. The private Felucca cruise on the Nile at sunset was absolute bliss.",
+          date: "2026-07-11"
+        }
+      ];
+
+      const SEED_SUBS = [
+        {
+          id: 'sub-seed-1',
+          email: 'alexander.great@macedon.org',
+          interests: ['diving', 'history'],
+          tier: 'pharaoh',
+          signupDate: '2026-07-10',
+          promoCode: 'RAMSES-8821-30'
+        },
+        {
+          id: 'sub-seed-2',
+          email: 'hypatia.scribe@alexandrialibrary.edu',
+          interests: ['history'],
+          tier: 'scribe',
+          signupDate: '2026-07-12',
+          promoCode: 'RAMSES-1029-30'
+        }
+      ];
+
+      const SEED_ORACLE_LOGS = [
+        {
+          id: 'log-1',
+          name: "Nefertiti Prospect",
+          email: "nefertiti.beauty@beauty-kemet.com",
+          query: "What is the ancient lore behind the sea god Nun at Ras Mohammed?",
+          time: "2026-07-14 14:32"
+        },
+        {
+          id: 'log-2',
+          name: "Marc Antony Noble",
+          email: "antony.rome@empire.org",
+          query: "Do you have chariot tours crossing from Hurghada to Luxor for the Hypostyle Hall?",
+          time: "2026-07-14 11:15"
+        }
+      ];
+
+      localStorage.setItem('kemet_bookings', JSON.stringify(SEED_BOOKINGS));
+      localStorage.setItem('kemet_reviews', JSON.stringify(SEED_REVIEWS));
+      localStorage.setItem('kemet_newsletter_signups', JSON.stringify(SEED_SUBS));
+      localStorage.setItem('kemet_oracle_chats_logs', JSON.stringify(SEED_ORACLE_LOGS));
+      localStorage.setItem('kemet_crm_profiles', JSON.stringify(INITIAL_CRM_PROFILES));
+      localStorage.setItem('kemet_excursions', JSON.stringify(INITIAL_EXCURSIONS_DATA));
+
+      setReviews(SEED_REVIEWS);
+      setCrmProfiles(INITIAL_CRM_PROFILES);
+      setOracleLogs(SEED_ORACLE_LOGS);
+      setSubscribers(SEED_SUBS);
+      setExcursions(INITIAL_EXCURSIONS_DATA);
+      onUpdateBookingsList(SEED_BOOKINGS);
+
+      window.dispatchEvent(new Event('kemet_reviews_updated'));
+      window.dispatchEvent(new Event('kemet_excursions_updated'));
+      window.dispatchEvent(new Event('kemet_subscribers_updated'));
+
+      triggerNotification("Divine seeds successfully sown inside the registry!");
+    }
+  };
+
+  const handleSimulateRandomBooking = () => {
+    const randomNames = ["Anubis Voyager", "Isis Pilgrim", "Osiris Nomad", "Thoth Explorer", "Sobek Diver", "Nut Gazer"];
+    const randomEmails = ["anubis@underworld.org", "isis.heals@sacred.com", "osiris.lord@aaru.net", "thoth.wisdom@library.edu", "sobek.waters@nile.com", "nut.sky@stars.org"];
+    const randomRequests = ["Wants to see dolphin pods and ancient hieroglyph marks", "Requires cold water at all stops", "Prefers early morning desert departures", "Wishes to have an extra scroll copy", "Vegetarian food options requested"];
+    const randomIndex = Math.floor(Math.random() * randomNames.length);
+    const chosenEx = excursions[Math.floor(Math.random() * excursions.length)] || INITIAL_EXCURSIONS_DATA[0];
+    const numGuests = Math.floor(Math.random() * 4) + 1;
+
+    const simulatedBooking: Booking = {
+      id: `b-sim-${Date.now()}`,
+      excursionId: chosenEx.id,
+      excursionTitle: chosenEx.title,
+      travelerName: randomNames[randomIndex],
+      travelerEmail: randomEmails[randomIndex],
+      date: new Date(Date.now() + 86400000 * (Math.floor(Math.random() * 15) + 3)).toISOString().split('T')[0],
+      numberOfGuests: numGuests,
+      totalCost: chosenEx.price * numGuests,
+      specialRequests: randomRequests[Math.floor(Math.random() * randomRequests.length)],
+      status: 'Pending Oracle Approval',
+      createdAt: new Date().toISOString()
+    };
+
+    const updatedBookings = [simulatedBooking, ...bookings];
+    onUpdateBookingsList(updatedBookings);
+    localStorage.setItem('kemet_bookings', JSON.stringify(updatedBookings));
+
+    triggerNotification(`Simulated booking received from ${simulatedBooking.travelerName}!`);
+  };
+
   // Excursion management
   const handleAddExcursionSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -929,6 +1101,45 @@ export default function AdminDashboard({
               <p className="text-stone-300 text-xs italic leading-relaxed">
                 "Our tours depart Hurghada, Dahab, and Luxor regularly. As administrator, please prioritize 'Pending Oracle Approval' booking status records. Approving a booking seals its registration status and gets everything ready for our travelers."
               </p>
+            </div>
+
+            {/* Database & System Maintenance System */}
+            <div className="bg-[#140c08] border-2 border-red-500/20 rounded-2xl p-6 space-y-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-red-500/5 rounded-full blur-2xl pointer-events-none"></div>
+              <div className="flex justify-between items-center border-b border-red-500/10 pb-3">
+                <h4 className="font-serif text-rose-400 font-bold text-sm uppercase tracking-wider flex items-center gap-2">
+                  <span className="text-red-500">𓂀</span> Sanctuary Database Purification & Live Simulation
+                </h4>
+                <span className="text-[9px] font-mono text-red-500 uppercase tracking-widest bg-red-500/10 px-2 py-0.5 rounded border border-red-500/25">
+                  Production Controls
+                </span>
+              </div>
+              <p className="text-stone-300 text-xs leading-relaxed">
+                As the High Priest, you have absolute authority to clear all temporary data to make the system **100% ready for the public**, restore rich simulated seeds for testing, or simulate live user bookings to test the CRM lead channels.
+              </p>
+              <div className="flex flex-wrap gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={handlePurgeAllData}
+                  className="bg-red-950/40 text-red-400 hover:bg-red-900/30 border border-red-500/30 px-4 py-2.5 rounded-xl text-[11px] font-mono uppercase tracking-wider cursor-pointer flex-1 min-w-[200px] transition-colors duration-200 text-center"
+                >
+                  🧹 Clear Ledger & Purge All Demo Data
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRestoreDivineSeeds}
+                  className="bg-stone-900 text-stone-300 hover:bg-stone-850 border border-stone-700 px-4 py-2.5 rounded-xl text-[11px] font-mono uppercase tracking-wider cursor-pointer flex-1 min-w-[200px] transition-colors duration-200 text-center"
+                >
+                  🌱 Restore Premium Divine Seeds
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSimulateRandomBooking}
+                  className="bg-[#241a10] text-[#d4af37] hover:bg-[#322417] border border-[#d4af37]/40 px-4 py-2.5 rounded-xl text-[11px] font-mono uppercase tracking-wider cursor-pointer flex-1 min-w-[200px] transition-colors duration-200 text-center"
+                >
+                  ⚡ Simulate Random Live Customer Booking
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
