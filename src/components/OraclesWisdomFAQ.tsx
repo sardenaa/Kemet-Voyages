@@ -280,7 +280,7 @@ export default function OraclesWisdomFAQ() {
         {/* Footer help note */}
         <div className="bg-[#1a140f] border border-[#d4af37]/10 rounded-xl p-3 text-center">
           <p className="text-[10px] text-stone-500 font-mono">
-            𓋹 Need more help? Ask our friendly AI Travel Assistant Sennedjem in the chat above!
+            𓋹 Need more help? Ask our friendly AI Travel Assistant in the chat above!
           </p>
         </div>
 

@@ -64,7 +64,7 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
     {
       id: 'welcome',
       role: 'assistant',
-      text: "Hail, noble traveler! I am Sennedjem, Scribe of the Sacred Cartouches and keeper of Kemet's secrets. Ask me of the hidden reefs in Nun's deep turquoise waters, the ancient path of Luxor's sun god, or request me to translate thy sacred title into hieroglyphic wisdom. What sayest thou?",
+      text: "Hello and welcome! I am your AI Travel Assistant. I can help you plan your journey, answer questions about ancient Egyptian history, or explain the meanings behind hieroglyphic symbols. How can I assist you with your travel plans today?",
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ]);
@@ -230,7 +230,7 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
             }`}
           >
             <Compass className="w-4 h-4" />
-            Royal Itinerary Customizer
+            Itinerary Planner
           </button>
           <button
             onClick={() => setActiveTab('chat')}
@@ -241,7 +241,7 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
             }`}
           >
             <MessageCircle className="w-4 h-4" />
-            Consult Scribe Sennedjem
+            Chat with AI Assistant
           </button>
         </div>
       </div>
@@ -256,12 +256,12 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
             className="space-y-6"
           >
             <div className="text-center mb-6">
-              <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">Bespoke Journeys</span>
+              <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">Custom Travel Plan</span>
               <h2 className="font-serif text-3xl font-extrabold text-[#e6c280] mt-1 uppercase">
-                The Pharaonic Voyage Planner
+                Custom Travel Itinerary Planner
               </h2>
               <p className="text-stone-400 text-sm max-w-xl mx-auto mt-2">
-                Allow Sennedjem to roll out the sacred papyrus and align the stars of Nut to script your personalized Red Sea and Luxor adventure.
+                Plan your perfect trip by entering your travel details below to receive a personalized day-by-day itinerary.
               </p>
             </div>
 
@@ -273,7 +273,7 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
                 <div className="flex justify-between items-center">
                   <label className="text-stone-300 text-sm flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-[#d4af37]" />
-                    Voyage Length (Days)
+                    Trip Duration (Days)
                   </label>
                   <span className="text-[#d4af37] font-mono font-bold text-lg">{duration} Days</span>
                 </div>
@@ -286,8 +286,8 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
                   className="w-full accent-[#d4af37] bg-stone-800 h-2 rounded-lg cursor-pointer"
                 />
                 <div className="flex justify-between text-[10px] text-stone-500 font-mono">
-                  <span>3 Days (Quick escape)</span>
-                  <span>7 Days (Grand Explorer)</span>
+                  <span>3 Days (Short Trip)</span>
+                  <span>7 Days (Full Experience)</span>
                 </div>
               </div>
 
@@ -295,7 +295,7 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
               <div className="space-y-1.5">
                 <label className="text-stone-300 text-sm flex items-center gap-2">
                   <Compass className="w-4 h-4 text-[#d4af37]" />
-                  Primary Spirit (Focus)
+                  Primary Focus
                 </label>
                 <select
                   value={interest}
@@ -312,7 +312,7 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
               <div className="space-y-1.5">
                 <label className="text-stone-300 text-sm flex items-center gap-2">
                   <Zap className="w-4 h-4 text-[#d4af37]" />
-                  Pace of Exploration
+                  Pacing
                 </label>
                 <select
                   value={intensity}
@@ -329,7 +329,7 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
               <div className="space-y-1.5">
                 <label className="text-stone-300 text-sm flex items-center gap-2">
                   <User className="w-4 h-4 text-[#d4af37]" />
-                  Expedition Companions
+                  Travel Companions
                 </label>
                 <select
                   value={companion}
@@ -346,12 +346,12 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
               <div className="md:col-span-2 space-y-1.5">
                 <label className="text-stone-300 text-sm flex items-center gap-2">
                   <BookOpen className="w-4 h-4 text-[#d4af37]" />
-                  Special Scribe Inscriptions (Optional requests or dietary focus)
+                  Special Requests (Optional)
                 </label>
                 <textarea
                   value={customReq}
                   onChange={(e) => setCustomReq(e.target.value)}
-                  placeholder="E.g., Vegetarian options, focusing on Ras Mohammed scuba sites, celebrating an anniversary..."
+                  placeholder="E.g., Vegetarian options, specific diving sites, anniversary requests..."
                   rows={2}
                   className="w-full bg-[#16120e] border border-[#d4af37]/30 rounded-lg p-3 text-[#f3e5c8] text-sm focus:outline-none focus:ring-1 focus:ring-[#d4af37] placeholder-stone-600"
                 />
@@ -369,12 +369,12 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
                 {isGenerating ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin text-[#140f0a]" />
-                    Mixing Nile Ink...
+                    Generating Travel Plan...
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-5 h-5 text-[#140f0a] animate-pulse" />
-                    Summon Custom Pharaoh Itinerary
+                    Generate My Travel Itinerary
                   </>
                 )}
               </button>
@@ -399,10 +399,10 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
 
                   <div className="text-center border-b-2 border-[#8b6508]/20 pb-6 mb-6">
                     <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-[#8b6508] font-bold block animate-pulse">
-                      Consulting Ancient Star Maps...
+                      Analyzing Travel Options...
                     </span>
                     <h3 className="font-serif text-2xl font-black text-[#5c4001] tracking-wide mt-2 uppercase">
-                      Drafting Thy Custom Charter
+                      Creating Your Custom Itinerary
                     </h3>
                     
                     {/* Animated Golden Hieroglyphs pulsing in sequence */}
@@ -516,16 +516,16 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
                       <button
                         onClick={() => setShowPrintModal(true)}
                         className="bg-[#8b6508] hover:bg-[#6e4e03] text-white px-4 py-2 rounded-xl text-xs font-serif font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer active:scale-95 group/btn border border-yellow-600/30"
-                        title="Inscribe into a Papyrus Scroll (PDF)"
+                        title="Export Itinerary (PDF)"
                       >
                         <Printer className="w-3.5 h-3.5 text-yellow-200 group-hover/btn:scale-110 transition-transform" />
-                        <span>Generate Papyrus Scroll</span>
+                        <span>Export Itinerary</span>
                       </button>
                     </div>
 
                     <div className="text-center border-b-2 border-[#8b6508]/20 pb-6 mb-6 md:pr-48">
                       <span className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#8b6508] font-bold">
-                        Decree of Sennedjem, Royal Scribe
+                        Your Customized Travel Plan
                       </span>
                       <h3 className="font-serif text-3xl font-black text-[#5c4001] tracking-wide mt-1 uppercase">
                         {itinerary.title}
@@ -539,23 +539,23 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
                         <div>
                           <h4 className="font-serif text-sm font-bold text-[#5c4001] uppercase flex items-center gap-2">
                             <span className="text-[#8b6508] text-base">𓊟</span>
-                            Scribe's Planning Manifest
+                            Your Travel Manifest
                           </h4>
                           <p className="text-[11px] text-stone-600 mt-0.5">
                             {progressPercent < 35 ? (
-                              <span>𓀚 A sparse manifest. Add more rites and excursions to satisfy the Scribes.</span>
+                              <span>Add more excursions and activities to complete your itinerary.</span>
                             ) : progressPercent < 75 ? (
-                              <span>𓂀 The stars align. Thy caravan is growing robust and complete!</span>
+                              <span>Your travel itinerary is shaping up nicely!</span>
                             ) : progressPercent < 100 ? (
-                              <span>𓅃 Almost perfect! Just a few more touches to fully seal thy destiny.</span>
+                              <span>Almost finished! Add a couple more activities to complete your plans.</span>
                             ) : (
-                              <span className="text-[#5c4001] font-semibold">𓋹 Perfect Harmony! Thy sacred charter is fully sealed by the High Scribe.</span>
+                              <span className="text-[#5c4001] font-semibold">Perfect! Your travel itinerary is complete and ready.</span>
                             )}
                           </p>
                         </div>
                         <div className="text-right flex md:flex-col items-baseline md:items-end gap-1.5">
                           <span className="text-xs font-mono font-bold text-[#8b6508] bg-[#faf3e0] px-2 py-0.5 rounded border border-[#8b6508]/20 shadow-sm">
-                            {totalActivities} / {targetActivities} Rites
+                            {totalActivities} / {targetActivities} Activities
                           </span>
                           <span className="text-xs font-serif font-black text-[#5c4001]">
                             {progressPercent}% Complete
@@ -591,9 +591,9 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
 
                       {/* Progress Marks */}
                       <div className="flex justify-between text-[9px] font-mono text-stone-500 mt-1.5 px-1">
-                        <span>Sparse (0%)</span>
+                        <span>Short Trip (0%)</span>
                         <span className={`${progressPercent >= 50 ? 'text-[#8b6508] font-bold' : ''}`}>Balanced (50%)</span>
-                        <span className={`${progressPercent === 100 ? 'text-[#8b6508] font-bold' : ''}`}>Divine Feast (100%+)</span>
+                        <span className={`${progressPercent === 100 ? 'text-[#8b6508] font-bold' : ''}`}>Full Experience (100%)</span>
                       </div>
                     </div>
 
@@ -657,7 +657,7 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
                               >
                                 <input
                                   type="text"
-                                  placeholder="Inscribe custom activity..."
+                                  placeholder="Enter custom activity..."
                                   value={newActivityInputs[day.dayNumber] || ""}
                                   onChange={(e) => setNewActivityInputs(prev => ({ ...prev, [day.dayNumber]: e.target.value }))}
                                   className="flex-1 bg-[#fcfaf4] border border-[#8b6508]/25 rounded-lg px-3 py-1.5 text-xs text-stone-800 focus:outline-none focus:ring-1 focus:ring-[#8b6508] placeholder-stone-400"
@@ -675,7 +675,7 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
                             {/* Scribe Wisdom Box */}
                             <div className="mt-3 bg-[#f2e7c9] border border-[#8b6508]/15 rounded-lg p-3 text-xs text-stone-600 italic">
                               <span className="font-serif font-bold text-[#8b6508] block not-italic mb-1 uppercase tracking-wider">
-                                𓋹 Scribe's Ancient Wisdom:
+                                𓋹 Historical & Cultural Tip:
                               </span>
                               {day.scribeWisdom}
                             </div>
@@ -707,9 +707,9 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
             className="flex flex-col h-[550px]"
           >
             <div className="text-center mb-4">
-              <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">Sacred Dialogues</span>
+              <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">AI Chat</span>
               <h2 className="font-serif text-2xl font-bold text-[#e6c280] mt-1 uppercase">
-                Oracle Scribe Conversational Chamber
+                Chat with AI Travel Guide
               </h2>
             </div>
 
@@ -746,7 +746,7 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
                       >
                         𓋹
                       </motion.div>
-                      <span className="italic tracking-wide text-[#e6c280]/95">Sennedjem is drafting glyphs on papyrus...</span>
+                      <span className="italic tracking-wide text-[#e6c280]/95">AI Travel Guide is writing...</span>
                     </div>
                     {/* Floating gold hieroglyphs typing transition */}
                     <div className="flex items-center gap-3 bg-[#1c1611] px-4 py-2 rounded-xl border border-[#d4af37]/10 w-fit">
@@ -788,7 +788,7 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
                 type="text"
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
-                placeholder="Ask about Ramses, diving spots, desert myths, or translating a name..."
+                placeholder="Ask about historical sites, diving spots, desert safaris, or translating a name..."
                 className="flex-1 bg-[#201a14] border border-[#d4af37]/45 rounded-xl py-3 px-4 text-[#f3e5c8] text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/50"
                 id="scribe-chat-input"
               />
@@ -798,7 +798,7 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
                 id="scribe-chat-send-btn"
               >
                 <Send className="w-4 h-4 text-[#140f0a]" />
-                Inscribe
+                Send
               </button>
             </form>
           </motion.div>
@@ -831,10 +831,10 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
               <div className="bg-[#f2e7c9] border-l-4 border-[#8b6508] p-4 rounded-r-lg mb-6 shadow-sm">
                 <h4 className="font-serif text-sm font-bold text-[#5c4001] uppercase flex items-center gap-1.5">
                   <Printer className="w-4 h-4 text-[#8b6508]" />
-                  Papyrus Inscription Chamber
+                  Export & Print Itinerary
                 </h4>
                 <p className="text-xs text-stone-700 mt-1 leading-relaxed">
-                  Thy sacred Nile charter is prepared! Press <span className="font-semibold text-[#8b6508]">Inscribe Scroll</span> to trigger the browser's print utility. Select <span className="font-semibold text-[#8b6508]">Save as PDF</span> to download your stylized digital parchment or print with ink.
+                  Your custom travel plan is ready! Click <span className="font-semibold text-[#8b6508]">Print Itinerary</span> to open your browser's print menu. You can choose <span className="font-semibold text-[#8b6508]">Save as PDF</span> to save a digital copy or print it directly.
                 </p>
               </div>
 
@@ -842,7 +842,7 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
               <div className="border-4 border-double border-[#8b6508]/40 p-4 md:p-6 bg-[#fbf8ee]/70 rounded-xl space-y-6 max-h-[50vh] overflow-y-auto mb-6">
                 <div className="text-center border-b-2 border-[#8b6508]/20 pb-4 mb-4">
                   <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-[#8b6508] font-bold block mb-1">
-                    Decree of Sennedjem, Royal Scribe
+                    Your Customized Travel Plan
                   </span>
                   <h3 className="font-serif text-2xl font-black text-[#5c4001] uppercase">
                     {itinerary.title}
@@ -890,7 +890,7 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
                   className="bg-[#8b6508] hover:bg-[#6e4e03] text-white px-5 py-2.5 rounded-xl text-xs font-serif font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95 border border-yellow-600/30"
                 >
                   <Printer className="w-4 h-4 text-yellow-200" />
-                  <span>Inscribe Scroll (Print / PDF)</span>
+                  <span>Print Itinerary (or Save as PDF)</span>
                 </button>
               </div>
             </motion.div>
@@ -1147,10 +1147,10 @@ function generateFallbackItinerary(days: number, focus: string, pace: string): C
   }
 
   return {
-    royalGreeting: "By the decree of the gods, we greet thee, noble explorer. Thou hast chosen well. The alignment of the sun of Ra and the tides of Nun show great fortune for thy journey. Let us scribe thy path...",
-    title: `The Royal Expedition of ${days} Suns`,
+    royalGreeting: "Welcome, explorer! We are excited to help you plan your upcoming journey. Here is a custom itinerary designed for your preferences:",
+    title: `${days}-Day Customized Travel Itinerary`,
     days: daysArray,
-    blessing: "May the divine protection of the Eye of Horus encircle thy path, may the sands of Deshret cushion thy steps, and may the waters of Nun bring everlasting replenishment to thy spirit. Go in peace, beloved noble!"
+    blessing: "We hope this travel itinerary inspires your next adventure. Safe travels and have an amazing trip!"
   };
 }
 
@@ -1159,20 +1159,20 @@ function getOfflineScribeResponse(query: string): string {
   const text = query.toLowerCase();
   
   if (text.includes("name") || text.includes("hieroglyph") || text.includes("translate")) {
-    return "Noble voyager! To write thy name in the sacred script of Kemet, navigate to our 'Royal Cartouche Scribe' above. Enter thy name, and behold: the vulture, water ripples, and linen folds shall formulate your protective amulet instantly! On this scroll, we map A to the vulture, N to water ripples, and S to the folded cloth of Sekhmet!";
+    return "To see your name written in ancient Egyptian hieroglyphs, check out our Name Translator tool above! Just type in your name, and we will translate each letter into its matching hieroglyphic symbol.";
   }
   
   if (text.includes("dive") || text.includes("coral") || text.includes("reef") || text.includes("sea")) {
-    return "Ah, the Red Sea! Our ancestors called it the great green water, part of Nun. The reefs are guarded by the spirits of ancient sailors. When diving, keep your breath measured like a scribe's stroke. The sunken ruins of Ras Mohammed contain massive limestone pillars and stone statues, placed as monuments to honor the sea god Nun.";
+    return "The Red Sea is world-famous for its crystal-clear waters and vibrant marine life. When diving at sites like Ras Mohammed, you can explore spectacular coral gardens, historic shipwrecks, and hundreds of species of fish.";
   }
 
   if (text.includes("safari") || text.includes("desert") || text.includes("camel") || text.includes("quad")) {
-    return "The desert sands, or Deshret, are ruled by the storm god Set. When navigating the dunes, the quad bike provides the speed of Horus's falcon, while the camel provides the patient endurance of the god Ptah. At night, look up at Nut, the starry goddess of the sky; the Bedouin tea we brew over acacia coals holds herbs that soothe the traveler's fatigue.";
+    return "Our desert safaris offer a perfect blend of adventure and culture. You can race over the dunes on a quad bike, enjoy a quiet camel trek at sunset, and visit a Bedouin camp to experience traditional hospitality and tea.";
   }
 
   if (text.includes("luxor") || text.includes("temple") || text.includes("king") || text.includes("ruin") || text.includes("history")) {
-    return "Luxor, known of old as Waset, is the golden capital of our greatest Pharaohs. On the East Bank, Karnak Temple stands as a house for Amun-Ra, while the West Bank houses the Valley of the Kings where the pharaohs' souls travel to the underworld. Touch the sandstone pillars—they have stood since the dawn of the New Kingdom, carrying the blessings of eternity.";
+    return "Luxor is home to some of the world's most incredible historical sites. On the East Bank of the Nile, you can visit the massive Karnak and Luxor temples. On the West Bank, you can descend into the beautifully painted tombs of the Valley of the Kings.";
   }
 
-  return "Thy words have been inscribed on my papyrus, noble seeker. The wisdom of Kemet is deep like the Nile. Tell me, wouldst thou like to know of the underwater wonders of the Red Sea, the golden safaris of the Hurghada dunes, or the tombs of the Valley of the Kings?";
+  return "Thank you for your question! I can help you with anything related to the Red Sea coral reefs, desert safaris, or historical tours to Luxor. What would you like to know more about?";
 }

@@ -245,13 +245,13 @@ export default function ScrollItineraryModal({ booking, excursion, onClose }: Sc
 
                   <div className="text-right space-y-1">
                     <div className="font-mono text-xs text-[#3b2314] italic">
-                      Scribe Sennedjem
+                      Travel Registrar
                     </div>
                     <span className="text-[8px] font-mono uppercase tracking-wider text-[#8c6b3e] block font-bold">
-                      Travel Scribe
+                      Travel Registrar
                     </span>
                     <span className="text-[9px] font-sans text-stone-500 block">
-                      Inscribed on 2026-07-14
+                      Inscribed on 2026-07-15
                     </span>
                   </div>
                 </div>

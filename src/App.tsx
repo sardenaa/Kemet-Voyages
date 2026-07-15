@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Compass, Sparkles, ScrollText, CalendarDays, Eye, BookOpen, Anchor, Map, Info } from 'lucide-react';
+import { Compass, Sparkles, ScrollText, CalendarDays, Eye, BookOpen, Anchor, Map, Info, Sun, Moon } from 'lucide-react';
 import { Booking } from './types';
 import CartoucheGenerator from './components/CartoucheGenerator';
 import ScribeOracle from './components/ScribeOracle';
@@ -14,10 +14,18 @@ import MobileBottomNav from './components/MobileBottomNav';
 import ScarabCelebration from './components/ScarabCelebration';
 
 export default function App() {
+  const [theme, setTheme] = useState<'desert' | 'nile'>(() => {
+    return (localStorage.getItem('kemet_theme') as 'desert' | 'nile') || 'desert';
+  });
+
   const [bookings, setBookings] = useState<Booking[]>(() => {
     const saved = localStorage.getItem('kemet_bookings');
     return saved ? JSON.parse(saved) : [];
   });
+
+  useEffect(() => {
+    localStorage.setItem('kemet_theme', theme);
+  }, [theme]);
 
   const [excursions, setExcursions] = useState<any[]>(() => {
     const saved = localStorage.getItem('kemet_excursions');
@@ -34,6 +42,7 @@ export default function App() {
   });
 
   const [isAdminMode, setIsAdminMode] = useState<boolean>(false);
+  const [activeStage, setActiveStage] = useState<'browsing' | 'itinerary' | 'finalizing'>('browsing');
   const [isAdminVerified, setIsAdminVerified] = useState<boolean>(() => {
     return localStorage.getItem('kemet_admin_verified') === 'true';
   });
@@ -41,6 +50,59 @@ export default function App() {
   const [passcodeError, setPasscodeError] = useState<string>('');
   const [scrollY, setScrollY] = useState<number>(0);
   const [celebrationCount, setCelebrationCount] = useState<number>(0);
+
+  // Scroll listener to update the active stage in progress tracker
+  useEffect(() => {
+    if (isAdminMode) return;
+
+    const handleScrollStage = () => {
+      const sections = [
+        { id: 'excursions-section', stage: 'browsing' as const },
+        { id: 'gallery-section', stage: 'browsing' as const },
+        { id: 'scribe-section', stage: 'itinerary' as const },
+        { id: 'cartouche-section', stage: 'itinerary' as const },
+        { id: 'faq-section', stage: 'itinerary' as const },
+        { id: 'ledger-section', stage: 'finalizing' as const }
+      ];
+
+      let closestStage: 'browsing' | 'itinerary' | 'finalizing' = 'browsing';
+      let minDistance = Infinity;
+
+      for (const section of sections) {
+        const el = document.getElementById(section.id);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          // Distance from top-middle viewport focus line
+          const distance = Math.abs(rect.top - 150);
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestStage = section.stage;
+          }
+        }
+      }
+
+      // If at the very top of page (Hero section)
+      if (window.scrollY < 200) {
+        closestStage = 'browsing';
+      }
+
+      // If scrolled near bottom
+      const isNearBottom = (window.innerHeight + window.scrollY) >= (document.documentElement.scrollHeight - 150);
+      if (isNearBottom) {
+        closestStage = 'finalizing';
+      }
+
+      setActiveStage(closestStage);
+    };
+
+    window.addEventListener('scroll', handleScrollStage, { passive: true });
+    // Run once immediately
+    handleScrollStage();
+
+    return () => {
+      window.removeEventListener('scroll', handleScrollStage);
+    };
+  }, [isAdminMode]);
 
   const triggerCelebration = () => {
     setCelebrationCount(prev => prev + 1);
@@ -118,7 +180,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#100c08] text-stone-200 font-sans selection:bg-[#d4af37]/30 selection:text-white overflow-x-hidden relative" id="app-root">
+    <div className={`min-h-screen bg-[#100c08] text-stone-200 font-sans selection:bg-[#d4af37]/30 selection:text-white overflow-x-hidden relative ${theme === 'nile' ? 'theme-nile' : 'theme-desert'}`} id="app-root">
       
       {/* Scroll-Triggered Parallax Background Hieroglyphs */}
       <div className="absolute inset-y-0 left-0 right-0 pointer-events-none overflow-hidden select-none z-0">
@@ -178,8 +240,8 @@ export default function App() {
           {/* Hero Image Background */}
           <div className="absolute inset-0">
             <img
-              src="/src/assets/images/egypt_red_sea_hero_1784070351173.jpg"
-              alt="Ancient Egypt Red Sea Coast"
+              src={theme === 'nile' ? "/src/assets/images/nile_midnight_bg_1784129212752.jpg" : "/src/assets/images/egypt_red_sea_hero_1784070351173.jpg"}
+              alt={theme === 'nile' ? "Nile River Midnight View" : "Ancient Egypt Red Sea Coast"}
               className="w-full h-full object-cover object-bottom scale-100"
               referrerPolicy="no-referrer"
             />
@@ -199,7 +261,7 @@ export default function App() {
             >
               <Sparkles className="text-[#d4af37] w-4 h-4 animate-pulse" />
               <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#e6c280]">
-                By Royal Decree of Kemet
+                Experience Ancient Egypt
               </span>
               <Sparkles className="text-[#d4af37] w-4 h-4 animate-pulse" />
             </motion.div>
@@ -229,7 +291,7 @@ export default function App() {
               transition={{ duration: 1.2, delay: 0.6 }}
               className="text-stone-300 text-sm md:text-base max-w-xl mx-auto leading-relaxed font-sans drop-shadow"
             >
-              Traverse the crystal sea reefs of Nun, conquer the high dunes of Set, and journey into the ancient tomb sanctuaries of Luxor with the wise counsel of the Pharaoh's Scribe.
+              Explore world-class Red Sea coral reefs, experience desert quad and camel safaris, and discover the historic temples and tombs of Luxor with our personalized travel planner.
             </motion.p>
 
             {/* Quick action buttons */}
@@ -243,13 +305,13 @@ export default function App() {
                 onClick={() => scrollToSection('excursions-section')}
                 className="bg-gradient-to-r from-[#d4af37] to-[#b08e23] hover:from-[#f3e5c8] hover:to-[#d4af37] text-[#140f0a] font-serif font-black text-sm uppercase tracking-widest px-8 py-3.5 rounded-xl shadow-lg shadow-[#d4af37]/25 hover:scale-105 transition-all duration-300 cursor-pointer"
               >
-                Explore Expeditions
+                Explore Tours
               </button>
               <button
                 onClick={() => scrollToSection('scribe-section')}
                 className="bg-[#140f0a]/90 hover:bg-[#201710] border border-[#d4af37]/50 text-[#e6c280] font-serif font-bold text-sm uppercase tracking-widest px-8 py-3.5 rounded-xl backdrop-blur-sm transition-all duration-300 cursor-pointer hover:border-amber-300"
               >
-                Consult Royal Scribe
+                Chat with AI Assistant
               </button>
             </motion.div>
           </div>
@@ -261,45 +323,148 @@ export default function App() {
 
         {/* EMBEDDED NAVIGATION BAR */}
         <nav className="sticky top-0 bg-[#140f0c]/90 border-b border-[#d4af37]/25 py-3.5 px-6 z-40 backdrop-blur-md">
-          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-            
-            {/* Logo */}
-            <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-              <span className="text-[#d4af37] text-2xl font-serif">𓋹</span>
-              <span className="font-serif font-bold text-[#e6c280] tracking-widest uppercase text-base">
-                KEMET VOYAGES
-              </span>
+          <div className="max-w-7xl mx-auto space-y-3.5">
+            {/* Main Nav Actions */}
+            <div className="flex flex-col lg:flex-row justify-between items-center gap-4">
+              
+              {/* Logo */}
+              <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                <span className="text-[#d4af37] text-2xl font-serif">𓋹</span>
+                <span className="font-serif font-bold text-[#e6c280] tracking-widest uppercase text-base">
+                  KEMET VOYAGES
+                </span>
+              </div>
+
+              {/* Anchors & Toggle */}
+              <div className="flex flex-wrap items-center justify-center gap-4 md:gap-5 text-xs font-mono uppercase tracking-widest">
+                {!isAdminMode && [
+                  { label: '𓆛 Tours & Excursions', target: 'excursions-section' },
+                  { label: '𓋹 AI Travel Planner', target: 'scribe-section' },
+                  { label: '𓅓 Photo Gallery', target: 'gallery-section' },
+                  { label: '𓉐 Name Translator', target: 'cartouche-section' },
+                  { label: '𓇚 Questions & Answers', target: 'faq-section' },
+                  { label: '𓎬 My Bookings', target: 'ledger-section' }
+                ].map((item) => (
+                  <button
+                    key={item.target}
+                    onClick={() => scrollToSection(item.target)}
+                    className="text-stone-400 hover:text-[#d4af37] hover:underline underline-offset-4 transition-all duration-300 cursor-pointer"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+
+                {/* Theme Toggle Button */}
+                <button
+                  onClick={() => setTheme(theme === 'desert' ? 'nile' : 'desert')}
+                  className="px-3 py-1.5 rounded-lg border font-mono font-bold transition-all duration-300 cursor-pointer uppercase flex items-center gap-1.5 bg-[#241a10]/60 text-[#e6c280] border-[#d4af37]/40 hover:border-[#d4af37]"
+                  title={theme === 'desert' ? "Switch to Nile Midnight" : "Switch to Desert Sun"}
+                >
+                  {theme === 'desert' ? (
+                    <>
+                      <Sun className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Desert Sun</span>
+                    </>
+                  ) : (
+                    <>
+                      <Moon className="w-3.5 h-3.5 text-sky-400" />
+                      <span>Nile Midnight</span>
+                    </>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => setIsAdminMode(!isAdminMode)}
+                  className={`px-3 py-1.5 rounded-lg border font-bold transition-all duration-300 cursor-pointer uppercase flex items-center gap-1.5 ${
+                    isAdminMode
+                      ? 'bg-[#d4af37] text-[#140f0a] border-[#d4af37]'
+                      : 'bg-[#241a10]/60 text-[#e6c280] border-[#d4af37]/40 hover:border-[#d4af37]'
+                  }`}
+                >
+                  {isAdminMode ? '𓀚 Traveler View' : '𓋹 Admin Dashboard'}
+                </button>
+              </div>
             </div>
 
-            {/* Anchors & Toggle */}
-            <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-xs font-mono uppercase tracking-widest">
-              {!isAdminMode && [
-                { label: '𓆛 Expeditions', target: 'excursions-section' },
-                { label: '𓋹 Scribe Oracle', target: 'scribe-section' },
-                { label: '𓅓 Galleries', target: 'gallery-section' },
-                { label: '𓉐 Cartouche Scribe', target: 'cartouche-section' },
-                { label: '𓇚 FAQ Wisdom', target: 'faq-section' },
-                { label: '𓎬 Ledger', target: 'ledger-section' }
-              ].map((item) => (
-                <button
-                  key={item.target}
-                  onClick={() => scrollToSection(item.target)}
-                  className="text-stone-400 hover:text-[#d4af37] hover:underline underline-offset-4 transition-all duration-300 cursor-pointer"
-                >
-                  {item.label}
-                </button>
-              ))}
+            {/* Stage Progress Tracker */}
+            <div className={`pt-3 border-t border-[#d4af37]/10 flex-col items-center justify-center admin-stage-tracker ${isAdminMode ? 'flex' : 'hidden'}`}>
+              <div className="flex items-center gap-2 mb-3 mt-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="text-[9px] font-mono text-[#d4af37] uppercase tracking-[0.25em]">
+                  𓂀 Real-Time Active Traveler Stage Monitor 𓋹
+                </span>
+              </div>
+              
+              <div className="w-full max-w-xl flex items-center justify-between text-[10px] font-mono uppercase tracking-[0.15em] relative py-1">
+                {/* Progress Line Background */}
+                <div className="absolute top-[14px] left-[30px] right-[30px] h-[1.5px] bg-stone-800/80 z-0"></div>
+                {/* Active Progress Line */}
+                <div 
+                  className="absolute top-[14px] left-[30px] h-[1.5px] bg-[#d4af37] z-0 transition-all duration-500 ease-in-out"
+                  style={{
+                    width: activeStage === 'browsing' ? '0%' : activeStage === 'itinerary' ? '50%' : '100%'
+                  }}
+                ></div>
 
-              <button
-                onClick={() => setIsAdminMode(!isAdminMode)}
-                className={`px-3 py-1.5 rounded-lg border font-bold transition-all duration-300 cursor-pointer uppercase flex items-center gap-1.5 ${
-                  isAdminMode
-                    ? 'bg-[#d4af37] text-[#140f0a] border-[#d4af37]'
-                    : 'bg-[#241a10]/60 text-[#e6c280] border-[#d4af37]/40 hover:border-[#d4af37]'
-                }`}
-              >
-                {isAdminMode ? '𓀚 Explorer View' : '𓋹 High Priest Console (CRM)'}
-              </button>
+                {/* Steps */}
+                {[
+                  { id: 'browsing', label: 'Browsing Tours', glyph: '𓆛', target: 'excursions-section', baseUsers: 4 },
+                  { id: 'itinerary', label: 'Building Itinerary', glyph: '𓋹', target: 'scribe-section', baseUsers: 2 },
+                  { id: 'finalizing', label: 'Finalizing Bookings', glyph: '𓎬', target: 'ledger-section', baseUsers: 1 }
+                ].map((step, idx) => {
+                  const isCompleted = 
+                    (activeStage === 'itinerary' && idx === 0) ||
+                    (activeStage === 'finalizing' && (idx === 0 || idx === 1));
+                  const isActive = activeStage === step.id;
+
+                  // Active users counts: simulated base + 1 if the current visitor (admin simulating) is on this section
+                  const currentCount = step.baseUsers + (isActive ? 1 : 0);
+
+                  return (
+                    <button
+                      key={step.id}
+                      onClick={() => scrollToSection(step.target)}
+                      className="relative z-10 flex flex-col items-center group focus:outline-none cursor-pointer"
+                      title={`Go to ${step.label}`}
+                    >
+                      {/* Step Bubble */}
+                      <div 
+                        className={`w-7 h-7 rounded-full flex items-center justify-center border font-serif text-xs transition-all duration-500 ${
+                          isActive 
+                            ? 'bg-[#d4af37] text-[#140f0a] border-[#d4af37] scale-110 shadow-md shadow-[#d4af37]/35' 
+                            : isCompleted
+                              ? 'bg-[#241a10] text-[#d4af37] border-[#d4af37]'
+                              : 'bg-[#140f0c] text-stone-500 border-stone-800/80 hover:border-stone-600'
+                        }`}
+                      >
+                        {step.glyph}
+                      </div>
+                      
+                      {/* Step Label */}
+                      <span 
+                        className={`mt-1.5 text-[8.5px] font-bold tracking-wider transition-all duration-300 ${
+                          isActive 
+                            ? 'text-[#e6c280]' 
+                            : isCompleted 
+                              ? 'text-[#d4af37]/80' 
+                              : 'text-stone-500 group-hover:text-stone-400'
+                        }`}
+                      >
+                        {step.label}
+                      </span>
+
+                      {/* Active Users Tag */}
+                      <span className={`mt-1 px-1.5 py-0.5 rounded-md text-[7px] font-mono tracking-normal font-bold border transition-all duration-300 ${
+                        isActive
+                          ? 'bg-emerald-950/80 text-emerald-400 border-emerald-500/20 shadow-[0_0_8px_rgba(16,185,129,0.1)]'
+                          : 'bg-stone-900/40 text-stone-500 border-stone-800/60'
+                      }`}>
+                        {currentCount} Active {isActive && '• Current'}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </nav>
@@ -326,12 +491,12 @@ export default function App() {
                 </div>
 
                 <div className="space-y-2">
-                  <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.25em] block">Restricted Sanctuary</span>
+                  <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.25em] block">Restricted Area</span>
                   <h3 className="font-serif text-2xl font-black text-[#e6c280] uppercase tracking-wide">
-                    High Priest Sanctuary Gate
+                    Admin Dashboard Access
                   </h3>
                   <p className="text-stone-400 text-xs leading-relaxed">
-                    Access is restricted only to Royal Scribes with designated administrative clearance. Speak the secret name of the Pharaoh to cross the threshold.
+                    Access is restricted to authorized travel administrators. Please enter the admin passcode to view the dashboard.
                   </p>
                 </div>
 
@@ -345,13 +510,13 @@ export default function App() {
                       setPasscodeInput('');
                       triggerCelebration(); // Celebrate!
                     } else {
-                      setPasscodeError('The sands of time reject this passcode. Speak the true title.');
+                      setPasscodeError('Incorrect passcode. Please try again.');
                     }
                   }}
                   className="space-y-4 text-left"
                 >
                   <div>
-                    <label className="text-[9px] font-mono text-stone-500 uppercase tracking-widest block mb-1">Enter Secret Title Key</label>
+                    <label className="text-[9px] font-mono text-stone-500 uppercase tracking-widest block mb-1">Enter Admin Passcode</label>
                     <input
                       type="password"
                       placeholder="e.g. pharaoh"
@@ -370,19 +535,19 @@ export default function App() {
                       onClick={() => setIsAdminMode(false)}
                       className="flex-1 bg-[#1a1511] hover:bg-stone-900 border border-stone-800 text-stone-400 py-2.5 rounded-xl text-[10px] font-mono uppercase tracking-widest transition-colors cursor-pointer"
                     >
-                      Banish View
+                      Cancel
                     </button>
                     <button
                       type="submit"
                       className="flex-1 bg-gradient-to-r from-[#d4af37] to-[#b59228] hover:from-[#e3be44] hover:to-[#cfa72d] text-[#140f0a] font-bold py-2.5 rounded-xl text-[10px] font-mono uppercase tracking-widest transition-colors shadow-md cursor-pointer"
                     >
-                      Verify Access
+                      Verify Admin
                     </button>
                   </div>
                 </form>
 
                 <p className="text-[9px] text-stone-600 font-mono italic">
-                  Hint: The title of the ancient Egyptian monarch (lower-case)
+                  Hint: pharaoh
                 </p>
               </motion.div>
             ) : (
@@ -455,10 +620,10 @@ export default function App() {
                 <div className="text-center">
                   <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">Artificial Intelligence</span>
                   <h2 className="font-serif text-3xl font-extrabold text-[#e6c280] uppercase mt-1">
-                    The Royal Scribe Sennedjem
+                    AI Travel Guide & Assistant
                   </h2>
                   <p className="text-stone-400 text-sm max-w-xl mx-auto mt-2">
-                    Converse with our Egyptologist scribe or generate an AI-curated itinerary synchronized to the Nile calendar.
+                    Ask our AI helper any questions or generate a custom day-by-day travel plan.
                   </p>
                 </div>
                 <ScribeOracle onScribeSuccess={triggerCelebration} />
@@ -486,12 +651,12 @@ export default function App() {
                 transition={{ duration: 0.8, ease: "easeOut" }}
               >
                 <div className="text-center">
-                  <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">Personal Protection</span>
+                  <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">Egyptian Cartouche</span>
                   <h2 className="font-serif text-3xl font-extrabold text-[#e6c280] uppercase mt-1">
-                    Pharaonic Name Protection
+                    Egyptian Name Translator
                   </h2>
                   <p className="text-stone-400 text-sm max-w-xl mx-auto mt-2">
-                    Inscribe your title into authentic-inspired stone glyphs inside an oval golden cartouche.
+                    Translate your name into ancient Egyptian hieroglyphic symbols inside a beautiful protective cartouche.
                   </p>
                 </div>
                 <CartoucheGenerator />
@@ -519,36 +684,15 @@ export default function App() {
                 transition={{ duration: 0.8, ease: "easeOut" }}
               >
                 <div className="text-center">
-                  <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">Sacred Ledger</span>
+                  <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">My Bookings</span>
                   <h2 className="font-serif text-3xl font-extrabold text-[#e6c280] uppercase mt-1">
-                    Expedition Ledger & Testimonials
+                    Your Bookings & Reviews
                   </h2>
                   <p className="text-stone-400 text-sm max-w-xl mx-auto mt-2">
-                    Inspect active caravans pending confirmation, or review the testimonies of historical travelers.
+                    View your pending or confirmed bookings, and read reviews from other travelers.
                   </p>
                 </div>
                 <BookingManager bookings={bookings} excursions={excursions} onCancelBooking={handleCancelBooking} />
-              </motion.section>
-
-              {/* SYSTEM INFO OR NOTIFICATION */}
-              <motion.section
-                className="bg-[#19130e] border border-[#d4af37]/20 rounded-2xl p-6 flex flex-col md:flex-row gap-6 items-center max-w-4xl mx-auto shadow-md"
-                initial={{ opacity: 0, scale: 0.96 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true, margin: "-80px" }}
-                transition={{ duration: 0.7 }}
-              >
-                <div className="bg-[#d4af37]/10 p-3 rounded-full border border-[#d4af37]/30">
-                  <Info className="text-[#d4af37] w-6 h-6" />
-                </div>
-                <div className="space-y-1 text-center md:text-left flex-1">
-                  <h4 className="font-serif text-[#e6c280] font-bold text-sm uppercase tracking-wider">
-                    Note on AI Customizations & Secrets
-                  </h4>
-                  <p className="text-stone-400 text-xs leading-relaxed">
-                    By default, this application utilizes full-stack server-side routes to proxy your requests with Gemini safely. If you do not see custom AI answers from Sennedjem, make sure you have loaded your <span className="text-[#d4af37] font-semibold">GEMINI_API_KEY</span> inside the **Settings &gt; Secrets** panel.
-                  </p>
-                </div>
               </motion.section>
             </div>
           )}
@@ -573,7 +717,7 @@ export default function App() {
           </div>
 
           <p className="text-stone-500 text-xs max-w-md mx-auto leading-relaxed">
-            Crafted for premium desert explorers, deep-sea divers, and lovers of ancient Egyptian history. May Ra make his face shine upon your voyages!
+            Designed for desert explorers, deep-sea divers, and lovers of history. Safe travels and have an amazing trip!
           </p>
 
           {/* Ancient seals icons */}
@@ -586,7 +730,7 @@ export default function App() {
           </div>
 
           <div className="pt-4 border-t border-stone-900/60 text-stone-600 text-[10px] font-mono uppercase tracking-widest">
-            © 2026 Kemet Voyages, Inc. • Licensed under the Scribes of Luxor
+            © 2026 Kemet Voyages, Inc. • All Rights Reserved.
           </div>
         </footer>
 
@@ -595,6 +739,8 @@ export default function App() {
           scrollToSection={scrollToSection}
           isAdminMode={isAdminMode}
           setIsAdminMode={setIsAdminMode}
+          theme={theme}
+          setTheme={setTheme}
         />
 
         {/* Golden Scarab Particle Celebration Overlay */}

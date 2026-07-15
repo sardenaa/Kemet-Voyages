@@ -335,7 +335,7 @@ export default function CartoucheGenerator() {
   const cleanName = name.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 8);
 
   const triggerDownload = () => {
-    alert("By the grace of Isis, take a screenshot of this royal decree to preserve your Pharaonic Cartouche!");
+    alert("Please take a screenshot of your cartouche to save it!");
   };
 
   return (
@@ -348,12 +348,12 @@ export default function CartoucheGenerator() {
         <div className="flex items-center justify-center gap-2 mb-2">
           <Sparkles className="text-[#d4af37] w-5 h-5 animate-pulse" />
           <h3 className="font-serif text-2xl font-bold tracking-wider text-[#e6c280] uppercase">
-            Royal Cartouche Scribe
+            Hieroglyphic Name Translator
           </h3>
           <Sparkles className="text-[#d4af37] w-5 h-5 animate-pulse" />
         </div>
         <p className="text-stone-400 text-sm max-w-lg mx-auto">
-          In ancient Kemet, royal names were encircled in a golden loop called a <span className="text-[#d4af37]">Cartouche</span> to ward off chaotic spirits. Translate your name phonetically:
+          Translate your name into ancient Egyptian hieroglyphs. In ancient Egypt, royal names were written inside an oval golden loop called a cartouche for protection. Enter your name below to see it:
         </p>
       </div>
 
@@ -362,7 +362,7 @@ export default function CartoucheGenerator() {
         <div className="lg:col-span-5 space-y-4">
           <div>
             <label className="block text-xs font-mono uppercase tracking-widest text-stone-500 mb-1.5">
-              Enter Noble Name (Max 8 letters)
+              Enter Name (Max 8 letters)
             </label>
             <div className="relative">
               <input
@@ -403,7 +403,7 @@ export default function CartoucheGenerator() {
                     </span>
                   </div>
                   <p className="text-stone-300 text-sm">
-                    <strong className="text-stone-500">Divine Meaning:</strong> {activeSymbol.meaning}
+                    <strong className="text-stone-500">Meaning:</strong> {activeSymbol.meaning}
                   </p>
                   <p className="text-[#d4af37]/80 text-xs font-mono uppercase tracking-wider">
                     Phonetic sound: "{activeSymbol.pronunciation}"
@@ -416,7 +416,7 @@ export default function CartoucheGenerator() {
                   animate={{ opacity: 1 }}
                   className="text-center text-stone-500 text-sm italic"
                 >
-                  Hover over or tap any glyph in your cartouche to unveil its ancient protection lore.
+                  Hover or tap on any hieroglyph inside your cartouche to learn its meaning and phonetic sound.
                 </motion.div>
               )}
             </AnimatePresence>
@@ -428,7 +428,7 @@ export default function CartoucheGenerator() {
             id="download-decree-btn"
           >
             <Download className="w-4 h-4 text-[#d4af37]" />
-            Seal and Save Royal Decree
+            Save Cartouche
           </button>
         </div>
 
@@ -474,7 +474,7 @@ export default function CartoucheGenerator() {
                 </div>
               ) : (
                 <div className="py-20 text-center text-stone-600 font-mono text-xs uppercase tracking-widest">
-                  EMPTY SLATE
+                  Enter a name
                 </div>
               )}
             </div>

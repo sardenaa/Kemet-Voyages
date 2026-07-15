@@ -108,17 +108,17 @@ export default function FooterNewsletter() {
   };
 
   const INTEREST_OPTIONS = [
-    { value: 'diving', label: '𓆛 Scuba Diving', desc: 'Coral walls & deep marine reserves' },
-    { value: 'boat', label: '𓊟 Yacht & Boat Trips', desc: 'Island luxury cruises & banquets' },
-    { value: 'speedboat', label: '𓊡 Speedboat Excursions', desc: 'High-speed adrenaline island hopping' },
-    { value: 'safari', label: '𓅓 Desert Safaris', desc: 'Quad racing & Bedouin stargazing' },
-    { value: 'history', label: '𓉐 Historical Luxor', desc: 'Pharaonic tombs & Nile pilgrimages' }
+    { value: 'diving', label: '𓆛 Scuba Diving', desc: 'Coral reefs and marine reserves' },
+    { value: 'boat', label: '𓊟 Yacht & Boat Trips', desc: 'Island luxury cruises and snorkeling' },
+    { value: 'speedboat', label: '𓊡 Speedboat Excursions', desc: 'High-speed island hopping tours' },
+    { value: 'safari', label: '𓅓 Desert Safaris', desc: 'Quad bike racing and stargazing' },
+    { value: 'history', label: '𓉐 Historical Luxor', desc: 'Ancient temples and tomb tours' }
   ];
 
   const TIER_OPTIONS = [
-    { value: 'citizen', name: 'Noble Citizen', discount: '15% Off', icon: '𓀚' },
-    { value: 'scribe', name: 'High Scribe', discount: '20% Off', icon: '𓁟' },
-    { value: 'pharaoh', name: 'Dynastic Pharaoh', discount: '30% Off', icon: '𓁠' }
+    { value: 'citizen', name: 'Standard Traveler', discount: '15% Off', icon: '𓀚' },
+    { value: 'scribe', name: 'Avid Explorer', discount: '20% Off', icon: '𓁟' },
+    { value: 'pharaoh', name: 'VIP Adventurer', discount: '30% Off', icon: '𓁠' }
   ];
 
   return (
@@ -138,13 +138,13 @@ export default function FooterNewsletter() {
           <div className="md:col-span-7 space-y-2 text-center md:text-left">
             <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.25em] flex items-center gap-1.5 justify-center md:justify-start">
               <Sparkles className="w-3 h-3 text-[#d4af37] animate-pulse" />
-              Imperial Decrees & Perks
+              Special Offers & Travel Deals
             </span>
             <h3 className="font-serif text-xl md:text-2xl font-black text-[#e6c280] uppercase tracking-wide">
-              The Imperial Excursion Discount Scroll
+              Travel Discount & Updates
             </h3>
             <p className="text-stone-400 text-xs leading-relaxed max-w-md">
-              Inscribe your electronic parchment mail below. Unlock divine seasonal discounts up to <span className="text-[#d4af37] font-semibold">30% Gold Coins</span> on diving, speedboats, and Nile cruises.
+              Enter your email below to subscribe and unlock seasonal discounts up to <span className="text-[#d4af37] font-semibold">30% Off</span> on diving trips, desert safaris, and Nile day tours.
             </p>
           </div>
 
@@ -159,7 +159,7 @@ export default function FooterNewsletter() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter thy noble email..."
+                    placeholder="Enter your email address..."
                     className="w-full bg-[#1c1611] border border-[#d4af37]/30 rounded-xl py-2.5 pl-10 pr-3 text-stone-200 text-xs focus:outline-none focus:ring-1 focus:ring-[#d4af37] placeholder:text-stone-600"
                   />
                 </div>
@@ -167,7 +167,7 @@ export default function FooterNewsletter() {
                   type="submit"
                   className="bg-gradient-to-r from-[#d4af37] to-[#bca03b] hover:from-[#e2be4c] hover:to-[#cca73d] text-stone-950 font-mono text-[10px] uppercase font-bold tracking-widest px-5 py-2.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap active:scale-95"
                 >
-                  Acquire Scroll <ChevronRight className="w-3 h-3 stroke-[3px]" />
+                  Subscribe <ChevronRight className="w-3 h-3 stroke-[3px]" />
                 </button>
               </form>
             ) : (
@@ -181,11 +181,11 @@ export default function FooterNewsletter() {
                     ✓
                   </div>
                   <span className="font-serif text-[#e6c280] font-bold text-xs uppercase tracking-wider">
-                    Imperial Covenant Sealed
+                    Subscription Confirmed
                   </span>
                 </div>
                 <p className="text-[11px] text-stone-400">
-                  Welcome to the court! Your active discount code:
+                  Welcome to our newsletter! Your active discount code is:
                 </p>
                 <div className="flex items-center justify-between bg-black/50 border border-stone-800 rounded-lg p-2 font-mono text-xs text-[#d4af37] select-all">
                   <span className="font-bold tracking-widest">{assignedPromo}</span>
@@ -195,7 +195,7 @@ export default function FooterNewsletter() {
                   onClick={handleResetSubscription}
                   className="text-[9px] font-mono text-stone-600 hover:text-stone-400 uppercase tracking-widest block mx-auto sm:ml-0 underline cursor-pointer"
                 >
-                  Reset / Change Covenant Email
+                  Unsubscribe / Change Email Address
                 </button>
               </motion.div>
             )}
@@ -237,10 +237,10 @@ export default function FooterNewsletter() {
                 </button>
                 <div className="text-2xl mb-1 text-[#d4af37]">𓂀</div>
                 <h3 className="font-serif text-lg md:text-xl font-extrabold text-[#e6c280] uppercase tracking-widest">
-                  Custom Caravan Preference Decree
+                  Customize Your Travel Interests
                 </h3>
                 <p className="text-stone-400 text-xs mt-1 font-mono">
-                  Sealing scroll access for: <span className="text-[#d4af37]">{email}</span>
+                  Select preferences for: <span className="text-[#d4af37]">{email}</span>
                 </p>
               </div>
 
@@ -251,10 +251,10 @@ export default function FooterNewsletter() {
                 <div className="space-y-3">
                   <div>
                     <label className="text-[10px] font-mono text-[#d4af37] uppercase tracking-wider block">
-                      Step I: Select Desired Excursions
+                      Step 1: Select Your Favorite Activities
                     </label>
                     <p className="text-stone-400 text-[11px] leading-relaxed">
-                      Which seasonal voyages should we target with your golden parchment scrolls?
+                      Which types of travel and excursions are you interested in?
                     </p>
                   </div>
 
@@ -291,14 +291,14 @@ export default function FooterNewsletter() {
                   </div>
                 </div>
 
-                {/* 2. Interactive Court Tier */}
+                {/* 2. Interactive Profile Level */}
                 <div className="space-y-3">
                   <div>
                     <label className="text-[10px] font-mono text-[#d4af37] uppercase tracking-wider block">
-                      Step II: Choose Your Court Dignity
+                      Step 2: Choose Your Profile Level
                     </label>
                     <p className="text-stone-400 text-[11px] leading-relaxed">
-                      Select your desired level of luxury communication inside the Pharaonic kingdom.
+                      Choose the type of travel offers and news you are interested in.
                     </p>
                   </div>
 
@@ -333,7 +333,7 @@ export default function FooterNewsletter() {
                 <div className="bg-[#1d1611] border border-[#d4af37]/15 rounded-xl p-3 flex gap-3 items-start">
                   <div className="text-lg text-[#d4af37] select-none">𓋹</div>
                   <p className="text-[10px] text-stone-400 leading-relaxed">
-                    By confirming this preference scroll, your email is sealed in our private archive. We respect the silence of Osiris: no promotional spam, only seasonal discount codes delivered with royal discretion.
+                    We value your privacy. We will never share your email address or send spam. You will only receive custom discount codes and seasonal travel deals.
                   </p>
                 </div>
 
@@ -346,12 +346,12 @@ export default function FooterNewsletter() {
                   {isSubmitting ? (
                     <>
                       <span className="w-4 h-4 border-2 border-stone-950 border-t-transparent rounded-full animate-spin"></span>
-                      Engraving Covenant...
+                      Saving Preferences...
                     </>
                   ) : (
                     <>
                       <Compass className="w-4 h-4 animate-spin-slow" />
-                      Inscribe Prefential Decree
+                      Save Travel Preferences
                     </>
                   )}
                 </button>

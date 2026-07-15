@@ -363,10 +363,51 @@ export default function AdminDashboard({
   // Feedback Notification
   const [notification, setNotification] = useState<{ text: string; type: 'success' | 'info' } | null>(null);
 
+  // Bulk Actions selection state for Caravan Ledger
+  const [selectedBookingIds, setSelectedBookingIds] = useState<string[]>([]);
+
+  // Clear selected bookings whenever the active tab or caravan filters change
+  useEffect(() => {
+    setSelectedBookingIds([]);
+  }, [activeTab, caravanStatusFilter]);
+
   // Sync state helpers
   const triggerNotification = (text: string, type: 'success' | 'info' = 'success') => {
     setNotification({ text, type });
     setTimeout(() => setNotification(null), 3000);
+  };
+
+  const handleBulkApprove = () => {
+    if (selectedBookingIds.length === 0) return;
+    
+    let count = 0;
+    const updated = bookings.map(b => {
+      if (selectedBookingIds.includes(b.id)) {
+        if (b.status === 'Pending Oracle Approval') {
+          count++;
+          return { ...b, status: 'Confirmed by High Priest' as const };
+        } else if (b.status === 'Confirmed by High Priest') {
+          count++;
+          return { ...b, status: 'Completed' as const };
+        }
+      }
+      return b;
+    });
+
+    onUpdateBookingsList(updated);
+    setSelectedBookingIds([]);
+    triggerNotification(`Approved & advanced ${count} selected bookings!`);
+  };
+
+  const handleBulkCancel = () => {
+    if (selectedBookingIds.length === 0) return;
+    if (window.confirm(`Are you sure you want to delete ${selectedBookingIds.length} selected bookings from the sacred ledger?`)) {
+      const count = selectedBookingIds.length;
+      const updated = bookings.filter(b => !selectedBookingIds.includes(b.id));
+      onUpdateBookingsList(updated);
+      setSelectedBookingIds([]);
+      triggerNotification(`Banished ${count} selected bookings from ledger`);
+    }
   };
 
   useEffect(() => {
@@ -526,10 +567,10 @@ export default function AdminDashboard({
   // Compose an email draft in the voice of Sennedjem
   const composeScribeEmailDraft = (profile: TravelerCRMProfile) => {
     const drafts = [
-      `Hail, Noble Traveler ${profile.name}!\n\nI am Sennedjem, Scribe of the Golden Pharaoh. I have rolled out the sacred papyrus and marked your interest in Kemet. Your current caravan status is registered as: [${profile.leadStatus}].\n\nThe stars of Nut align in perfect resonance for your voyages. May your journey with Kemet Voyages be ever secure, and may your name be engraved in the gold cartouche of the kings!\n\nIn Scribe Wisdom,\nSennedjem of Luxor`,
-      `Peace be upon thy house, Traveler Noble ${profile.name}!\n\nAs we prepare the cedar boats of Nun and the desert quads of Set, our High Priests note your request: "${profile.scribeNotes.slice(0, 80)}...". We are preparing a customized golden itinerary for you.\n\nCommand us, and we shall scribe your path to glory.\n\nBlessings of Horus,\nKemet Royal Travel Scribes`
+      `Hello ${profile.name}!\n\nI am your Kemet Travel Assistant. I have recorded your travel preferences and marked your interest in Kemet. Your current status is: [${profile.leadStatus}].\n\nWe are looking forward to designing an unforgettable tour for you. May your journey with Kemet Voyages be wonderful and secure!\n\nBest regards,\nKemet Voyages Team`,
+      `Hello ${profile.name}!\n\nAs we prepare our custom boats and desert safaris, our team has noted your request: "${profile.scribeNotes.slice(0, 80)}...". We are preparing a customized golden itinerary for you.\n\nLet us know how we can make your dream trip a reality.\n\nSafe travels,\nKemet Travel Team`
     ];
-    alert(`AUTOMATED PHARAONIC CRM EMAIL DRAFT FOR ${profile.name.toUpperCase()}:\n\n${drafts[Math.floor(Math.random() * drafts.length)]}`);
+    alert(`AUTOMATED TRAVEL CRM EMAIL DRAFT FOR ${profile.name.toUpperCase()}:\n\n${drafts[Math.floor(Math.random() * drafts.length)]}`);
   };
 
   // Filter Profiles
@@ -883,204 +924,283 @@ export default function AdminDashboard({
             {/* Quick Scribe Guidance Box */}
             <div className="bg-[#241a10] border-l-4 border-[#d4af37] rounded-r-2xl p-5 space-y-2">
               <span className="font-serif text-xs font-bold text-[#d4af37] uppercase tracking-widest flex items-center gap-1.5">
-                <BookOpen className="w-4 h-4 text-[#d4af37]" /> Scribe Sennedjem's Administrative Council
+                <BookOpen className="w-4 h-4 text-[#d4af37]" /> Travel Assistant's Administrative Guide
               </span>
               <p className="text-stone-300 text-xs italic leading-relaxed">
-                "Our caravans depart Hurghada, Dahab, and Luxor following the solar cycles. As High Priest Admin, prioritize 'Pending Oracle Approval' status records. Approving a caravan seals its traveler's fate inside the golden ledger, sending the divine energy of Ra ahead to pave their pathways."
+                "Our tours depart Hurghada, Dahab, and Luxor regularly. As administrator, please prioritize 'Pending Oracle Approval' booking status records. Approving a booking seals its registration status and gets everything ready for our travelers."
               </p>
             </div>
           </motion.div>
         )}
 
         {/* TAB 2: CARAVAN LEDGER (CRM BOOKINGS MANAGER) */}
-        {activeTab === 'caravans' && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="space-y-6"
-          >
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h3 className="font-serif text-xl font-bold text-[#e6c280] uppercase tracking-wider">
-                  Active Caravan Ledger Registry
-                </h3>
-                <p className="text-stone-400 text-xs">Manage active customer registrations and high priest sealing approvals.</p>
+        {activeTab === 'caravans' && (() => {
+          const filteredBookings = bookings.filter((b) => {
+            const matchesSearch = b.excursionTitle.toLowerCase().includes(caravanSearch.toLowerCase()) ||
+                                  b.travelerName.toLowerCase().includes(caravanSearch.toLowerCase()) ||
+                                  b.travelerEmail.toLowerCase().includes(caravanSearch.toLowerCase()) ||
+                                  b.id.toLowerCase().includes(caravanSearch.toLowerCase());
+            const matchesStatus = caravanStatusFilter === 'all' || b.status === caravanStatusFilter;
+            return matchesSearch && matchesStatus;
+          });
+
+          return (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h3 className="font-serif text-xl font-bold text-[#e6c280] uppercase tracking-wider">
+                    Active Caravan Ledger Registry
+                  </h3>
+                  <p className="text-stone-400 text-xs">Manage active customer registrations and high priest sealing approvals.</p>
+                </div>
+
+                {/* Status tally legend */}
+                <div className="flex gap-2 text-[9px] font-mono uppercase tracking-widest">
+                  <span className="bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-full px-2 py-0.5">
+                    {bookings.filter(b => b.status === 'Pending Oracle Approval').length} Pending
+                  </span>
+                  <span className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-full px-2 py-0.5">
+                    {bookings.filter(b => b.status === 'Confirmed by High Priest').length} Confirmed
+                  </span>
+                  <span className="bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded-full px-2 py-0.5">
+                    {bookings.filter(b => b.status === 'Completed').length} Completed
+                  </span>
+                </div>
               </div>
 
-              {/* Status tally legend */}
-              <div className="flex gap-2 text-[9px] font-mono uppercase tracking-widest">
-                <span className="bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-full px-2 py-0.5">
-                  {bookings.filter(b => b.status === 'Pending Oracle Approval').length} Pending
-                </span>
-                <span className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-full px-2 py-0.5">
-                  {bookings.filter(b => b.status === 'Confirmed by High Priest').length} Confirmed
-                </span>
-                <span className="bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded-full px-2 py-0.5">
-                  {bookings.filter(b => b.status === 'Completed').length} Completed
-                </span>
-              </div>
-            </div>
+              {/* Search and Filters for Caravans */}
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 bg-[#14100c] p-4 rounded-xl border border-stone-850">
+                <div className="sm:col-span-8 relative">
+                  <Search className="absolute left-3 top-3 w-4 h-4 text-stone-500" />
+                  <input
+                    type="text"
+                    placeholder="Search Caravans by traveler name, email, excursion title, or ledger entry number..."
+                    value={caravanSearch}
+                    onChange={(e) => setCaravanSearch(e.target.value)}
+                    className="w-full bg-[#1c1611] border border-stone-800 rounded-lg py-2 pl-9 pr-4 text-xs text-stone-200 focus:outline-none focus:border-[#d4af37]/65"
+                  />
+                </div>
 
-            {/* Search and Filters for Caravans */}
-            <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 bg-[#14100c] p-4 rounded-xl border border-stone-850">
-              <div className="sm:col-span-8 relative">
-                <Search className="absolute left-3 top-3 w-4 h-4 text-stone-500" />
-                <input
-                  type="text"
-                  placeholder="Search Caravans by traveler name, email, excursion title, or ledger entry number..."
-                  value={caravanSearch}
-                  onChange={(e) => setCaravanSearch(e.target.value)}
-                  className="w-full bg-[#1c1611] border border-stone-800 rounded-lg py-2 pl-9 pr-4 text-xs text-stone-200 focus:outline-none focus:border-[#d4af37]/65"
-                />
-              </div>
-
-              {/* Status filter */}
-              <div className="sm:col-span-4">
-                <select
-                  value={caravanStatusFilter}
-                  onChange={(e) => setCaravanStatusFilter(e.target.value)}
-                  className="w-full bg-[#1c1611] border border-stone-800 rounded-lg p-2 text-xs text-stone-300 focus:outline-none focus:border-[#d4af37]/60"
-                >
-                  <option value="all">All Caravan Statuses</option>
-                  <option value="Pending Oracle Approval">Pending Oracle Approval</option>
-                  <option value="Confirmed by High Priest">Confirmed by High Priest</option>
-                  <option value="Completed">Completed</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Bookings Ledger list */}
-            <div className="space-y-4">
-              {(() => {
-                const filteredBookings = bookings.filter((b) => {
-                  const matchesSearch = b.excursionTitle.toLowerCase().includes(caravanSearch.toLowerCase()) ||
-                                        b.travelerName.toLowerCase().includes(caravanSearch.toLowerCase()) ||
-                                        b.travelerEmail.toLowerCase().includes(caravanSearch.toLowerCase()) ||
-                                        b.id.toLowerCase().includes(caravanSearch.toLowerCase());
-                  const matchesStatus = caravanStatusFilter === 'all' || b.status === caravanStatusFilter;
-                  return matchesSearch && matchesStatus;
-                });
-
-                if (filteredBookings.length === 0) {
-                  return (
-                    <div className="bg-[#18120d] border border-stone-850 rounded-2xl p-12 text-center text-stone-500 text-sm">
-                      <p className="italic">No bookings matched your criteria inside the caravan ledger.</p>
-                      <p className="text-xs text-[#d4af37]/60 mt-1">Try adjusting your search terms or status filter above!</p>
-                    </div>
-                  );
-                }
-
-                return filteredBookings.map((booking) => (
-                  <div
-                    key={booking.id}
-                    className="bg-[#18120d] border border-stone-800 rounded-2xl p-5 space-y-4 relative overflow-hidden"
+                {/* Status filter */}
+                <div className="sm:col-span-4">
+                  <select
+                    value={caravanStatusFilter}
+                    onChange={(e) => setCaravanStatusFilter(e.target.value)}
+                    className="w-full bg-[#1c1611] border border-stone-800 rounded-lg p-2 text-xs text-stone-300 focus:outline-none focus:border-[#d4af37]/60"
                   >
-                    {/* Visual left indicator line based on booking status */}
-                    <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${
-                      booking.status === 'Pending Oracle Approval'
-                        ? 'bg-amber-500'
-                        : booking.status === 'Confirmed by High Priest'
-                        ? 'bg-emerald-500'
-                        : 'bg-purple-500'
-                    }`}></div>
+                    <option value="all">All Caravan Statuses</option>
+                    <option value="Pending Oracle Approval">Pending Oracle Approval</option>
+                    <option value="Confirmed by High Priest">Confirmed by High Priest</option>
+                    <option value="Completed">Completed</option>
+                  </select>
+                </div>
+              </div>
 
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pl-2">
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-[9px] font-mono text-stone-500 uppercase tracking-widest">Ledger Entry #{booking.id.slice(-6)}</span>
-                          <span className="text-stone-600 text-xs">•</span>
-                          <span className="text-xs text-stone-400 font-mono">{booking.createdAt ? new Date(booking.createdAt).toLocaleDateString() : 'N/A'}</span>
-                        </div>
-                        <h4 className="font-serif text-[#e6c280] font-black text-base uppercase mt-1">
-                          {booking.excursionTitle}
-                        </h4>
-                      </div>
-
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {/* Approve buttons */}
-                        {booking.status === 'Pending Oracle Approval' && (
-                          <button
-                            onClick={() => {
-                              onUpdateBookingStatus(booking.id, 'Confirmed by High Priest');
-                              triggerNotification(`Caravan #${booking.id.slice(-4)} sealed & confirmed!`);
-                            }}
-                            className="bg-emerald-500 hover:bg-emerald-400 text-[#140f0a] text-[10px] font-mono font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1"
-                          >
-                            <Check className="w-3.5 h-3.5" /> Seal & Approve
-                          </button>
-                        )}
-
-                        {booking.status === 'Confirmed by High Priest' && (
-                          <button
-                            onClick={() => {
-                              onUpdateBookingStatus(booking.id, 'Completed');
-                              triggerNotification("Caravan marked Completed! Scribes shall thank the traveler.");
-                            }}
-                            className="bg-purple-600 hover:bg-purple-500 text-white text-[10px] font-mono font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1"
-                          >
-                            <CheckCircle className="w-3.5 h-3.5" /> Mark Completed
-                          </button>
-                        )}
-
-                        {/* Status chip */}
-                        <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-widest border ${
-                          booking.status === 'Pending Oracle Approval'
-                            ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
-                            : booking.status === 'Confirmed by High Priest'
-                            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-                            : 'bg-purple-500/10 border-purple-500/30 text-purple-400'
-                        }`}>
-                          {booking.status}
-                        </span>
-
-                        {/* Revoke button */}
-                        <button
-                          onClick={() => {
-                            if (window.confirm("Banish this booking request from the sacred ledger?")) {
-                              onCancelBooking(booking.id);
-                              triggerNotification("Booking petition deleted from ledger");
-                            }
-                          }}
-                          className="text-stone-500 hover:text-red-400 p-1.5 rounded-lg hover:bg-stone-900 transition-colors cursor-pointer"
-                          title="Revoke Petition"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Booking Details Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-[#14100c] rounded-xl p-3.5 text-xs text-stone-300 font-sans pl-2">
-                      <div>
-                        <span className="text-[10px] font-mono text-stone-500 uppercase tracking-wider block">Traveler Noble:</span>
-                        <span className="text-stone-100 font-semibold">{booking.travelerName}</span>
-                      </div>
-                      <div>
-                        <span className="text-[10px] font-mono text-stone-500 uppercase tracking-wider block">Messenger Email:</span>
-                        <span className="text-stone-100">{booking.travelerEmail}</span>
-                      </div>
-                      <div>
-                        <span className="text-[10px] font-mono text-stone-500 uppercase tracking-wider block">Passage Date:</span>
-                        <span className="text-stone-100">{booking.date}</span>
-                      </div>
-                      <div>
-                        <span className="text-[10px] font-mono text-stone-500 uppercase tracking-wider block">Caravan Cost Tribute:</span>
-                        <span className="text-[#d4af37] font-mono font-bold">${booking.totalCost} ({booking.numberOfGuests} Guests)</span>
-                      </div>
-                    </div>
-
-                    {booking.specialRequests && (
-                      <div className="bg-[#110d0a] rounded-lg p-3 text-xs italic text-stone-400 border border-stone-900 ml-2">
-                        <strong className="not-italic text-stone-500 font-mono text-[9px] uppercase tracking-wider block mb-0.5">Customer special requests:</strong>
-                        "{booking.specialRequests}"
-                      </div>
-                    )}
+              {/* Bulk Actions Bar */}
+              {filteredBookings.length > 0 && (
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[#18120d] px-5 py-4 rounded-xl border border-[#d4af37]/20 shadow-[inset_0_0_12px_rgba(212,175,55,0.03)]">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="select-all-bookings"
+                      checked={filteredBookings.every(b => selectedBookingIds.includes(b.id))}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          const allIds = filteredBookings.map(b => b.id);
+                          setSelectedBookingIds(allIds);
+                        } else {
+                          setSelectedBookingIds([]);
+                        }
+                      }}
+                      className="w-4 h-4 rounded border-stone-800 bg-[#14100c] text-[#d4af37] focus:ring-0 cursor-pointer accent-[#d4af37]"
+                    />
+                    <label htmlFor="select-all-bookings" className="text-xs font-mono text-stone-300 uppercase tracking-widest cursor-pointer select-none flex items-center gap-1.5">
+                      <span>𓀚</span> Select All Matched ({filteredBookings.length})
+                    </label>
                   </div>
-                ));
-              })()}
-            </div>
-          </motion.div>
-        )}
+
+                  {selectedBookingIds.length > 0 ? (
+                    <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                      <span className="text-[10px] font-mono text-[#d4af37] font-bold bg-[#d4af37]/10 border border-[#d4af37]/35 px-2.5 py-1 rounded-md">
+                        {selectedBookingIds.length} SELECTED
+                      </span>
+
+                      <button
+                        onClick={handleBulkApprove}
+                        className="bg-emerald-500 hover:bg-emerald-400 text-[#140f0a] text-[10px] font-mono font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 shadow-md shadow-emerald-500/10"
+                      >
+                        <Check className="w-3.5 h-3.5" /> Approve Selected
+                      </button>
+
+                      <button
+                        onClick={handleBulkCancel}
+                        className="bg-red-950/50 hover:bg-red-900/40 text-red-400 border border-red-500/20 text-[10px] font-mono font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> Cancel Selected
+                      </button>
+
+                      <button
+                        onClick={() => setSelectedBookingIds([])}
+                        className="text-stone-400 hover:text-stone-200 text-[10px] font-mono uppercase tracking-widest px-2 py-1.5 rounded transition-all cursor-pointer"
+                      >
+                        Clear Selection
+                      </button>
+                    </div>
+                  ) : (
+                    <span className="text-[10px] font-mono text-stone-500 italic uppercase">
+                      Select multiple entries below for bulk actions
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Bookings Ledger list */}
+              <div className="space-y-4">
+                {filteredBookings.length === 0 ? (
+                  <div className="bg-[#18120d] border border-stone-850 rounded-2xl p-12 text-center text-stone-500 text-sm">
+                    <p className="italic">No bookings matched your criteria inside the caravan ledger.</p>
+                    <p className="text-xs text-[#d4af37]/60 mt-1">Try adjusting your search terms or status filter above!</p>
+                  </div>
+                ) : (
+                  filteredBookings.map((booking) => {
+                    const isSelected = selectedBookingIds.includes(booking.id);
+                    return (
+                      <div
+                        key={booking.id}
+                        className={`bg-[#18120d] border rounded-2xl p-5 space-y-4 relative overflow-hidden transition-all duration-300 ${
+                          isSelected 
+                            ? 'border-[#d4af37]/60 shadow-[0_4px_20px_rgba(212,175,55,0.05)] bg-[#211812]' 
+                            : 'border-stone-850 hover:border-stone-750'
+                        }`}
+                      >
+                        {/* Checkbox for individual selection */}
+                        <div className="absolute right-5 top-5 z-20 flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedBookingIds(prev => [...prev, booking.id]);
+                              } else {
+                                setSelectedBookingIds(prev => prev.filter(id => id !== booking.id));
+                              }
+                            }}
+                            className="w-4 h-4 rounded border-stone-800 bg-[#14100c] text-[#d4af37] focus:ring-0 cursor-pointer accent-[#d4af37]"
+                          />
+                        </div>
+
+                        {/* Visual left indicator line based on booking status */}
+                        <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${
+                          booking.status === 'Pending Oracle Approval'
+                            ? 'bg-amber-500'
+                            : booking.status === 'Confirmed by High Priest'
+                            ? 'bg-emerald-500'
+                            : 'bg-purple-500'
+                        }`}></div>
+
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pl-2 pr-8">
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-[9px] font-mono text-stone-500 uppercase tracking-widest">Ledger Entry #{booking.id.slice(-6)}</span>
+                              <span className="text-stone-600 text-xs">•</span>
+                              <span className="text-xs text-stone-400 font-mono">{booking.createdAt ? new Date(booking.createdAt).toLocaleDateString() : 'N/A'}</span>
+                            </div>
+                            <h4 className="font-serif text-[#e6c280] font-black text-base uppercase mt-1">
+                              {booking.excursionTitle}
+                            </h4>
+                          </div>
+
+                          <div className="flex items-center gap-2 flex-wrap pr-4">
+                            {/* Approve buttons */}
+                            {booking.status === 'Pending Oracle Approval' && (
+                              <button
+                                onClick={() => {
+                                  onUpdateBookingStatus(booking.id, 'Confirmed by High Priest');
+                                  triggerNotification(`Caravan #${booking.id.slice(-4)} sealed & confirmed!`);
+                                }}
+                                className="bg-emerald-500 hover:bg-emerald-400 text-[#140f0a] text-[10px] font-mono font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1"
+                              >
+                                <Check className="w-3.5 h-3.5" /> Seal & Approve
+                              </button>
+                            )}
+
+                            {booking.status === 'Confirmed by High Priest' && (
+                              <button
+                                onClick={() => {
+                                  onUpdateBookingStatus(booking.id, 'Completed');
+                                  triggerNotification("Caravan marked Completed! Scribes shall thank the traveler.");
+                                }}
+                                className="bg-purple-600 hover:bg-purple-500 text-white text-[10px] font-mono font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1"
+                              >
+                                <CheckCircle className="w-3.5 h-3.5" /> Mark Completed
+                              </button>
+                            )}
+
+                            {/* Status chip */}
+                            <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-widest border ${
+                              booking.status === 'Pending Oracle Approval'
+                                ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                                : booking.status === 'Confirmed by High Priest'
+                                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                                : 'bg-purple-500/10 border-purple-500/30 text-purple-400'
+                            }`}>
+                              {booking.status}
+                            </span>
+
+                            {/* Revoke button */}
+                            <button
+                              onClick={() => {
+                                if (window.confirm("Banish this booking request from the sacred ledger?")) {
+                                  onCancelBooking(booking.id);
+                                  triggerNotification("Booking petition deleted from ledger");
+                                }
+                              }}
+                              className="text-stone-500 hover:text-red-400 p-1.5 rounded-lg hover:bg-stone-900 transition-colors cursor-pointer"
+                              title="Revoke Petition"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Booking Details Grid */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-[#14100c] rounded-xl p-3.5 text-xs text-stone-300 font-sans pl-2">
+                          <div>
+                            <span className="text-[10px] font-mono text-stone-500 uppercase tracking-wider block">Traveler Noble:</span>
+                            <span className="text-stone-100 font-semibold">{booking.travelerName}</span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] font-mono text-stone-500 uppercase tracking-wider block">Messenger Email:</span>
+                            <span className="text-stone-100">{booking.travelerEmail}</span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] font-mono text-stone-500 uppercase tracking-wider block">Passage Date:</span>
+                            <span className="text-stone-100">{booking.date}</span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] font-mono text-stone-500 uppercase tracking-wider block">Caravan Cost Tribute:</span>
+                            <span className="text-[#d4af37] font-mono font-bold">${booking.totalCost} ({booking.numberOfGuests} Guests)</span>
+                          </div>
+                        </div>
+
+                        {booking.specialRequests && (
+                          <div className="bg-[#110d0a] rounded-lg p-3 text-xs italic text-stone-400 border border-stone-900 ml-2">
+                            <strong className="not-italic text-stone-500 font-mono text-[9px] uppercase tracking-wider block mb-0.5">Customer special requests:</strong>
+                            "{booking.specialRequests}"
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </motion.div>
+          );
+        })()}
 
         {/* TAB 3: TRAVELER CRM & NOBLE RELATIONSHIPS */}
         {activeTab === 'nobles' && (
@@ -1699,9 +1819,9 @@ export default function AdminDashboard({
           >
             <div>
               <h3 className="font-serif text-xl font-bold text-[#e6c280] uppercase tracking-wider">
-                𓂀 Oracle Sennedjem Chat Lead Captures
+                𓂀 AI Chat Lead Captures
               </h3>
-              <p className="text-stone-400 text-xs">Observe live travelers consulting the Royal Oracle to proactively design specialized follow-up offerings.</p>
+              <p className="text-stone-400 text-xs">Observe live travelers consulting the AI Assistant to proactively design specialized follow-up offerings.</p>
             </div>
 
             <div className="space-y-4">

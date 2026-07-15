@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Compass, HelpCircle, FileText, Menu, X, Sparkles, Image, MessageSquare, ShieldAlert, Award } from 'lucide-react';
+import { Compass, HelpCircle, FileText, Menu, X, Sparkles, Image, MessageSquare, ShieldAlert, Award, Sun, Moon } from 'lucide-react';
 
 interface MobileBottomNavProps {
   scrollToSection: (id: string) => void;
   isAdminMode: boolean;
   setIsAdminMode: (mode: boolean) => void;
+  theme: 'desert' | 'nile';
+  setTheme: (theme: 'desert' | 'nile') => void;
 }
 
-export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdminMode }: MobileBottomNavProps) {
+export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdminMode, theme, setTheme }: MobileBottomNavProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const handleNavClick = (targetId: string) => {
@@ -172,6 +174,26 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
                   <span className="text-[9px] font-sans text-stone-500">View trip statuses & details</span>
                 </button>
 
+              </div>
+
+              {/* Theme Toggle (Mobile Drawer) */}
+              <div className="pt-2">
+                <button
+                  onClick={() => setTheme(theme === 'desert' ? 'nile' : 'desert')}
+                  className="w-full py-3.5 px-4 rounded-xl border font-mono text-xs uppercase tracking-widest font-bold transition-all duration-300 cursor-pointer flex items-center justify-center gap-2 bg-[#241a10]/60 text-[#e6c280] border-[#d4af37]/35 hover:border-[#d4af37]"
+                >
+                  {theme === 'desert' ? (
+                    <>
+                      <Sun className="w-4 h-4 text-amber-400" />
+                      <span>Desert Sun Theme</span>
+                    </>
+                  ) : (
+                    <>
+                      <Moon className="w-4 h-4 text-sky-400" />
+                      <span>Nile Midnight Theme</span>
+                    </>
+                  )}
+                </button>
               </div>
 
               {/* Admin Portal Toggle (High Priest CRM console) */}
