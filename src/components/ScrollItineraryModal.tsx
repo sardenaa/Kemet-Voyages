@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { X, Printer, Calendar, Users, Compass, Shield, Award, MapPin } from 'lucide-react';
 import { Booking, Excursion } from '../types';
+import BookingQRCode from './BookingQRCode';
 
 interface ScrollItineraryModalProps {
   booking: Booking;
@@ -182,6 +183,16 @@ export default function ScrollItineraryModal({ booking, excursion, onClose }: Sc
                     </div>
                   </div>
 
+                </div>
+
+                {/* Stylized QR Code Amulet for Outpost Check-in (Prints beautifully on Papyrus Scroll) */}
+                <div className="w-full pt-1">
+                  <BookingQRCode
+                    bookingId={booking.id}
+                    travelerName={booking.travelerName}
+                    excursionTitle={booking.excursionTitle}
+                    lightTheme={true}
+                  />
                 </div>
 
                 {/* Excursion Particulars (Highlights & Lore if available) */}

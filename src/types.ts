@@ -25,6 +25,7 @@ export interface Booking {
   totalCost: number;
   specialRequests?: string;
   status: 'Pending Oracle Approval' | 'Confirmed by High Priest' | 'Completed';
+  checkedIn?: boolean;
   createdAt: string;
 }
 

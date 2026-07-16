@@ -328,14 +328,163 @@ const HIEROGLYPHS_MAP: Record<string, HieroglyphData> = {
   }
 };
 
+const HIEROGLYPHS_RAW_PATHS: Record<string, string> = {
+  A: `<path d="M20,65 C25,50 35,40 50,40 C65,40 75,50 80,65 M50,40 L50,15 L45,22 M50,15 L55,22 M30,53 L30,80 M70,53 L70,80" stroke-width="3" fill="none" stroke="#d4af37" /><circle cx="50" cy="30" r="4" fill="#d4af37" /><path d="M40,40 C35,43 30,50 30,53" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M60,40 C65,43 70,50 70,53" stroke-width="3" fill="none" stroke="#d4af37" />`,
+  B: `<path d="M35,20 L35,65 C35,75 40,80 55,80 L75,80" stroke-linecap="round" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M55,80 C65,80 75,75 75,65" stroke-linecap="round" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M35,35 L45,35 M35,50 L45,50" stroke-width="3" fill="none" stroke="#d4af37" />`,
+  C: `<path d="M20,40 L80,40 C80,65 65,80 50,80 C35,80 20,65 20,40 Z" stroke-linejoin="round" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M20,40 L50,80 M80,40 L50,80 M50,40 L50,80" stroke-dasharray="3,3" stroke-width="3" fill="none" stroke="#d4af37" />`,
+  D: `<path d="M25,60 L50,60 C55,60 75,55 80,50 C85,45 80,35 70,40 L60,45" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M50,43 C55,30 50,20 42,20 C35,20 38,35 43,43" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M43,43 C47,25 42,15 35,15 C28,15 30,30 35,43" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M35,43 C38,28 32,18 25,18 C18,18 20,32 27,45" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M27,45 C20,35 15,25 10,30 C5,35 12,45 22,50" stroke-width="3" fill="none" stroke="#d4af37" />`,
+  E: `<path d="M50,85 L50,15" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M50,15 C40,25 40,45 50,55" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M50,25 C42,32 42,48 50,55" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M50,75 L65,85 M50,65 L35,75" stroke-width="3" fill="none" stroke="#d4af37" />`,
+  F: `<path d="M15,65 C25,65 30,55 45,55 C60,55 65,65 80,65 C90,65 95,50 85,45 C75,40 65,48 60,48" stroke-linecap="round" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M85,45 L88,35 M85,45 L78,38" stroke-width="3" fill="none" stroke="#d4af37" />`,
+  G: `<path d="M30,80 L70,80" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M50,80 L50,45" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M35,45 L65,45 C75,45 75,20 65,20 L35,20 C25,20 25,45 35,45 Z" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M35,20 L40,10 L60,10 L65,20" stroke-width="3" fill="none" stroke="#d4af37" />`,
+  H: `<rect x="25" y="25" width="50" height="50" rx="5" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M40,75 L40,60 L60,60 L60,75" stroke-width="3" fill="none" stroke="#d4af37" /><line x1="25" y1="50" x2="75" y2="50" stroke-width="3" fill="none" stroke="#d4af37" />`,
+  I: `<line x1="40" y1="85" x2="40" y2="15" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M40,15 C30,25 30,45 40,55" stroke-width="3" fill="none" stroke="#d4af37" /><line x1="60" y1="85" x2="60" y2="15" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M60,15 C50,25 50,45 60,55" stroke-width="3" fill="none" stroke="#d4af37" />`,
+  J: `<path d="M30,80 C45,80 50,75 50,60 C50,45 35,40 35,25 C35,15 45,15 55,20 C65,25 70,35 65,50" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M55,20 C58,12 68,12 70,22" stroke-width="3" fill="none" stroke="#d4af37" /><circle cx="53" cy="18" r="2" fill="#d4af37" />`,
+  K: `<path d="M20,45 L80,45 C80,68 65,80 50,80 C35,80 20,68 20,45 Z" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M80,45 C88,45 88,30 80,30 L70,30" stroke-width="3" fill="none" stroke="#d4af37" />`,
+  L: `<path d="M20,70 L80,70" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M20,70 C15,65 15,50 25,50 L55,50 C65,50 70,40 70,30 C75,20 85,25 80,45 C78,55 75,70 70,70" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M72,30 C75,25 80,25 82,32" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M20,70 C15,75 10,70 12,65" stroke-width="3" fill="none" stroke="#d4af37" />`,
+  M: `<path d="M15,40 L25,30 L35,40 L45,30 L55,40 L65,30 L75,40 L85,30" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M15,60 L25,50 L35,60 L45,50 L55,60 L65,50 L75,60 L85,50" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" fill="none" stroke="#d4af37" />`,
+  N: `<path d="M15,50 L22,40 L29,50 L36,40 L43,50 L50,40 L57,50 L64,40 L71,50 L78,40 L85,50" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" fill="none" stroke="#d4af37" />`,
+  O: `<circle cx="50" cy="45" r="22" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M35,60 L25,80 M65,60 L75,80" stroke-width="3" fill="none" stroke="#d4af37" /><line x1="25" y1="80" x2="75" y2="80" stroke-width="3" fill="none" stroke="#d4af37" />`,
+  P: `<rect x="25" y="25" width="50" height="50" rx="4" stroke-width="3" fill="none" stroke="#d4af37" /><line x1="37" y1="25" x2="37" y2="75" stroke-width="3" fill="none" stroke="#d4af37" /><line x1="50" y1="25" x2="50" y2="75" stroke-width="3" fill="none" stroke="#d4af37" /><line x1="62" y1="25" x2="62" y2="75" stroke-width="3" fill="none" stroke="#d4af37" /><line x1="25" y1="50" x2="75" y2="50" stroke-width="3" fill="none" stroke="#d4af37" />`,
+  Q: `<path d="M15,80 L45,40 C50,35 55,35 60,40 L85,80" stroke-linejoin="round" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M30,60 C40,55 50,62 60,57" stroke-width="3" fill="none" stroke="#d4af37" />`,
+  R: `<path d="M20,50 C35,30 65,30 80,50 C65,70 35,70 20,50 Z" stroke-linejoin="round" stroke-width="3" fill="none" stroke="#d4af37" /><line x1="20" y1="50" x2="80" y2="50" stroke-width="3" fill="none" stroke="#d4af37" />`,
+  S: `<path d="M35,20 L65,20 C65,20 65,55 50,60 C35,65 35,80 50,80 L65,80" stroke-linecap="round" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M35,20 L35,50" stroke-width="3" fill="none" stroke="#d4af37" />`,
+  T: `<path d="M20,70 L80,70 C80,70 80,30 50,30 C20,30 20,70 20,70 Z" stroke-linejoin="round" stroke-width="3" fill="none" stroke="#d4af37" /><line x1="30" y1="50" x2="70" y2="50" stroke-width="3" fill="none" stroke="#d4af37" />`,
+  U: `<circle cx="65" cy="35" r="12" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M65,47 C55,50 45,45 35,55 C25,65 25,80 45,80 C65,80 77,65 77,47" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M75,32 L83,30" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M35,70 L30,80 M45,78 L45,85 M55,75 L60,85" stroke-width="3" fill="none" stroke="#d4af37" />`,
+  V: `<path d="M15,55 C25,55 35,65 50,65 C65,65 75,55 85,55" stroke-linecap="round" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M15,55 L10,48 M15,55 L22,48" stroke-linecap="round" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M85,55 C90,50 90,40 82,35 C75,30 70,40 65,42" stroke-width="3" fill="none" stroke="#d4af37" />`,
+  W: `<circle cx="60" cy="30" r="10" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M60,40 C50,43 40,40 30,50 C20,60 20,75 40,75 C60,75 70,60 70,40" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M30,65 L25,75 M40,73 L40,80 M50,70 L55,80" stroke-width="3" fill="none" stroke="#d4af37" />`,
+  X: `<line x1="25" y1="25" x2="75" y2="75" stroke-linecap="round" stroke-width="3" fill="none" stroke="#d4af37" /><line x1="75" y1="25" x2="25" y2="75" stroke-linecap="round" stroke-width="3" fill="none" stroke="#d4af37" /><circle cx="25" cy="25" r="5" fill="#d4af37" /><circle cx="75" cy="25" r="5" fill="#d4af37" />`,
+  Y: `<path d="M50,85 C50,85 50,40 50,15" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M50,15 C65,22 70,50 60,85" stroke-width="3" fill="none" stroke="#d4af37" /><path d="M50,30 L60,35 M50,45 L58,50 M50,60 L56,65" stroke-width="3" fill="none" stroke="#d4af37" />`,
+  Z: `<line x1="15" y1="50" x2="85" y2="50" stroke-linecap="round" stroke-width="3" fill="none" stroke="#d4af37" /><line x1="35" y1="35" x2="35" y2="65" stroke-linecap="round" stroke-width="3" fill="none" stroke="#d4af37" /><line x1="65" y1="35" x2="65" y2="65" stroke-linecap="round" stroke-width="3" fill="none" stroke="#d4af37" /><circle cx="50" cy="50" r="4" fill="#d4af37" />`
+};
+
+interface SavedCartouche {
+  id: string;
+  name: string;
+  date: string;
+}
+
 export default function CartoucheGenerator() {
   const [name, setName] = useState<string>("KEMET");
   const [activeSymbol, setActiveSymbol] = useState<HieroglyphData | null>(null);
+  const [isSaved, setIsSaved] = useState<boolean>(false);
+  const [savedCartouches, setSavedCartouches] = useState<SavedCartouche[]>(() => {
+    const local = localStorage.getItem('kemet_saved_cartouches');
+    if (local) {
+      try {
+        return JSON.parse(local);
+      } catch (e) {
+        return [];
+      }
+    }
+    return [];
+  });
 
   const cleanName = name.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 8);
 
+  const generateCartoucheSVG = (nameString: string) => {
+    const chars = nameString.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 8).split('');
+    const N = chars.length;
+    if (N === 0) return "";
+    
+    const itemHeight = 70;
+    const gap = 15;
+    const topPadding = 90;
+    const bottomPadding = 90;
+    const H = topPadding + N * (itemHeight + gap) - gap + bottomPadding;
+    
+    let glyphsMarkup = "";
+    chars.forEach((char, index) => {
+      const rawPath = HIEROGLYPHS_RAW_PATHS[char] || "";
+      const yOffset = topPadding + index * (itemHeight + gap);
+      glyphsMarkup += `
+      <!-- Letter ${char} -->
+      <g transform="translate(70, ${yOffset})">
+        <g transform="scale(1)">
+          ${rawPath}
+        </g>
+        <text x="50" y="88" fill="#a8a29e" font-family="'Courier New', monospace" font-size="11" text-anchor="middle" font-weight="bold">${char}</text>
+      </g>`;
+    });
+
+    return `<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 ${H}" width="240" height="${H}">
+  <defs>
+    <radialGradient id="bg-grad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2d2116"/>
+      <stop offset="100%" stop-color="#14100c"/>
+    </radialGradient>
+  </defs>
+  
+  <!-- Solid Dark Background -->
+  <rect width="240" height="${H}" fill="#14100c"/>
+  <rect x="5" y="5" width="230" height="${H - 10}" fill="url(#bg-grad)" stroke="#d4af37" stroke-width="1" opacity="0.3"/>
+  
+  <!-- Outer Double Golden Border (Cartouche loop) -->
+  <rect x="40" y="30" width="160" height="${H - 75}" rx="80" fill="none" stroke="#d4af37" stroke-width="6"/>
+  <rect x="46" y="36" width="148" height="${H - 87}" rx="74" fill="none" stroke="#d4af37" stroke-width="1.5" stroke-dasharray="none"/>
+  
+  <!-- Loop Top Detail -->
+  <rect x="112" y="15" width="16" height="4" fill="#d4af37" rx="1"/>
+
+  <!-- Cartouche Horizontal Royal Base Bar -->
+  <rect x="45" y="${H - 52}" width="150" height="12" fill="#d4af37" rx="2"/>
+  <rect x="65" y="${H - 36}" width="110" height="4" fill="#d4af37" rx="1"/>
+
+  <!-- Hieroglyphics list -->
+  ${glyphsMarkup}
+  
+  <!-- Royal Legend Watermark text -->
+  <text x="120" y="${H - 12}" fill="#b08e23" font-family="'Georgia', serif" font-size="10" letter-spacing="2" text-anchor="middle" opacity="0.8">𓍹 ROYAL DECREE 𓍺</text>
+</svg>`;
+  };
+
   const triggerDownload = () => {
-    alert("Please take a screenshot of your cartouche to save it!");
+    if (!cleanName) return;
+
+    // 1. Generate and download SVG file
+    const svgContent = generateCartoucheSVG(cleanName);
+    if (!svgContent) return;
+    
+    const blob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `kemet_cartouche_${cleanName}.svg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    // 2. Save to local storage list
+    const isDuplicate = savedCartouches.some(sc => sc.name === cleanName);
+    if (!isDuplicate) {
+      const newSavedItem: SavedCartouche = {
+        id: `cart-${Date.now()}`,
+        name: cleanName,
+        date: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+      };
+      const updated = [newSavedItem, ...savedCartouches];
+      setSavedCartouches(updated);
+      localStorage.setItem('kemet_saved_cartouches', JSON.stringify(updated));
+    }
+
+    // 3. Trigger button feedback
+    setIsSaved(true);
+    setTimeout(() => {
+      setIsSaved(false);
+    }, 2500);
+  };
+
+  const loadSavedCartouche = (savedName: string) => {
+    setName(savedName);
+  };
+
+  const deleteSavedCartouche = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    const updated = savedCartouches.filter(sc => sc.id !== id);
+    setSavedCartouches(updated);
+    localStorage.setItem('kemet_saved_cartouches', JSON.stringify(updated));
   };
 
   return (
@@ -377,7 +526,7 @@ export default function CartoucheGenerator() {
               {name && (
                 <button
                   onClick={() => setName("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-[#d4af37] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-[#d4af37] transition-colors cursor-pointer"
                 >
                   <RefreshCw className="w-4 h-4" />
                 </button>
@@ -422,13 +571,28 @@ export default function CartoucheGenerator() {
             </AnimatePresence>
           </div>
 
+          {/* Download/Save decree button */}
           <button
             onClick={triggerDownload}
-            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#d4af37]/20 to-[#9a7b1c]/20 hover:from-[#d4af37]/30 hover:to-[#9a7b1c]/30 border border-[#d4af37]/50 text-[#f3e5c8] rounded-xl py-2.5 text-sm font-semibold transition-all shadow-md active:scale-95 cursor-pointer"
+            disabled={!cleanName}
+            className={`w-full flex items-center justify-center gap-2 bg-gradient-to-r ${
+              isSaved
+                ? 'from-emerald-500/20 to-teal-600/20 border-emerald-500 text-emerald-400 font-bold shadow-[0_0_15px_rgba(16,185,129,0.15)]'
+                : 'from-[#d4af37]/20 to-[#9a7b1c]/20 hover:from-[#d4af37]/30 hover:to-[#9a7b1c]/30 border-[#d4af37]/50 text-[#f3e5c8]'
+            } border rounded-xl py-2.5 text-sm font-semibold transition-all shadow-md active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
             id="download-decree-btn"
           >
-            <Download className="w-4 h-4 text-[#d4af37]" />
-            Save Cartouche
+            {isSaved ? (
+              <>
+                <span className="font-serif text-[#d4af37] text-lg">𓋹</span>
+                <span className="font-mono uppercase text-xs font-bold tracking-wider">Cartouche Saved Successfully!</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4 text-[#d4af37]" />
+                <span>Save &amp; Download Cartouche</span>
+              </>
+            )}
           </button>
         </div>
 
@@ -489,6 +653,43 @@ export default function CartoucheGenerator() {
           </div>
         </div>
       </div>
+
+      {/* Persistent Archive Gallery (Saved Cartouches) */}
+      {savedCartouches.length > 0 && (
+        <div className="mt-8 pt-6 border-t border-[#d4af37]/15">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-sm text-[#d4af37]">𓍼</span>
+            <h4 className="font-serif text-sm uppercase tracking-wider text-[#e6c280]">
+              Royal Archives of Inscribed Seals ({savedCartouches.length})
+            </h4>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {savedCartouches.map((item) => (
+              <motion.div
+                key={item.id}
+                onClick={() => loadSavedCartouche(item.name)}
+                whileHover={{ scale: 1.02 }}
+                className="bg-[#201a14]/60 border border-stone-800 hover:border-[#d4af37]/40 px-3 py-2.5 rounded-lg cursor-pointer transition-all flex flex-col justify-between group relative overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 w-8 h-8 bg-[#d4af37]/5 rounded-full pointer-events-none transition-all group-hover:bg-[#d4af37]/15"></div>
+                <div className="text-stone-300 font-mono text-xs font-bold tracking-wider truncate mb-1">
+                  𓍹 {item.name} 𓍺
+                </div>
+                <div className="flex items-center justify-between mt-1 text-[9px] text-stone-500 font-mono">
+                  <span>{item.date}</span>
+                  <button
+                    onClick={(e) => deleteSavedCartouche(e, item.id)}
+                    className="text-stone-600 hover:text-red-400 p-0.5 rounded cursor-pointer transition-colors"
+                    title="Dissolve seal"
+                  >
+                    ×
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

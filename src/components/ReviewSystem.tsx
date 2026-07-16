@@ -85,9 +85,25 @@ export default function ReviewSystem({ excursionId, onReviewAdded }: ReviewSyste
         return INITIAL_REVIEWS;
       }
     }
-    localStorage.setItem('kemet_reviews', JSON.stringify(INITIAL_REVIEWS));
     return INITIAL_REVIEWS;
   });
+
+  // Load reviews from secure backend database on mount
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const response = await fetch('/api/reviews');
+        if (response.ok) {
+          const data = await response.json();
+          setReviews(data);
+          localStorage.setItem('kemet_reviews', JSON.stringify(data));
+        }
+      } catch (err) {
+        console.error("Failed to load reviews from server:", err);
+      }
+    };
+    fetchReviews();
+  }, []);
 
   // State for adding a review
   const [selectedExcursionId, setSelectedExcursionId] = useState<string>(excursionId || "diving-1");
@@ -109,29 +125,56 @@ export default function ReviewSystem({ excursionId, onReviewAdded }: ReviewSyste
   }, [excursionId]);
 
   // Handle adding review
-  const handleReviewSubmit = (e: React.FormEvent) => {
+  const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reviewAuthor.trim() || !reviewComment.trim()) return;
 
     const chosenAvatarObj = AVATARS.find(av => av.value === selectedAvatar);
     const avatarFull = `${selectedAvatar} ${chosenAvatarObj?.label.split(' ').slice(1).join(' ') || 'the Noble'}`;
 
-    const newReview: Review = {
-      id: `rev-${Date.now()}`,
+    const newReview = {
       excursionId: selectedExcursionId,
       author: reviewAuthor,
       avatar: avatarFull,
       rating: reviewRating,
-      comment: reviewComment,
-      date: new Date().toISOString().split('T')[0]
+      comment: reviewComment
     };
 
-    const updatedReviews = [newReview, ...reviews];
-    setReviews(updatedReviews);
-    localStorage.setItem('kemet_reviews', JSON.stringify(updatedReviews));
-
-    // Update global rating average in excursions if appropriate (we'll save the review, and trigger parent)
-    updateLocalExcursionRating(selectedExcursionId, updatedReviews);
+    try {
+      const response = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newReview)
+      });
+      if (response.ok) {
+        const savedReview = await response.json();
+        const updatedReviews = [savedReview, ...reviews];
+        setReviews(updatedReviews);
+        localStorage.setItem('kemet_reviews', JSON.stringify(updatedReviews));
+        updateLocalExcursionRating(selectedExcursionId, updatedReviews);
+      } else {
+        const fallbackReview: Review = {
+          id: `rev-${Date.now()}`,
+          ...newReview,
+          date: new Date().toISOString().split('T')[0]
+        };
+        const updatedReviews = [fallbackReview, ...reviews];
+        setReviews(updatedReviews);
+        localStorage.setItem('kemet_reviews', JSON.stringify(updatedReviews));
+        updateLocalExcursionRating(selectedExcursionId, updatedReviews);
+      }
+    } catch (err) {
+      console.error("Failed to post review:", err);
+      const fallbackReview: Review = {
+        id: `rev-${Date.now()}`,
+        ...newReview,
+        date: new Date().toISOString().split('T')[0]
+      };
+      const updatedReviews = [fallbackReview, ...reviews];
+      setReviews(updatedReviews);
+      localStorage.setItem('kemet_reviews', JSON.stringify(updatedReviews));
+      updateLocalExcursionRating(selectedExcursionId, updatedReviews);
+    }
 
     setShowSuccess(true);
     setReviewAuthor("");

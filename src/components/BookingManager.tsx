@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { FileText, Clock, MessageSquare, CheckCircle, Sparkles, Printer } from 'lucide-react';
+import { FileText, Clock, MessageSquare, CheckCircle, Sparkles, Printer, QrCode, Ticket, Camera } from 'lucide-react';
 import { Booking, Excursion } from '../types';
 import ReviewSystem from './ReviewSystem';
 import ScrollItineraryModal from './ScrollItineraryModal';
+import BookingQRCode from './BookingQRCode';
+import DetailedTicketCard from './DetailedTicketCard';
+import ExcursionFeedbackForm from './ExcursionFeedbackForm';
+import TicketScanner from './TicketScanner';
 
 const STATUS_CONFIG = {
   'Pending Oracle Approval': {
@@ -33,22 +37,58 @@ interface BookingManagerProps {
   bookings: Booking[];
   excursions?: Excursion[];
   onCancelBooking?: (id: string) => void;
+  onVerifyCheckIn?: (id: string) => void;
 }
 
-export default function BookingManager({ bookings, excursions, onCancelBooking }: BookingManagerProps) {
+export default function BookingManager({ bookings, excursions, onCancelBooking, onVerifyCheckIn }: BookingManagerProps) {
   const [selectedScrollBooking, setSelectedScrollBooking] = useState<Booking | null>(null);
+  const [expandedQrId, setExpandedQrId] = useState<string | null>(null);
+  const [expandedTicketId, setExpandedTicketId] = useState<string | null>(null);
+  const [expandedFeedbackId, setExpandedFeedbackId] = useState<string | null>(null);
+  const [isScannerOpen, setIsScannerOpen] = useState<boolean>(false);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8" id="ledger-manager-grid">
       
       {/* LEFT COLUMN: Sacred Booking Ledger (Pending Statuses) */}
       <div className="lg:col-span-6 space-y-6" id="bookings-ledger-col">
-        <div className="flex items-center gap-2 border-b border-[#d4af37]/20 pb-3">
-          <FileText className="text-[#d4af37] w-5 h-5" />
-          <h3 className="font-serif text-xl font-bold text-[#e6c280] uppercase tracking-wider">
-            Your Booked Expeditions
-          </h3>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-[#d4af37]/20 pb-3">
+          <div className="flex items-center gap-2">
+            <FileText className="text-[#d4af37] w-5 h-5" />
+            <h3 className="font-serif text-xl font-bold text-[#e6c280] uppercase tracking-wider">
+              Your Booked Expeditions
+            </h3>
+          </div>
+          <button
+            onClick={() => setIsScannerOpen(!isScannerOpen)}
+            className={`flex items-center justify-center gap-1.5 px-3 py-1.5 border rounded-lg text-xs font-mono uppercase tracking-wider transition-all cursor-pointer shadow-sm active:scale-95 ${
+              isScannerOpen
+                ? 'bg-red-500/10 border-red-500/40 text-red-400'
+                : 'bg-[#d4af37]/10 hover:bg-[#d4af37]/25 border-[#d4af37]/40 text-[#fbf5e6]'
+            }`}
+            title="Open camera to scan ticket QR code"
+          >
+            <Camera className="w-3.5 h-3.5" />
+            <span>{isScannerOpen ? 'Close Scanner' : 'Scan Ticket QR'}</span>
+          </button>
         </div>
+
+        <AnimatePresence>
+          {isScannerOpen && onVerifyCheckIn && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden mb-4"
+            >
+              <TicketScanner
+                bookings={bookings}
+                onVerifyCheckIn={onVerifyCheckIn}
+                onClose={() => setIsScannerOpen(false)}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="space-y-4">
           {bookings.length === 0 ? (
@@ -56,10 +96,23 @@ export default function BookingManager({ bookings, excursions, onCancelBooking }
               𓀞 You haven't booked any trips yet. Browse our tours above to plan your adventure!
             </div>
           ) : (
-            <AnimatePresence>
+             <AnimatePresence mode="popLayout">
               {bookings.map((booking) => {
                 const config = STATUS_CONFIG[booking.status] || STATUS_CONFIG['Pending Oracle Approval'];
                 const StatusIcon = config.icon;
+
+                if (expandedTicketId === booking.id) {
+                  return (
+                    <DetailedTicketCard
+                      key={booking.id}
+                      booking={booking}
+                      excursion={excursions?.find((e) => e.id === booking.excursionId)}
+                      onCollapse={() => setExpandedTicketId(null)}
+                      onCancelBooking={onCancelBooking}
+                      onViewItinerary={(booking.status === 'Confirmed by High Priest' || booking.status === 'Completed') ? () => setSelectedScrollBooking(booking) : undefined}
+                    />
+                  );
+                }
 
                 return (
                   <motion.div
@@ -82,9 +135,16 @@ export default function BookingManager({ bookings, excursions, onCancelBooking }
                         </h4>
                       </div>
 
-                      <div className={`flex items-center gap-1.5 border rounded-full px-2.5 py-0.5 text-[9px] font-mono uppercase tracking-widest ${config.colorClass}`}>
-                        <StatusIcon className="w-3 h-3" />
-                        {config.labelText}
+                      <div className="flex flex-col items-end gap-1.5">
+                        <div className={`flex items-center gap-1.5 border rounded-full px-2.5 py-0.5 text-[9px] font-mono uppercase tracking-widest ${config.colorClass}`}>
+                          <StatusIcon className="w-3 h-3" />
+                          {config.labelText}
+                        </div>
+                        {booking.checkedIn && (
+                          <div className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-full px-2 py-0.5 text-[8px] font-mono uppercase tracking-wider font-bold">
+                            <span className="text-[10px]">𓋹</span> Verified Check-In
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -120,6 +180,44 @@ export default function BookingManager({ bookings, excursions, onCancelBooking }
                       <span className="text-stone-500 italic text-left flex-1 self-center min-w-[120px]">
                         {config.descText}
                       </span>
+
+                      {/* Expand to Ticket Toggle Button */}
+                      <button
+                        onClick={() => setExpandedTicketId(booking.id)}
+                        className="text-[#d4af37] hover:text-[#fbf5e6] px-3 py-1 bg-[#d4af37]/10 hover:bg-[#d4af37]/25 border border-[#d4af37]/35 rounded-md transition-all cursor-pointer flex items-center gap-1.5 font-bold text-[10px] uppercase tracking-wider"
+                        title="Expand to a detailed ticket card with QR code"
+                      >
+                        <Ticket className="w-3 h-3" />
+                        <span>🎟️ Expand to Ticket</span>
+                      </button>
+
+                      {/* Ticket QR Toggle Button */}
+                      <button
+                        onClick={() => setExpandedQrId(expandedQrId === booking.id ? null : booking.id)}
+                        className={`px-3 py-1 border rounded-md transition-all cursor-pointer flex items-center gap-1.5 font-bold text-[10px] uppercase tracking-wider ${
+                          expandedQrId === booking.id
+                            ? 'bg-[#d4af37] text-[#140f0c] border-[#d4af37]'
+                            : 'text-[#d4af37] border-[#d4af37]/35 hover:bg-[#d4af37]/10 hover:border-[#d4af37]/60'
+                        }`}
+                        title="Display check-in ticket QR"
+                      >
+                        <QrCode className="w-3 h-3" />
+                        <span>{expandedQrId === booking.id ? 'Hide QR Code' : 'Check-In QR'}</span>
+                      </button>
+
+                      {/* Excursion Feedback Toggle Button */}
+                      <button
+                        onClick={() => setExpandedFeedbackId(expandedFeedbackId === booking.id ? null : booking.id)}
+                        className={`px-3 py-1 border rounded-md transition-all cursor-pointer flex items-center gap-1.5 font-bold text-[10px] uppercase tracking-wider ${
+                          expandedFeedbackId === booking.id
+                            ? 'bg-[#d4af37] text-[#140f0c] border-[#d4af37]'
+                            : 'text-[#d4af37] border-[#d4af37]/35 hover:bg-[#d4af37]/10 hover:border-[#d4af37]/60'
+                        }`}
+                        title="Inscribe a testimony or rating for this excursion"
+                      >
+                        <MessageSquare className="w-3 h-3" />
+                        <span>{expandedFeedbackId === booking.id ? 'Hide Feedback Form' : '𓏞 Leave Review'}</span>
+                      </button>
                       
                       {/* Print Scroll Button for Confirmed/Completed Bookings */}
                       {(booking.status === 'Confirmed by High Priest' || booking.status === 'Completed') && (
@@ -141,6 +239,47 @@ export default function BookingManager({ bookings, excursions, onCancelBooking }
                         </button>
                       )}
                     </div>
+
+                    {/* Animated QR Code Section */}
+                    <AnimatePresence>
+                      {expandedQrId === booking.id && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                          animate={{ opacity: 1, height: 'auto', marginTop: 12 }}
+                          exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="overflow-hidden"
+                        >
+                          <BookingQRCode
+                            bookingId={booking.id}
+                            travelerName={booking.travelerName}
+                            excursionTitle={booking.excursionTitle}
+                            lightTheme={false}
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    {/* Animated Feedback Form Section */}
+                    <AnimatePresence>
+                      {expandedFeedbackId === booking.id && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                          animate={{ opacity: 1, height: 'auto', marginTop: 12 }}
+                          exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="overflow-hidden"
+                        >
+                          <ExcursionFeedbackForm
+                            bookingId={booking.id}
+                            excursionId={booking.excursionId}
+                            excursionTitle={booking.excursionTitle}
+                            travelerName={booking.travelerName}
+                            lightTheme={false}
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
                 );
               })}

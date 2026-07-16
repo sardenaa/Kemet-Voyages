@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Compass, Sparkles, ScrollText, CalendarDays, Eye, BookOpen, Anchor, Map, Info, Sun, Moon } from 'lucide-react';
 import { Booking } from './types';
 import CartoucheGenerator from './components/CartoucheGenerator';
@@ -12,6 +12,7 @@ import FooterNewsletter from './components/FooterNewsletter';
 import OraclesWisdomFAQ from './components/OraclesWisdomFAQ';
 import MobileBottomNav from './components/MobileBottomNav';
 import ScarabCelebration from './components/ScarabCelebration';
+import PapyrusScrollCelebration from './components/PapyrusScrollCelebration';
 
 export default function App() {
   const [theme, setTheme] = useState<'desert' | 'nile'>(() => {
@@ -36,8 +37,6 @@ export default function App() {
         // ignore fallback
       }
     }
-    // Store and return default
-    localStorage.setItem('kemet_excursions', JSON.stringify(EXCURSIONS_DATA));
     return EXCURSIONS_DATA;
   });
 
@@ -46,10 +45,47 @@ export default function App() {
   const [isAdminVerified, setIsAdminVerified] = useState<boolean>(() => {
     return localStorage.getItem('kemet_admin_verified') === 'true';
   });
+
+  // Sync with secure server database on mount and when admin status changes
+  useEffect(() => {
+    const syncData = async () => {
+      try {
+        const resEx = await fetch('/api/excursions');
+        if (resEx.ok) {
+          const exData = await resEx.json();
+          setExcursions(exData);
+          localStorage.setItem('kemet_excursions', JSON.stringify(exData));
+          window.dispatchEvent(new Event('kemet_excursions_updated'));
+        }
+      } catch (err) {
+        console.error("Failed to load excursions from sacred server registry:", err);
+      }
+
+      if (isAdminVerified) {
+        const passcode = localStorage.getItem('kemet_admin_passcode') || 'pharaoh';
+        try {
+          const resBk = await fetch('/api/bookings', {
+            headers: {
+              'x-admin-passcode': passcode
+            }
+          });
+          if (resBk.ok) {
+            const bkData = await resBk.json();
+            setBookings(bkData);
+            localStorage.setItem('kemet_bookings', JSON.stringify(bkData));
+          }
+        } catch (err) {
+          console.error("Failed to load bookings ledger from server:", err);
+        }
+      }
+    };
+    syncData();
+  }, [isAdminVerified]);
   const [passcodeInput, setPasscodeInput] = useState<string>('');
   const [passcodeError, setPasscodeError] = useState<string>('');
   const [scrollY, setScrollY] = useState<number>(0);
   const [celebrationCount, setCelebrationCount] = useState<number>(0);
+  const [newlyCreatedBooking, setNewlyCreatedBooking] = useState<Booking | null>(null);
 
   // Scroll listener to update the active stage in progress tracker
   useEffect(() => {
@@ -154,22 +190,98 @@ export default function App() {
   }, [bookings]);
 
   // Handle adding a new booking from the catalog
-  const handleAddBooking = (newBooking: Booking) => {
-    setBookings(prev => [newBooking, ...prev]);
-    triggerCelebration();
+  const handleAddBooking = async (newBooking: Booking) => {
+    try {
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newBooking)
+      });
+      if (response.ok) {
+        const savedBooking = await response.json();
+        setBookings(prev => [savedBooking, ...prev]);
+        setNewlyCreatedBooking(savedBooking);
+        triggerCelebration();
+      } else {
+        const errData = await response.json();
+        console.error(errData.error || "Failed to submit booking to server.");
+        // Fallback to local memory
+        setBookings(prev => [newBooking, ...prev]);
+        setNewlyCreatedBooking(newBooking);
+        triggerCelebration();
+      }
+    } catch (err) {
+      console.error("Error creating booking:", err);
+      setBookings(prev => [newBooking, ...prev]);
+      setNewlyCreatedBooking(newBooking);
+      triggerCelebration();
+    }
   };
 
   // Handle cancelling/revoking a pending booking
-  const handleCancelBooking = (bookingId: string) => {
-    setBookings(prev => prev.filter(b => b.id !== bookingId));
+  const handleCancelBooking = async (bookingId: string) => {
+    const passcode = localStorage.getItem('kemet_admin_passcode') || 'pharaoh';
+    try {
+      const response = await fetch(`/api/bookings/${bookingId}`, {
+        method: 'DELETE',
+        headers: { 'x-admin-passcode': passcode }
+      });
+      if (response.ok) {
+        setBookings(prev => prev.filter(b => b.id !== bookingId));
+      } else {
+        setBookings(prev => prev.filter(b => b.id !== bookingId));
+      }
+    } catch (err) {
+      console.error("Failed to cancel booking on server:", err);
+      setBookings(prev => prev.filter(b => b.id !== bookingId));
+    }
   };
 
-  const handleUpdateBookingStatus = (id: string, status: Booking['status']) => {
-    setBookings(prev => prev.map(b => b.id === id ? { ...b, status } : b));
+  const handleUpdateBookingStatus = async (id: string, status: Booking['status']) => {
+    const passcode = localStorage.getItem('kemet_admin_passcode') || 'pharaoh';
+    try {
+      const response = await fetch(`/api/bookings/${id}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-passcode': passcode
+        },
+        body: JSON.stringify({ status })
+      });
+      if (response.ok) {
+        setBookings(prev => prev.map(b => b.id === id ? { ...b, status } : b));
+      } else {
+        setBookings(prev => prev.map(b => b.id === id ? { ...b, status } : b));
+      }
+    } catch (err) {
+      console.error("Failed to update booking status on server:", err);
+      setBookings(prev => prev.map(b => b.id === id ? { ...b, status } : b));
+    }
   };
 
   const handleUpdateBookingsList = (updatedList: Booking[]) => {
     setBookings(updatedList);
+  };
+
+  const handleVerifyCheckIn = async (bookingId: string) => {
+    try {
+      const response = await fetch(`/api/bookings/${bookingId}/checkin`, {
+        method: 'POST',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.bookings) {
+          setBookings(data.bookings);
+        } else {
+          setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: 'Completed', checkedIn: true } : b));
+        }
+      } else {
+        setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: 'Completed', checkedIn: true } : b));
+      }
+    } catch (err) {
+      console.error("Failed to sync check-in with server, checking in locally:", err);
+      setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: 'Completed', checkedIn: true } : b));
+    }
   };
 
   const scrollToSection = (id: string) => {
@@ -500,17 +612,28 @@ export default function App() {
                   </p>
                 </div>
 
-                <form
-                  onSubmit={(e) => {
+                 <form
+                  onSubmit={async (e) => {
                     e.preventDefault();
-                    if (passcodeInput.trim().toLowerCase() === 'pharaoh') {
-                      setIsAdminVerified(true);
-                      localStorage.setItem('kemet_admin_verified', 'true');
-                      setPasscodeError('');
-                      setPasscodeInput('');
-                      triggerCelebration(); // Celebrate!
-                    } else {
-                      setPasscodeError('Incorrect passcode. Please try again.');
+                    try {
+                      const response = await fetch('/api/admin/verify', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ passcode: passcodeInput })
+                      });
+                      const data = await response.json();
+                      if (response.ok && data.success) {
+                        setIsAdminVerified(true);
+                        localStorage.setItem('kemet_admin_verified', 'true');
+                        localStorage.setItem('kemet_admin_passcode', passcodeInput.trim());
+                        setPasscodeError('');
+                        setPasscodeInput('');
+                        triggerCelebration(); // Celebrate!
+                      } else {
+                        setPasscodeError(data.error || 'Incorrect passcode. Please try again.');
+                      }
+                    } catch (err) {
+                      setPasscodeError('Divine verification server is offline. Please try again.');
                     }
                   }}
                   className="space-y-4 text-left"
@@ -692,7 +815,7 @@ export default function App() {
                     View your pending or confirmed bookings, and read reviews from other travelers.
                   </p>
                 </div>
-                <BookingManager bookings={bookings} excursions={excursions} onCancelBooking={handleCancelBooking} />
+                <BookingManager bookings={bookings} excursions={excursions} onCancelBooking={handleCancelBooking} onVerifyCheckIn={handleVerifyCheckIn} />
               </motion.section>
             </div>
           )}
@@ -745,6 +868,16 @@ export default function App() {
 
         {/* Golden Scarab Particle Celebration Overlay */}
         <ScarabCelebration triggerCount={celebrationCount} />
+
+        {/* Papyrus Scroll Unrolling Celebration Overlay */}
+        <AnimatePresence>
+          {newlyCreatedBooking && (
+            <PapyrusScrollCelebration
+              booking={newlyCreatedBooking}
+              onClose={() => setNewlyCreatedBooking(null)}
+            />
+          )}
+        </AnimatePresence>
 
       </div>
     </div>

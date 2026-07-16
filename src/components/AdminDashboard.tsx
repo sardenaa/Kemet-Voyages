@@ -503,8 +503,22 @@ export default function AdminDashboard({
     triggerNotification("Testimony deleted from the sacred public board");
   };
 
-  const handlePurgeAllData = () => {
+  const handlePurgeAllData = async () => {
     if (window.confirm("𓋹 WARNING: You are about to initiate a TOTAL PURGE of the sacred records! This will permanently delete all customer bookings, active traveler cards, user reviews, newsletter subscriptions, and chat transcripts. This action is irreversible. Proceed?")) {
+      const passcode = localStorage.getItem('kemet_admin_passcode') || 'pharaoh';
+      try {
+        const response = await fetch('/api/admin/purge', {
+          method: 'POST',
+          headers: { 'x-admin-passcode': passcode }
+        });
+        if (response.ok) {
+          const result = await response.json();
+          console.log(result.message);
+        }
+      } catch (err) {
+        console.error("Failed to purge server database:", err);
+      }
+
       localStorage.setItem('kemet_bookings', JSON.stringify([]));
       localStorage.setItem('kemet_reviews', JSON.stringify([]));
       localStorage.setItem('kemet_newsletter_signups', JSON.stringify([]));
@@ -527,8 +541,22 @@ export default function AdminDashboard({
     }
   };
 
-  const handleRestoreDivineSeeds = () => {
+  const handleRestoreDivineSeeds = async () => {
     if (window.confirm("Do you wish to populate the sanctuary with premium pre-configured traveler data, reviews, and bookings for testing/presentation?")) {
+      const passcode = localStorage.getItem('kemet_admin_passcode') || 'pharaoh';
+      try {
+        const response = await fetch('/api/admin/seed', {
+          method: 'POST',
+          headers: { 'x-admin-passcode': passcode }
+        });
+        if (response.ok) {
+          const result = await response.json();
+          console.log(result.message);
+        }
+      } catch (err) {
+        console.error("Failed to seed server database:", err);
+      }
+
       const SEED_BOOKINGS: Booking[] = [
         {
           id: 'b-seed-1',
@@ -585,7 +613,7 @@ export default function AdminDashboard({
           rating: 5,
           comment: "Visiting the mortuary temple in Luxor left my royal caravan speechless. The columns of Karnak are so wide they command complete silence. The private Felucca cruise on the Nile at sunset was absolute bliss.",
           date: "2026-07-11"
-        }
+         }
       ];
 
       const SEED_SUBS = [
@@ -646,7 +674,7 @@ export default function AdminDashboard({
     }
   };
 
-  const handleSimulateRandomBooking = () => {
+  const handleSimulateRandomBooking = async () => {
     const randomNames = ["Anubis Voyager", "Isis Pilgrim", "Osiris Nomad", "Thoth Explorer", "Sobek Diver", "Nut Gazer"];
     const randomEmails = ["anubis@underworld.org", "isis.heals@sacred.com", "osiris.lord@aaru.net", "thoth.wisdom@library.edu", "sobek.waters@nile.com", "nut.sky@stars.org"];
     const randomRequests = ["Wants to see dolphin pods and ancient hieroglyph marks", "Requires cold water at all stops", "Prefers early morning desert departures", "Wishes to have an extra scroll copy", "Vegetarian food options requested"];
@@ -654,8 +682,7 @@ export default function AdminDashboard({
     const chosenEx = excursions[Math.floor(Math.random() * excursions.length)] || INITIAL_EXCURSIONS_DATA[0];
     const numGuests = Math.floor(Math.random() * 4) + 1;
 
-    const simulatedBooking: Booking = {
-      id: `b-sim-${Date.now()}`,
+    const simulatedBooking = {
       excursionId: chosenEx.id,
       excursionTitle: chosenEx.title,
       travelerName: randomNames[randomIndex],
@@ -663,25 +690,43 @@ export default function AdminDashboard({
       date: new Date(Date.now() + 86400000 * (Math.floor(Math.random() * 15) + 3)).toISOString().split('T')[0],
       numberOfGuests: numGuests,
       totalCost: chosenEx.price * numGuests,
-      specialRequests: randomRequests[Math.floor(Math.random() * randomRequests.length)],
-      status: 'Pending Oracle Approval',
-      createdAt: new Date().toISOString()
+      specialRequests: randomRequests[Math.floor(Math.random() * randomRequests.length)]
     };
 
-    const updatedBookings = [simulatedBooking, ...bookings];
-    onUpdateBookingsList(updatedBookings);
-    localStorage.setItem('kemet_bookings', JSON.stringify(updatedBookings));
-
-    triggerNotification(`Simulated booking received from ${simulatedBooking.travelerName}!`);
+    try {
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(simulatedBooking)
+      });
+      if (response.ok) {
+        const savedBooking = await response.json();
+        const updatedBookings = [savedBooking, ...bookings];
+        onUpdateBookingsList(updatedBookings);
+        localStorage.setItem('kemet_bookings', JSON.stringify(updatedBookings));
+        triggerNotification(`Simulated booking received from ${savedBooking.travelerName}!`);
+      }
+    } catch (err) {
+      console.error("Failed to post simulated booking:", err);
+      const fbBooking: Booking = {
+        id: `b-sim-${Date.now()}`,
+        ...simulatedBooking,
+        status: 'Pending Oracle Approval',
+        createdAt: new Date().toISOString()
+      };
+      const updatedBookings = [fbBooking, ...bookings];
+      onUpdateBookingsList(updatedBookings);
+      localStorage.setItem('kemet_bookings', JSON.stringify(updatedBookings));
+      triggerNotification(`Simulated booking received from ${fbBooking.travelerName}!`);
+    }
   };
 
   // Excursion management
-  const handleAddExcursionSubmit = (e: React.FormEvent) => {
+  const handleAddExcursionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newExTitle || !newExDesc) return;
 
-    const newEx: Excursion = {
-      id: `ex-${Date.now()}`,
+    const newEx = {
       title: newExTitle,
       tagline: newExTagline || "Eternally curated pharaonic voyage",
       category: newExCategory,
@@ -696,32 +741,80 @@ export default function AdminDashboard({
       ancientLore: newExLore || "This sacred terrain was aligned by Imhotep to match the solar zenith, granting safety to all travelers under the eye of Horus."
     };
 
-    setExcursions([newEx, ...excursions]);
+    const passcode = localStorage.getItem('kemet_admin_passcode') || 'pharaoh';
+    try {
+      const response = await fetch('/api/excursions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-passcode': passcode
+        },
+        body: JSON.stringify(newEx)
+      });
+      if (response.ok) {
+        const updatedCatalog = await response.json();
+        setExcursions(updatedCatalog);
+        localStorage.setItem('kemet_excursions', JSON.stringify(updatedCatalog));
+        window.dispatchEvent(new Event('kemet_excursions_updated'));
+        triggerNotification("Divine Excursion added to the active catalog!");
+      }
+    } catch (err) {
+      console.error("Failed to add excursion to server:", err);
+    }
+
     setIsAddOfferingOpen(false);
-    triggerNotification("Divine Excursion added to the active catalog!");
-    
-    // reset
     setNewExTitle("");
     setNewExTagline("");
     setNewExDesc("");
     setNewExLore("");
   };
 
-  const handleEditExcursionSubmit = (e: React.FormEvent) => {
+  const handleEditExcursionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingExcursion) return;
 
-    const updated = excursions.map((ex) => (ex.id === editingExcursion.id ? editingExcursion : ex));
-    setExcursions(updated);
+    const passcode = localStorage.getItem('kemet_admin_passcode') || 'pharaoh';
+    try {
+      const response = await fetch('/api/excursions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-passcode': passcode
+        },
+        body: JSON.stringify(editingExcursion)
+      });
+      if (response.ok) {
+        const updatedCatalog = await response.json();
+        setExcursions(updatedCatalog);
+        localStorage.setItem('kemet_excursions', JSON.stringify(updatedCatalog));
+        window.dispatchEvent(new Event('kemet_excursions_updated'));
+        triggerNotification("Sacred offering updated successfully.");
+      }
+    } catch (err) {
+      console.error("Failed to update excursion on server:", err);
+    }
+
     setEditingExcursion(null);
-    triggerNotification("Sacred offering updated successfully.");
   };
 
-  const handleDeleteExcursion = (id: string) => {
+  const handleDeleteExcursion = async (id: string) => {
     if (window.confirm("Are you sure you wish to banish this excursion offering from Kemet?")) {
-      const updated = excursions.filter((ex) => ex.id !== id);
-      setExcursions(updated);
-      triggerNotification("Offering banished from catalog", "info");
+      const passcode = localStorage.getItem('kemet_admin_passcode') || 'pharaoh';
+      try {
+        const response = await fetch(`/api/excursions/${id}`, {
+          method: 'DELETE',
+          headers: { 'x-admin-passcode': passcode }
+        });
+        if (response.ok) {
+          const updatedCatalog = await response.json();
+          setExcursions(updatedCatalog);
+          localStorage.setItem('kemet_excursions', JSON.stringify(updatedCatalog));
+          window.dispatchEvent(new Event('kemet_excursions_updated'));
+          triggerNotification("Offering banished from catalog", "info");
+        }
+      } catch (err) {
+        console.error("Failed to delete excursion on server:", err);
+      }
     }
   };
 
