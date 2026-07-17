@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, Info, Download, RefreshCw } from 'lucide-react';
 
@@ -367,6 +367,7 @@ export default function CartoucheGenerator() {
   const [name, setName] = useState<string>("KEMET");
   const [activeSymbol, setActiveSymbol] = useState<HieroglyphData | null>(null);
   const [isSaved, setIsSaved] = useState<boolean>(false);
+  const [isGlowing, setIsGlowing] = useState<boolean>(false);
   const [savedCartouches, setSavedCartouches] = useState<SavedCartouche[]>(() => {
     const local = localStorage.getItem('kemet_saved_cartouches');
     if (local) {
@@ -380,6 +381,16 @@ export default function CartoucheGenerator() {
   });
 
   const cleanName = name.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 8);
+
+  useEffect(() => {
+    if (cleanName) {
+      setIsGlowing(true);
+      const timer = setTimeout(() => {
+        setIsGlowing(false);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [cleanName]);
 
   const generateCartoucheSVG = (nameString: string) => {
     const chars = nameString.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 8).split('');
@@ -438,25 +449,83 @@ export default function CartoucheGenerator() {
 </svg>`;
   };
 
-  const triggerDownload = () => {
-    if (!cleanName) return;
-
-    // 1. Generate and download SVG file
-    const svgContent = generateCartoucheSVG(cleanName);
+  const downloadPNG = (nameString: string) => {
+    const svgContent = generateCartoucheSVG(nameString);
     if (!svgContent) return;
-    
+
     const blob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(blob);
-    
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `kemet_cartouche_${cleanName}.svg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    
-    // 2. Save to local storage list
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const chars = nameString.split('');
+      const N = chars.length;
+      const itemHeight = 70;
+      const gap = 15;
+      const topPadding = 90;
+      const bottomPadding = 90;
+      const H = topPadding + N * (itemHeight + gap) - gap + bottomPadding;
+
+      const scale = 2;
+      canvas.width = 240 * scale;
+      canvas.height = H * scale;
+
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.fillStyle = '#14100c';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.scale(scale, scale);
+        ctx.drawImage(img, 0, 0);
+
+        try {
+          const pngUrl = canvas.toDataURL('image/png');
+          const link = document.createElement('a');
+          link.href = pngUrl;
+          link.download = `kemet_cartouche_${nameString}.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } catch (err) {
+          console.error("Failed to export as PNG, falling back to SVG", err);
+          const svgLink = document.createElement('a');
+          svgLink.href = url;
+          svgLink.download = `kemet_cartouche_${nameString}.svg`;
+          document.body.appendChild(svgLink);
+          svgLink.click();
+          document.body.removeChild(svgLink);
+        }
+      }
+      URL.revokeObjectURL(url);
+    };
+    img.onerror = () => {
+      console.error("Failed to load SVG image for PNG export");
+      URL.revokeObjectURL(url);
+    };
+    img.src = url;
+  };
+
+  const handleSave = (format: 'png' | 'svg') => {
+    if (!cleanName) return;
+
+    if (format === 'svg') {
+      const svgContent = generateCartoucheSVG(cleanName);
+      if (!svgContent) return;
+      const blob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `kemet_cartouche_${cleanName}.svg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } else {
+      downloadPNG(cleanName);
+    }
+
     const isDuplicate = savedCartouches.some(sc => sc.name === cleanName);
     if (!isDuplicate) {
       const newSavedItem: SavedCartouche = {
@@ -469,7 +538,6 @@ export default function CartoucheGenerator() {
       localStorage.setItem('kemet_saved_cartouches', JSON.stringify(updated));
     }
 
-    // 3. Trigger button feedback
     setIsSaved(true);
     setTimeout(() => {
       setIsSaved(false);
@@ -488,12 +556,26 @@ export default function CartoucheGenerator() {
   };
 
   return (
-    <div className="bg-[#16120e] border border-[#d4af37]/30 rounded-2xl p-6 md:p-8 shadow-2xl relative overflow-hidden" id="cartouche-creator">
+    <div className="bg-[#16120e] border border-[#d4af37]/35 rounded-2xl p-8 md:p-10 shadow-[0_15px_35px_rgba(0,0,0,0.8)] relative overflow-hidden" id="cartouche-creator">
+      {/* Decorative Ancient Egyptian Hieroglyphic Border Ribbon around the component */}
+      <div className="absolute top-0 left-0 right-0 h-5 bg-[#1b1410] border-b border-[#d4af37]/20 flex items-center justify-around text-[10px] text-[#d4af37]/30 font-serif select-none pointer-events-none px-4">
+        <span>𓋹</span><span>𓂀</span><span>𓆗</span><span>𓅃</span><span>𓏛</span><span>𓉐</span><span>𓆛</span><span>𓊹</span><span>𓎛</span><span>𓍼</span><span>𓅓</span><span>𓍢</span><span>𓉴</span><span>𓆣</span><span>𓆃</span>
+      </div>
+      <div className="absolute bottom-0 left-0 right-0 h-5 bg-[#1b1410] border-t border-[#d4af37]/20 flex items-center justify-around text-[10px] text-[#d4af37]/30 font-serif select-none pointer-events-none px-4">
+        <span>𓆃</span><span>𓆣</span><span>𓉴</span><span>𓍢</span><span>𓅓</span><span>𓍼</span><span>𓎛</span><span>𓊹</span><span>𓆛</span><span>𓉐</span><span>𓏛</span><span>𓅃</span><span>𓆗</span><span>𓂀</span><span>𓋹</span>
+      </div>
+      <div className="absolute left-0 top-5 bottom-5 w-5 bg-[#1b1410]/60 border-r border-[#d4af37]/20 flex flex-col items-center justify-around text-[10px] text-[#d4af37]/30 font-serif select-none pointer-events-none py-2">
+        <span>𓋹</span><span>𓂀</span><span>𓆗</span><span>𓅃</span><span>𓏛</span><span>𓉐</span><span>𓆛</span><span>𓊹</span><span>𓎛</span>
+      </div>
+      <div className="absolute right-0 top-5 bottom-5 w-5 bg-[#1b1410]/60 border-l border-[#d4af37]/20 flex flex-col items-center justify-around text-[10px] text-[#d4af37]/30 font-serif select-none pointer-events-none py-2">
+        <span>𓎛</span><span>𓊹</span><span>𓆛</span><span>𓉐</span><span>𓏛</span><span>𓅃</span><span>𓆗</span><span>𓂀</span><span>𓋹</span>
+      </div>
+
       {/* Dynamic Background Accents */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-[#d4af37]/5 rounded-full blur-2xl pointer-events-none"></div>
       <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#c5a059]/5 rounded-full blur-2xl pointer-events-none"></div>
 
-      <div className="text-center mb-6">
+      <div className="text-center mb-8 mt-2">
         <div className="flex items-center justify-center gap-2 mb-2">
           <Sparkles className="text-[#d4af37] w-5 h-5 animate-pulse" />
           <h3 className="font-serif text-2xl font-bold tracking-wider text-[#e6c280] uppercase">
@@ -506,9 +588,9 @@ export default function CartoucheGenerator() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center px-4">
         {/* Input & Info Side */}
-        <div className="lg:col-span-5 space-y-4">
+        <div className="lg:col-span-5 space-y-5">
           <div>
             <label className="block text-xs font-mono uppercase tracking-widest text-stone-500 mb-1.5">
               Enter Name (Max 8 letters)
@@ -552,7 +634,7 @@ export default function CartoucheGenerator() {
                     </span>
                   </div>
                   <p className="text-stone-300 text-sm">
-                    <strong className="text-stone-500">Meaning:</strong> {activeSymbol.meaning}
+                     <strong className="text-stone-500">Meaning:</strong> {activeSymbol.meaning}
                   </p>
                   <p className="text-[#d4af37]/80 text-xs font-mono uppercase tracking-wider">
                     Phonetic sound: "{activeSymbol.pronunciation}"
@@ -571,36 +653,93 @@ export default function CartoucheGenerator() {
             </AnimatePresence>
           </div>
 
-          {/* Download/Save decree button */}
-          <button
-            onClick={triggerDownload}
-            disabled={!cleanName}
-            className={`w-full flex items-center justify-center gap-2 bg-gradient-to-r ${
-              isSaved
-                ? 'from-emerald-500/20 to-teal-600/20 border-emerald-500 text-emerald-400 font-bold shadow-[0_0_15px_rgba(16,185,129,0.15)]'
-                : 'from-[#d4af37]/20 to-[#9a7b1c]/20 hover:from-[#d4af37]/30 hover:to-[#9a7b1c]/30 border-[#d4af37]/50 text-[#f3e5c8]'
-            } border rounded-xl py-2.5 text-sm font-semibold transition-all shadow-md active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
-            id="download-decree-btn"
-          >
-            {isSaved ? (
-              <>
-                <span className="font-serif text-[#d4af37] text-lg">𓋹</span>
-                <span className="font-mono uppercase text-xs font-bold tracking-wider">Cartouche Saved Successfully!</span>
-              </>
-            ) : (
-              <>
-                <Download className="w-4 h-4 text-[#d4af37]" />
-                <span>Save &amp; Download Cartouche</span>
-              </>
+          {/* Split Download Buttons Grid */}
+          <div className="flex flex-col gap-2.5">
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => handleSave('png')}
+                disabled={!cleanName}
+                className={`flex items-center justify-center gap-1.5 bg-gradient-to-r ${
+                  isSaved
+                    ? 'from-emerald-500/20 to-teal-600/20 border-emerald-500 text-emerald-400 font-bold shadow-[0_0_15px_rgba(16,185,129,0.15)]'
+                    : 'from-[#d4af37]/25 to-[#9a7b1c]/25 hover:from-[#d4af37]/40 hover:to-[#9a7b1c]/40 border-[#d4af37]/60 text-[#f3e5c8]'
+                } border rounded-xl py-2.5 text-xs font-semibold transition-all shadow-md active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed`}
+              >
+                <Download className="w-3.5 h-3.5 text-[#d4af37]" />
+                <span className="font-mono uppercase text-[10px] tracking-wider">Save PNG Image</span>
+              </button>
+
+              <button
+                onClick={() => handleSave('svg')}
+                disabled={!cleanName}
+                className="flex items-center justify-center gap-1.5 bg-[#120e0a] hover:bg-[#1a1410] border border-[#d4af37]/35 text-stone-300 rounded-xl py-2.5 text-xs font-semibold transition-all shadow-md active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Download className="w-3.5 h-3.5 text-[#e6c280]/75" />
+                <span className="font-mono uppercase text-[10px] tracking-wider">Save SVG File</span>
+              </button>
+            </div>
+
+            {isSaved && (
+              <motion.div
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center text-[10px] text-emerald-400 font-mono uppercase tracking-widest bg-emerald-500/10 py-1 rounded border border-emerald-500/25"
+              >
+                𓍼 Royal Decree Saved successfully! 𓍼
+              </motion.div>
             )}
-          </button>
+          </div>
         </div>
 
         {/* Visual Cartouche Side */}
-        <div className="lg:col-span-7 flex justify-center py-4">
-          <div className="relative">
-            {/* Golden Oval Royal Frame */}
-            <div className="border-[6px] border-[#d4af37] bg-[#221a12] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#2d2116] to-[#14100c] rounded-full px-8 py-10 min-w-[160px] max-w-[280px] shadow-[0_0_40px_rgba(212,175,55,0.15)] flex flex-col items-center gap-4 relative border-double">
+        <div className="lg:col-span-7 flex flex-col items-center justify-center py-8 px-6 bg-[#1a130f] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#322318]/50 via-[#16100c] to-[#0e0a08] border border-[#d4af37]/25 rounded-3xl relative shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden min-h-[480px]">
+          {/* Ancient Egypt themed backgrounds & App Name overlays */}
+          <div className="absolute inset-0 bg-[radial-gradient(#d4af37_0.6px,transparent_0.6px)] [background-size:12px_12px] opacity-[0.03] pointer-events-none" />
+          <div className="absolute top-0 bottom-0 left-0 w-1 bg-gradient-to-b from-[#d4af37]/30 via-transparent to-[#d4af37]/30" />
+          <div className="absolute top-0 bottom-0 right-0 w-1 bg-gradient-to-b from-[#d4af37]/30 via-transparent to-[#d4af37]/30" />
+          
+          <div className="absolute top-4 left-4 text-stone-850/25 text-3xl select-none pointer-events-none font-serif flex flex-col gap-2">
+            <span>𓋹</span>
+            <span>𓂀</span>
+            <span>𓆗</span>
+          </div>
+          <div className="absolute top-4 right-4 text-stone-850/25 text-3xl select-none pointer-events-none font-serif flex flex-col gap-2">
+            <span>𓅃</span>
+            <span>𓆛</span>
+            <span>𓉐</span>
+          </div>
+
+          {/* Gold-foil Pharaoh's Official Seal Badge next to cartouche container */}
+          <motion.div 
+            initial={{ scale: 0, rotate: -20 }}
+            animate={{ scale: 1, rotate: 12 }}
+            transition={{ type: "spring", stiffness: 100, delay: 0.5 }}
+            className="absolute top-6 right-6 md:top-8 md:right-8 bg-gradient-to-br from-[#ffe89e] via-[#d4af37] to-[#8c6507] border-2 border-amber-200 text-stone-950 font-serif text-[9px] font-black py-2 px-3 rounded-full shadow-[0_6px_15px_rgba(212,175,55,0.4)] select-none z-20 flex items-center gap-1.5 uppercase tracking-widest border-double cursor-help hover:scale-110 hover:rotate-3 transition-all duration-300"
+            title="Authentic Royal Seal of the Scribes"
+          >
+            <span className="text-sm">𓂀</span>
+            <span className="font-mono text-[8px] tracking-normal font-bold">Pharaoh's Seal</span>
+          </motion.div>
+
+          <div className="text-center mb-6 space-y-1 z-10 select-none">
+            <span className="text-[9px] font-mono text-[#d4af37] uppercase tracking-[0.25em] block animate-pulse">
+              𓂀 Sacred Royal Seal 𓂀
+            </span>
+            <h4 className="font-serif text-lg font-black text-[#e6c280] tracking-widest uppercase">
+              Kemet Tours
+            </h4>
+            <p className="text-[8px] font-mono text-stone-500 uppercase tracking-widest">
+              Powered by Mas international Agency
+            </p>
+          </div>
+
+          <div className="relative z-10">
+            {/* Golden Oval Royal Frame with subtle magic glowing triggers */}
+            <div className={`border-[6px] border-[#d4af37] bg-[#221a12] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#2d2116] to-[#14100c] rounded-full px-8 py-10 min-w-[160px] max-w-[280px] flex flex-col items-center gap-4 relative border-double transition-all duration-1000 ${
+              isGlowing 
+                ? 'shadow-[0_0_60px_rgba(212,175,55,0.65)] border-[#ffd54f]' 
+                : 'shadow-[0_0_40px_rgba(212,175,55,0.15)]'
+            }`}>
               {/* Cartouche Horizontal Royal Base Bar */}
               <div className="absolute bottom-0 h-4 w-4/5 bg-[#d4af37] border-t-2 border-b-2 border-amber-200 rounded-sm"></div>
 
@@ -617,11 +756,22 @@ export default function CartoucheGenerator() {
                     return (
                       <motion.div
                         key={index}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ 
+                          opacity: 1, 
+                          scale: 1,
+                          filter: isGlowing ? "drop-shadow(0 0 10px rgba(212,175,55,0.85)) brightness(1.2)" : "drop-shadow(0 0 0px rgba(0,0,0,0))"
+                        }}
+                        transition={{ 
+                          type: "spring", 
+                          stiffness: 300, 
+                          damping: 15,
+                          delay: index * 0.12 
+                        }}
                         className="group relative cursor-pointer p-1.5 rounded-lg hover:bg-[#d4af37]/10 transition-colors flex flex-col items-center w-full max-w-[80px]"
                         onMouseEnter={() => setActiveSymbol(data)}
                         onMouseLeave={() => setActiveSymbol(null)}
                         whileHover={{ scale: 1.15 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 15 }}
                       >
                         {/* Glow Background */}
                         <div className="absolute inset-0 bg-[#d4af37]/0 group-hover:bg-[#d4af37]/5 rounded-lg blur-md transition-all"></div>
