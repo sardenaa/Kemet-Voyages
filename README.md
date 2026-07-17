@@ -1,8 +1,8 @@
-# 𓂀 Kemet Voyages: Sacred Excursions & Pharaonic Itineraries 𓋹
+# 𓂀 Kemet Tours - Powered by Mas international Agency: Sacred Excursions & Pharaonic Itineraries 𓋹
 
-Kemet Voyages is an immersive, ancient-Egypt-themed full-stack travel portal, CRM, and itinerary planner. It transports travelers to the mystical lands of the Nile, the Red Sea, and the Western deserts, blending a cohesive **Pharaonic visual identity** with sophisticated **Gemini 3.5 Flash Generative AI** capabilities.
+Kemet Tours - Powered by Mas international Agency is an immersive, ancient-Egypt-themed full-stack travel portal, CRM, and itinerary planner. It transports travelers to the mystical lands of the Nile, the Red Sea, and the Western deserts, blending a cohesive **Pharaonic visual identity** with sophisticated **Gemini 3.5 Flash Generative AI** capabilities.
 
-Designed to mimic a royal treasury and scribe’s papyrus scroll, Kemet Voyages is optimized for both desktop and mobile screens, offering travelers and administrators alike an interactive portal into historical tours, mythical lore, and real-time caravan management.
+Designed to mimic a royal treasury and scribe’s papyrus scroll, Kemet Tours is optimized for both desktop and mobile screens, offering travelers and administrators alike an interactive portal into historical tours, mythical lore, and real-time caravan management.
 
 ---
 
@@ -55,7 +55,7 @@ A robust back-office platform that operates as a real-time Command Center:
 
 ## 🎨 Visual Identity & Themes
 
-Kemet Voyages features custom ambient styles designed to emphasize the desert majesty:
+Kemet Tours features custom ambient styles designed to emphasize the desert majesty:
 *   **Default Theme (Desert Sand & Obsidian):** Deep charcoal colors (`#140f0c`), glowing Egyptian Gold borders (`#d4af37`), warm parchment headers, and rich bronze shadow indicators.
 *   **Nile Blue Theme:** Smooth obsidian colors paired with deep-river turquoise, lapis lazuli accents, and cool aquatic neon shadows.
 *   **Responsive Layouts:** Employs micro-animations, fade transitions powered by `motion`, hover effects, and custom CSS-pulsing containers to mimic candle-lit stone chambers.

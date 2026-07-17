@@ -551,7 +551,7 @@ export default function EgyptologyGallery() {
           <div className="lg:col-span-7 space-y-4">
             <div className="flex items-center justify-between border-b border-stone-850 pb-3">
               <span className="font-mono text-[10px] text-stone-500 uppercase tracking-widest">
-                Ledger Entries ({communityPhotos.length} Voyages)
+                Ledger Entries ({communityPhotos.length} Tours)
               </span>
               <button 
                 onClick={fetchPhotos}

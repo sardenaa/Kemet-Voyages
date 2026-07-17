@@ -130,7 +130,7 @@ export default function PapyrusScrollCelebration({
               <div class="scroll-container">
                 <div class="seal">𓋹 𓂀 𓆗</div>
                 <h1>Sacred Entry Scroll</h1>
-                <div class="subtitle">Kemet Pharaoh Voyages</div>
+                <div class="subtitle">Kemet Tours - Powered by Mas international Agency</div>
                 <div class="divider"></div>
                 
                 <h2>${booking.excursionTitle}</h2>

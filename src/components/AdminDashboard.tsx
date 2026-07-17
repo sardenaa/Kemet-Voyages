@@ -832,7 +832,7 @@ export default function AdminDashboard({
   // Compose an email draft in the voice of Sennedjem
   const composeScribeEmailDraft = (profile: TravelerCRMProfile) => {
     const drafts = [
-      `Hello ${profile.name}!\n\nI am your Kemet Travel Assistant. I have recorded your travel preferences and marked your interest in Kemet. Your current status is: [${profile.leadStatus}].\n\nWe are looking forward to designing an unforgettable tour for you. May your journey with Kemet Voyages be wonderful and secure!\n\nBest regards,\nKemet Voyages Team`,
+      `Hello ${profile.name}!\n\nI am your Kemet Travel Assistant. I have recorded your travel preferences and marked your interest in Kemet. Your current status is: [${profile.leadStatus}].\n\nWe are looking forward to designing an unforgettable tour for you. May your journey with Kemet Tours - Powered by Mas international Agency be wonderful and secure!\n\nBest regards,\nKemet Tours Team`,
       `Hello ${profile.name}!\n\nAs we prepare our custom boats and desert safaris, our team has noted your request: "${profile.scribeNotes.slice(0, 80)}...". We are preparing a customized golden itinerary for you.\n\nLet us know how we can make your dream trip a reality.\n\nSafe travels,\nKemet Travel Team`
     ];
     alert(`AUTOMATED TRAVEL CRM EMAIL DRAFT FOR ${profile.name.toUpperCase()}:\n\n${drafts[Math.floor(Math.random() * drafts.length)]}`);

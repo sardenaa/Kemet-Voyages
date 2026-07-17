@@ -465,7 +465,7 @@ export default function ExcursionCatalog({ onAddBooking, excursions }: CatalogPr
     setSuccessMsg(true);
 
     // Formulate a beautiful WhatsApp detail message
-    const message = `𓂀 KEMET VOYAGES - EXPEDITION BOOKING 𓂀
+    const message = `𓂀 Kemet Tours - Powered by Mas international Agency - EXPEDITION BOOKING 𓂀
 
 Greetings Scribe! I have inscribed a new caravan passage:
 
@@ -741,7 +741,7 @@ Please seal my booking with the High Priest approval!`;
                   </div>
                   <button
                     onClick={() => {
-                      const msg = `𓂀 KEMET VOYAGES - EXPEDITION INQUIRY 𓂀\n\nGreetings Scribe! I am interested in embarking on the beautiful "${ex.title}" (${ex.duration}) expedition. Can you please tell me more about availability and itineraries?`;
+                      const msg = `𓂀 Kemet Tours - Powered by Mas international Agency - EXPEDITION INQUIRY 𓂀\n\nGreetings Scribe! I am interested in embarking on the beautiful "${ex.title}" (${ex.duration}) expedition. Can you please tell me more about availability and itineraries?`;
                       const url = `https://wa.me/201202181834?text=${encodeURIComponent(msg)}`;
                       window.open(url, '_blank') || (window.location.href = url);
                     }}
@@ -1040,7 +1040,7 @@ Please seal my booking with the High Priest approval!`;
                     <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto">
                       <button
                         onClick={() => {
-                          const msg = `𓂀 KEMET VOYAGES - EXPEDITION DOSSIER INQUIRY 𓂀\n\nGreetings Scribe! I was reviewing the beautiful details of "${selectedExcursion.title}" (${selectedExcursion.duration}) located in "${selectedExcursion.location}". Can you please advise me on availability, customization options, and seasonal discounts?`;
+                          const msg = `𓂀 Kemet Tours - Powered by Mas international Agency - EXPEDITION DOSSIER INQUIRY 𓂀\n\nGreetings Scribe! I was reviewing the beautiful details of "${selectedExcursion.title}" (${selectedExcursion.duration}) located in "${selectedExcursion.location}". Can you please advise me on availability, customization options, and seasonal discounts?`;
                           const url = `https://wa.me/201202181834?text=${encodeURIComponent(msg)}`;
                           window.open(url, '_blank') || (window.location.href = url);
                         }}

@@ -190,7 +190,7 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
               <div className="pt-1">
                 <button
                   onClick={() => {
-                    const msg = "𓂀 KEMET VOYAGES 𓂀\n\nGreetings Scribe! I am visiting your temple dashboard and would like to ask a general question about excursions, bookings, or custom travel plans!";
+                    const msg = "𓂀 Kemet Tours - Powered by Mas international Agency 𓂀\n\nGreetings Scribe! I am visiting your temple dashboard and would like to ask a general question about excursions, bookings, or custom travel plans!";
                     const url = `https://wa.me/201202181834?text=${encodeURIComponent(msg)}`;
                     window.open(url, '_blank') || (window.location.href = url);
                   }}

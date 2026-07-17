@@ -113,7 +113,7 @@ export default function PromotionalBanner() {
   const season = getCurrentSeasonDiscount(currentDate);
 
   const handleWhatsAppRedirection = () => {
-    const msg = `𓂀 KEMET VOYAGES - SEASONAL OFFER 𓂀\n\nGreetings Scribe! I wish to redeem the "${season.name}" seasonal discount offering ${season.discount}.\nCode: ${season.code}\n\nPlease advise how I may apply this gold standard privilege to my upcoming booking!`;
+    const msg = `𓂀 Kemet Tours - Powered by Mas international Agency - SEASONAL OFFER 𓂀\n\nGreetings Scribe! I wish to redeem the "${season.name}" seasonal discount offering ${season.discount}.\nCode: ${season.code}\n\nPlease advise how I may apply this gold standard privilege to my upcoming booking!`;
     const url = `https://wa.me/201202181834?text=${encodeURIComponent(msg)}`;
     window.open(url, '_blank') || (window.location.href = url);
   };

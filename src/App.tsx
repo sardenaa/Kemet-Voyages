@@ -434,15 +434,15 @@ export default function App() {
                 transition={{ duration: 1.2, delay: 0.2 }}
                 className="font-serif text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-[#fbf5e6] via-[#d4af37] to-[#8e6b12] uppercase tracking-wider drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] leading-none"
               >
-                Pharaoh Voyages
+                Kemet Tours
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 1.2, delay: 0.4 }}
-                className="font-serif text-lg md:text-2xl text-[#e6c280]/80 tracking-widest uppercase drop-shadow-md"
+                className="font-serif text-base md:text-xl text-[#e6c280]/80 tracking-widest uppercase drop-shadow-md"
               >
-                Red Sea & Desert Expeditions
+                Powered by Mas international Agency
               </motion.p>
             </div>
 
@@ -492,7 +492,7 @@ export default function App() {
               <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                 <span className="text-[#d4af37] text-2xl font-serif">𓋹</span>
                 <span className="font-serif font-bold text-[#e6c280] tracking-widest uppercase text-base">
-                  KEMET VOYAGES
+                  KEMET TOURS
                 </span>
               </div>
 
@@ -896,13 +896,13 @@ export default function App() {
           <div className="flex justify-center items-center gap-2">
             <span className="text-[#d4af37] text-2xl font-serif">𓋹</span>
             <span className="font-serif font-black text-xl text-[#e6c280] tracking-widest uppercase">
-              KEMET PHARAOH VOYAGES
+              Kemet Tours
             </span>
             <span className="text-[#d4af37] text-2xl font-serif">𓋹</span>
           </div>
 
           <p className="text-stone-500 text-xs max-w-md mx-auto leading-relaxed">
-            Designed for desert explorers, deep-sea divers, and lovers of history. Safe travels and have an amazing trip!
+            Powered by Mas international Agency. Designed for desert explorers, deep-sea divers, and lovers of history. Safe travels and have an amazing trip!
           </p>
 
           {/* Ancient seals icons */}
@@ -915,7 +915,7 @@ export default function App() {
           </div>
 
           <div className="pt-4 border-t border-stone-900/60 text-stone-600 text-[10px] font-mono uppercase tracking-widest">
-            © 2026 Kemet Voyages, Inc. • All Rights Reserved.
+            © 2026 Kemet Tours - Powered by Mas international Agency • All Rights Reserved.
           </div>
         </footer>
 
@@ -934,7 +934,7 @@ export default function App() {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => {
-              const msg = "𓂀 KEMET PHARAOH VOYAGES 𓂀\n\nGreetings Scribe! I am visiting your temple dashboard and would like to inquire about customized itineraries, booking availability, or special Pharaonic excursions!";
+              const msg = "𓂀 Kemet Tours - Powered by Mas international Agency 𓂀\n\nGreetings Scribe! I am visiting your temple dashboard and would like to inquire about customized itineraries, booking availability, or special Pharaonic excursions!";
               const url = `https://wa.me/201202181834?text=${encodeURIComponent(msg)}`;
               window.open(url, '_blank') || (window.location.href = url);
             }}
