@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Compass, HelpCircle, FileText, Menu, X, Sparkles, Image, MessageSquare, ShieldAlert, Award, Sun, Moon } from 'lucide-react';
+import { Compass, HelpCircle, FileText, Menu, X, Sparkles, Image, MessageSquare, ShieldAlert, Award, Sun, Moon, Map } from 'lucide-react';
 
 interface MobileBottomNavProps {
   scrollToSection: (id: string) => void;
@@ -122,6 +122,16 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
                   <Compass className="w-5 h-5 text-[#d4af37]" />
                   <span className="font-serif text-xs font-bold text-[#e6c280] uppercase">Expeditions</span>
                   <span className="text-[9px] font-sans text-stone-500">Traverse deep Sea & Dunes</span>
+                </button>
+
+                {/* 1.5. Ancient Map */}
+                <button
+                  onClick={() => handleNavClick('map-section')}
+                  className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-[#1c1510] border border-[#d4af37]/15 hover:border-[#d4af37]/45 text-left transition-all cursor-pointer"
+                >
+                  <Map className="w-5 h-5 text-[#d4af37]" />
+                  <span className="font-serif text-xs font-bold text-[#e6c280] uppercase">Ancient Map</span>
+                  <span className="text-[9px] font-sans text-stone-500">Interactive geography & lore</span>
                 </button>
 
                 {/* 2. Scribe Oracle */}

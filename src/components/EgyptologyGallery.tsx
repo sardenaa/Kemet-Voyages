@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, Eye, X, BookOpen, Compass, MapPin } from 'lucide-react';
+import { Sparkles, Eye, X, BookOpen, Compass, MapPin, Camera, Upload, Heart, RefreshCw, Check, Loader2, Image } from 'lucide-react';
 
 interface GalleryItem {
   id: string;
@@ -50,6 +50,39 @@ export default function EgyptologyGallery() {
   const [activeItem, setActiveItem] = useState<GalleryItem | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  // Community Photos Board States
+  const [communityPhotos, setCommunityPhotos] = useState<any[]>([]);
+  const [isLoadingPhotos, setIsLoadingPhotos] = useState<boolean>(true);
+
+  // Camera & Image Capture States
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [isCameraActive, setIsCameraActive] = useState<boolean>(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  // Form Submission States
+  const [authorName, setAuthorName] = useState<string>('');
+  const [caption, setCaption] = useState<string>('');
+  const [locationName, setLocationName] = useState<string>('');
+  const [isSubmittingPhoto, setIsSubmittingPhoto] = useState<boolean>(false);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+
+  // Reactions / Likes States
+  const [likes, setLikes] = useState<Record<string, number>>(() => {
+    const saved = localStorage.getItem('kemet_photo_likes');
+    return saved ? JSON.parse(saved) : {
+      'photo-seed-1': 24,
+      'photo-seed-2': 18,
+      'photo-seed-3': 42
+    };
+  });
+  const [myLikedPhotos, setMyLikedPhotos] = useState<string[]>(() => {
+    const saved = localStorage.getItem('kemet_my_likes');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Load scenery gallery skeleton
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
@@ -57,8 +90,178 @@ export default function EgyptologyGallery() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Fetch Community Photos
+  const fetchPhotos = async () => {
+    try {
+      const res = await fetch('/api/community-photos');
+      if (res.ok) {
+        const data = await res.json();
+        setCommunityPhotos(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch community photos:", err);
+    } finally {
+      setIsLoadingPhotos(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPhotos();
+  }, []);
+
+  // Bind video element to camera stream
+  useEffect(() => {
+    if (videoRef.current && cameraStream) {
+      videoRef.current.srcObject = cameraStream;
+    }
+  }, [cameraStream]);
+
+  // Cleanup stream on unmount
+  useEffect(() => {
+    return () => {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [cameraStream]);
+
+  // Summon webcam camera stream
+  const startCamera = async () => {
+    setCameraError(null);
+    setIsCameraActive(true);
+    setCapturedImage(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+        audio: false
+      });
+      setCameraStream(stream);
+    } catch (err: any) {
+      console.error("Webcam media stream retrieval failed:", err);
+      setCameraError("Summoning camera failed. Please verify browser permissions, or drag-and-drop a photo directly below.");
+    }
+  };
+
+  // Close webcam stream
+  const stopCamera = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+      setCameraStream(null);
+    }
+    setIsCameraActive(false);
+  };
+
+  // Capture image snapshot from active video stream
+  const capturePhoto = () => {
+    if (videoRef.current) {
+      const video = videoRef.current;
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        setCapturedImage(dataUrl);
+        stopCamera();
+      }
+    }
+  };
+
+  // Process standard file upload click
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCapturedImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Drag and drop event handlers
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCapturedImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Submit traveler photo to public board
+  const handleSubmitPhoto = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!capturedImage || !authorName.trim() || !caption.trim()) return;
+
+    setIsSubmittingPhoto(true);
+    try {
+      const res = await fetch('/api/community-photos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image: capturedImage,
+          caption: caption.trim(),
+          author: authorName.trim(),
+          location: locationName.trim() || "Kemet Coast"
+        })
+      });
+
+      if (res.ok) {
+        const newPhoto = await res.json();
+        setCommunityPhotos(prev => [newPhoto, ...prev]);
+        setCapturedImage(null);
+        setAuthorName('');
+        setCaption('');
+        setLocationName('');
+        // Trigger golden scarab celebration
+        window.dispatchEvent(new Event('kemet_celebrate'));
+      } else {
+        const errData = await res.json();
+        console.error("Server rejected photo:", errData.error);
+      }
+    } catch (err) {
+      console.error("Failed to save public photo:", err);
+    } finally {
+      setIsSubmittingPhoto(false);
+    }
+  };
+
+  // Like Toggle
+  const handleLikePhoto = (photoId: string) => {
+    let newLikes = { ...likes };
+    let newMyLiked = [...myLikedPhotos];
+
+    if (newMyLiked.includes(photoId)) {
+      newMyLiked = newMyLiked.filter(id => id !== photoId);
+      newLikes[photoId] = Math.max(0, (newLikes[photoId] || 1) - 1);
+    } else {
+      newMyLiked.push(photoId);
+      newLikes[photoId] = (newLikes[photoId] || 0) + 1;
+    }
+
+    setLikes(newLikes);
+    setMyLikedPhotos(newMyLiked);
+    localStorage.setItem('kemet_photo_likes', JSON.stringify(newLikes));
+    localStorage.setItem('kemet_my_likes', JSON.stringify(newMyLiked));
+  };
+
   return (
-    <div className="space-y-8" id="immersive-gallery">
+    <div className="space-y-12" id="immersive-gallery">
       {/* Title */}
       <div className="text-center">
         <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">Sights of Kemet</span>
@@ -94,23 +297,30 @@ export default function EgyptologyGallery() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {GALLERY_ITEMS.map((item) => (
+          {GALLERY_ITEMS.map((item, index) => (
             <motion.div
               key={item.id}
-              whileHover={{ y: -6 }}
+              initial={{ opacity: 0, y: 35 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.8, delay: index * 0.12, ease: [0.16, 1, 0.3, 1] }}
+              whileHover={{ y: -8 }}
               className="bg-[#1a1410] border border-[#d4af37]/20 rounded-2xl overflow-hidden shadow-lg group relative cursor-pointer"
               onClick={() => setActiveItem(item)}
               id={`gallery-thumb-${item.id}`}
             >
               {/* Image container */}
               <div className="h-64 relative overflow-hidden">
-                <img
+                <motion.img
                   src={item.image}
                   alt={item.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  initial={{ scale: 1.08 }}
+                  whileHover={{ scale: 1.15, y: -6 }}
+                  transition={{ duration: 0.6, ease: "easeOut" }}
+                  className="w-full h-full object-cover origin-center"
                   referrerPolicy="no-referrer"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#140f0a] via-transparent to-transparent opacity-80"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-[#140f0a] via-transparent to-transparent opacity-80 pointer-events-none"></div>
                 
                 {/* View Icon Overlay */}
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-[#140f0a]/40 backdrop-blur-[2px] transition-all duration-300">
@@ -133,6 +343,306 @@ export default function EgyptologyGallery() {
           ))}
         </div>
       )}
+
+      {/* ========================================================= */}
+      {/* DIVINE CHRONICLES: PUBLIC TRAVEL BOARD SECTION */}
+      {/* ========================================================= */}
+      <div className="border-t border-stone-800 pt-12 space-y-8" id="travelers-chronicles-board">
+        <div className="text-center space-y-2">
+          <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.2em] flex items-center justify-center gap-1.5">
+            𓆗 Divine Chronicles 𓆗
+          </span>
+          <h3 className="font-serif text-2xl font-black text-[#e6c280] uppercase tracking-wide">
+            Public Travel Board
+          </h3>
+          <p className="text-stone-400 text-xs max-w-lg mx-auto">
+            Immortalize your journey under Ra's sky. Capture a live photo through your camera or select an expedition portrait to pin to our community board.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* LEFT: PHOTO INSCRIBER FORM & CAMERA VIEWER */}
+          <div className="lg:col-span-5 bg-[#17120e] border border-[#d4af37]/25 rounded-3xl p-6 space-y-6 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-3 opacity-[0.03] text-8xl font-serif select-none pointer-events-none">
+              𓂀
+            </div>
+
+            <div className="space-y-1">
+              <h4 className="font-serif text-base font-bold text-[#e6c280] uppercase tracking-wider flex items-center gap-2">
+                <Camera className="w-4 h-4 text-[#d4af37]" /> Inscribe Thy Voyage
+              </h4>
+              <p className="text-stone-400 text-[11px] leading-relaxed">
+                Render a visual seal of your sacred journey across Egypt.
+              </p>
+            </div>
+
+            {/* Interactive Camera Screen OR Captured Preview Box */}
+            <div 
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`relative h-64 rounded-2xl overflow-hidden border flex flex-col items-center justify-center transition-all ${
+                isDragging 
+                  ? 'border-emerald-500 bg-emerald-950/20' 
+                  : capturedImage 
+                    ? 'border-emerald-500/40 bg-stone-900' 
+                    : 'border-[#d4af37]/20 bg-stone-950/60'
+              }`}
+            >
+              {isCameraActive ? (
+                /* Live Camera Video Feed */
+                <div className="w-full h-full relative">
+                  <video 
+                    ref={videoRef}
+                    autoPlay 
+                    playsInline 
+                    id="camera-preview"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-x-0 bottom-4 flex justify-center gap-2.5 z-10">
+                    <button
+                      type="button"
+                      onClick={capturePhoto}
+                      className="bg-gradient-to-r from-[#d4af37] to-[#b08e23] text-[#140f0a] font-serif font-black text-[11px] uppercase tracking-widest px-4 py-2 rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" /> Capture Seal
+                    </button>
+                    <button
+                      type="button"
+                      onClick={stopCamera}
+                      className="bg-stone-900/90 border border-stone-850 hover:bg-stone-800 text-stone-300 font-mono text-[10px] uppercase tracking-wider px-3.5 py-2 rounded-xl cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : capturedImage ? (
+                /* Captured Image Preview and Redo trigger */
+                <div className="w-full h-full relative">
+                  <img 
+                    src={capturedImage} 
+                    alt="Captured voyage preview" 
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                  <div className="absolute bottom-3 right-3 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setCapturedImage(null)}
+                      className="bg-stone-900/95 border border-stone-800 hover:border-[#d4af37]/40 text-[#e6c280] font-mono text-[9px] uppercase tracking-widest py-1.5 px-3 rounded-lg transition-all cursor-pointer flex items-center gap-1"
+                    >
+                      <RefreshCw className="w-3 h-3 text-[#d4af37]" /> Redo Image
+                    </button>
+                  </div>
+                  <div className="absolute top-3 left-3 bg-emerald-950/90 border border-emerald-500/40 text-emerald-400 font-mono text-[9px] uppercase tracking-widest px-2.5 py-1 rounded-md flex items-center gap-1">
+                    <Check className="w-3 h-3" /> Ready
+                  </div>
+                </div>
+              ) : (
+                /* Empty state / summoning state */
+                <div className="p-6 text-center space-y-4">
+                  <div className="w-14 h-14 rounded-full bg-[#d4af37]/10 border border-[#d4af37]/20 flex items-center justify-center mx-auto text-[#d4af37] animate-pulse">
+                    <Camera className="w-6 h-6" />
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <p className="text-xs text-stone-200 font-medium font-serif uppercase tracking-wider">
+                      Summon the Sacred Mirror
+                    </p>
+                    <p className="text-[10px] text-stone-400 max-w-xs mx-auto">
+                      Click below to capture from your camera, or drag & drop a file directly in this zone!
+                    </p>
+                  </div>
+
+                  {cameraError && (
+                    <p className="text-[10px] text-red-400 font-mono leading-relaxed max-w-[240px] mx-auto">
+                      {cameraError}
+                    </p>
+                  )}
+
+                  <div className="flex flex-wrap items-center justify-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={startCamera}
+                      className="bg-[#1f1914] hover:bg-[#2e241b] border border-[#d4af37]/40 text-[#e6c280] font-mono text-[10px] uppercase tracking-widest px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Camera className="w-3.5 h-3.5 text-[#d4af37]" /> Open Camera
+                    </button>
+
+                    <label className="bg-stone-900 hover:bg-stone-850 border border-stone-800 text-stone-400 font-mono text-[10px] uppercase tracking-widest px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5">
+                      <Upload className="w-3.5 h-3.5 text-stone-500" />
+                      <span>Select File</span>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handleFileUpload} 
+                        className="hidden" 
+                      />
+                    </label>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Traveler & Expedition details form */}
+            <form onSubmit={handleSubmitPhoto} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="block text-[9px] font-mono uppercase tracking-widest text-stone-400">Traveler Name</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Scribe Sophia"
+                    value={authorName}
+                    onChange={(e) => setAuthorName(e.target.value)}
+                    className="w-full bg-stone-950/80 border border-[#d4af37]/25 rounded-xl p-3 text-stone-200 text-xs focus:outline-none focus:border-[#d4af37] transition-colors"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-[9px] font-mono uppercase tracking-widest text-stone-400">Expedition Site</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Sharm El Sheikh"
+                    value={locationName}
+                    onChange={(e) => setLocationName(e.target.value)}
+                    className="w-full bg-stone-950/80 border border-[#d4af37]/25 rounded-xl p-3 text-stone-200 text-xs focus:outline-none focus:border-[#d4af37] transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-[9px] font-mono uppercase tracking-widest text-stone-400">Voyage Inscription (Caption)</label>
+                <textarea
+                  required
+                  rows={2}
+                  maxLength={180}
+                  placeholder="Share a short historical testimony or review of your visual journey..."
+                  value={caption}
+                  onChange={(e) => setCaption(e.target.value)}
+                  className="w-full bg-stone-950/80 border border-[#d4af37]/25 rounded-xl p-3 text-stone-200 text-xs focus:outline-none focus:border-[#d4af37] transition-colors leading-relaxed"
+                />
+                <span className="text-[8px] font-mono text-stone-500 text-right block">
+                  {caption.length}/180 characters limit
+                </span>
+              </div>
+
+              <button
+                type="submit"
+                disabled={!capturedImage || isSubmittingPhoto}
+                className="w-full bg-gradient-to-r from-[#d4af37] to-[#b08e23] disabled:from-stone-850 disabled:to-stone-900 disabled:text-stone-500 text-[#140f0a] font-serif font-black text-xs uppercase tracking-widest py-3.5 rounded-xl transition-all disabled:cursor-not-allowed shadow-md shadow-[#d4af37]/5 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {isSubmittingPhoto ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-[#140f0a]" />
+                    <span>Sealing Testimony...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4" />
+                    <span>Inscribe to Community Board</span>
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+
+          {/* RIGHT: LIVE COMMUNITY PHOTO BOARD GRID */}
+          <div className="lg:col-span-7 space-y-4">
+            <div className="flex items-center justify-between border-b border-stone-850 pb-3">
+              <span className="font-mono text-[10px] text-stone-500 uppercase tracking-widest">
+                Ledger Entries ({communityPhotos.length} Voyages)
+              </span>
+              <button 
+                onClick={fetchPhotos}
+                className="text-stone-400 hover:text-[#d4af37] transition-colors cursor-pointer"
+                title="Refresh Board"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {isLoadingPhotos ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[1, 2].map((i) => (
+                  <div key={i} className="h-64 bg-[#1a1410] rounded-2xl border border-stone-850 animate-pulse" />
+                ))}
+              </div>
+            ) : communityPhotos.length === 0 ? (
+              <div className="text-center py-16 bg-[#17120e]/40 rounded-2xl border border-dashed border-[#d4af37]/15">
+                <Image className="w-10 h-10 text-stone-600 mx-auto mb-2 animate-bounce" />
+                <p className="font-serif text-sm text-stone-400">The Travel Board is currently unscribed.</p>
+                <p className="text-[10px] text-stone-500">Be the first to share an image above!</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[580px] overflow-y-auto pr-2 scrollbar-thin">
+                <AnimatePresence>
+                  {communityPhotos.map((photo) => {
+                    const isLiked = myLikedPhotos.includes(photo.id);
+                    const count = likes[photo.id] || 0;
+                    return (
+                      <motion.div
+                        key={photo.id}
+                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="bg-[#120e0a] border border-[#d4af37]/15 rounded-2xl overflow-hidden shadow-md group relative flex flex-col justify-between"
+                      >
+                        {/* Image Canvas */}
+                        <div className="h-44 relative overflow-hidden bg-stone-900">
+                          <motion.img 
+                            src={photo.image} 
+                            alt={photo.caption} 
+                            initial={{ scale: 1.08 }}
+                            whileHover={{ scale: 1.15, y: -4 }}
+                            transition={{ duration: 0.6, ease: "easeOut" }}
+                            className="w-full h-full object-cover origin-center"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#140f0a] via-transparent to-transparent opacity-90 pointer-events-none" />
+
+                          {/* Interactive Sparkle Reaction Button */}
+                          <button
+                            onClick={() => handleLikePhoto(photo.id)}
+                            className={`absolute top-3 right-3 p-2 rounded-xl backdrop-blur-md border transition-all cursor-pointer flex items-center gap-1.5 ${
+                              isLiked 
+                                ? 'bg-amber-500/20 text-amber-300 border-[#d4af37]/55' 
+                                : 'bg-stone-900/75 text-stone-400 border-stone-800 hover:text-[#d4af37] hover:border-[#d4af37]/35'
+                            }`}
+                          >
+                            <Heart className={`w-3.5 h-3.5 transition-colors ${isLiked ? 'fill-current text-amber-400' : ''}`} />
+                            <span className="text-[10px] font-mono font-bold">{count}</span>
+                          </button>
+
+                          {/* Pin details overlay */}
+                          <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between">
+                            <span className="text-[10px] font-serif font-black text-[#e6c280] bg-[#140f0a]/60 px-2.5 py-1 rounded-md border border-[#d4af37]/10 truncate max-w-[150px]">
+                              {photo.author}
+                            </span>
+                            <span className="text-[8px] font-mono text-stone-400 bg-stone-950/70 px-2 py-1 rounded border border-stone-850 flex items-center gap-1">
+                              <MapPin className="w-2.5 h-2.5 text-[#d4af37]" /> {photo.location}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Caption Context */}
+                        <div className="p-3 bg-[#17120e] flex-1 flex flex-col justify-between space-y-2">
+                          <p className="text-[10.5px] text-stone-300 leading-relaxed italic">
+                            "{photo.caption}"
+                          </p>
+                          <div className="flex items-center justify-between border-t border-stone-850/60 pt-2 text-[8px] font-mono text-stone-500">
+                            <span>📜 Travel Log</span>
+                            <span>{new Date(photo.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Full Theater Modal */}
       <AnimatePresence>

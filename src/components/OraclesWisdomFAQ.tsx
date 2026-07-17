@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { HelpCircle, ChevronDown, Compass, Shield, Anchor, Calendar, Waves, Search, Sparkles, BookOpen } from 'lucide-react';
+import { HelpCircle, ChevronDown, Compass, Shield, Anchor, Calendar, Waves, Search, Sparkles, BookOpen, CheckSquare, Square, RotateCcw, Luggage, Shirt, Info, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 interface FAQItem {
   id: string;
@@ -78,10 +78,152 @@ const FAQ_DATA: FAQItem[] = [
   }
 ];
 
+type EnvironmentType = 'diving' | 'desert' | 'temples';
+type SeasonType = 'spring_autumn' | 'summer' | 'winter';
+
+const BASE_PACKING_DATA: Record<EnvironmentType, string[]> = {
+  diving: [
+    'Swimwear & swim trunks (bring 2 sets)',
+    'Reef-safe biodegradable sunscreen (SPF 50+)',
+    'Waterproof dry bag for boat decks',
+    'Personal diving mask (prescription if needed)',
+    'Physical or digital dive certification card & logbook',
+    'Lightweight sandals or flip-flops'
+  ],
+  desert: [
+    'Sturdy closed-toe sneakers or hiking boots (sandals not permitted)',
+    'Lightweight, breathable long-sleeve shirts (protection from sun & dust)',
+    'Polarized sunglasses with high UV protection',
+    'Washable cotton headscarf / bandana (for wind protection)',
+    'Moisture-wicking athletic socks',
+    'High-UV lip balm & intensive moisturizer'
+  ],
+  temples: [
+    'Modest apparel (shoulders and knees covered for sacred ruins)',
+    'Wide-brim sun hat or linen cap',
+    'Ultra-comfortable, supportive walking shoes',
+    'Hand sanitizer & pocket wet wipes',
+    'Small local cash bills (EGP coins for temple facilities)',
+    'Compact travel umbrella for personal shade'
+  ]
+};
+
+const SEASONAL_PACKING_DATA: Record<SeasonType, string[]> = {
+  spring_autumn: [
+    'Light jacket or wrap for cool evening breezes',
+    'Versatile layering options for high diurnal temperature swings'
+  ],
+  summer: [
+    'Handheld personal misting fan',
+    'Electrolyte rehydration powder packs',
+    'UV protective cooling towel',
+    'High-grade sunblock (reapply every 2 hours)'
+  ],
+  winter: [
+    'Cozy fleece jacket or packable down coat for chilly desert nights',
+    'Warm pashmina scarf or travel shawl',
+    'Thermal base layer if participating in overnight stargazing camping'
+  ]
+};
+
+const ETIQUETTE_DATA: Record<EnvironmentType, { dos: string[]; donts: string[] }> = {
+  diving: {
+    dos: [
+      'Practice neutral buoyancy to keep a safe distance from fragile coral reefs.',
+      'Apply reef-safe biodegradable sunscreen at least 30 minutes before entering the water.',
+      'Show appreciation by tipping the boat crew (Baksheesh is customary and highly valued).'
+    ],
+    donts: [
+      'Never touch, stand on, or kick the living coral. A single brush can destroy decades of growth.',
+      'Do not collect seashells, fossilized coral pieces, or artifacts from marine national parks.',
+      'Never feed or try to chase wild marine life; let them swim freely.'
+    ]
+  },
+  desert: {
+    dos: [
+      'Always wear sturdy closed-toe shoes to protect against hot sand, thorns, or small desert fauna.',
+      'Always ask for permission before taking photographs of Bedouin hosts, handlers, or camels.',
+      'Drink water constantly, even if you do not feel thirsty; desert air evaporates sweat instantly.'
+    ],
+    donts: [
+      'Do not litter or leave waste. Keep the pristine desert dunes perfectly untouched.',
+      'Never wander off alone beyond the marked perimeter of the camp, especially after sunset.',
+      'Avoid high-speed quad-biking maneuvers that kick up unnecessary dust clouds near camel routes.'
+    ]
+  },
+  temples: {
+    dos: [
+      'Dress modestly by keeping both shoulders and knees covered when entering historic temples and tombs.',
+      'Keep a supply of small-denomination Egyptian Pound (EGP) cash notes on hand for tipping.',
+      'Carry your trash with you until you find a waste receptacle.'
+    ],
+    donts: [
+      'Never touch, lean on, or scratch ancient carved reliefs, painted murals, or hieroglyphic pillars.',
+      'Absolutely NO flash photography inside any tombs. Bright strobe light degrades historical organic pigments.',
+      'Do not climb or sit on ancient stone altars, walls, ruins, or statues.'
+    ]
+  }
+};
+
 export default function OraclesWisdomFAQ() {
+  const [viewMode, setViewMode] = useState<'faq' | 'advice'>('faq');
+  const [selectedEnv, setSelectedEnv] = useState<EnvironmentType>('diving');
+  const [selectedSeason, setSelectedSeason] = useState<SeasonType>('spring_autumn');
+
   const [activeCategory, setActiveCategory] = useState<'all' | 'equipment' | 'seasons' | 'history' | 'general'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>('faq-1');
+
+  // Load / save checklist items state from localStorage
+  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>(() => {
+    try {
+      const saved = localStorage.getItem('egypt_packing_checklist_v1');
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('egypt_packing_checklist_v1', JSON.stringify(checkedItems));
+  }, [checkedItems]);
+
+  // Combine baseline and seasonal lists to produce dynamic, context-aware packing lists
+  const packingList = useMemo(() => {
+    const base = BASE_PACKING_DATA[selectedEnv] || [];
+    const seasonal = SEASONAL_PACKING_DATA[selectedSeason] || [];
+    return [...base, ...seasonal];
+  }, [selectedEnv, selectedSeason]);
+
+  // Calculate stats for checked list
+  const checkedItemsCount = useMemo(() => {
+    return packingList.filter(item => checkedItems[item]).length;
+  }, [packingList, checkedItems]);
+
+  const packingProgress = useMemo(() => {
+    if (packingList.length === 0) return 0;
+    return (checkedItemsCount / packingList.length) * 100;
+  }, [packingList, checkedItemsCount]);
+
+  // Retrieve context-aware etiquette rules
+  const etiquetteRules = useMemo(() => {
+    return ETIQUETTE_DATA[selectedEnv] || { dos: [], donts: [] };
+  }, [selectedEnv]);
+
+  const toggleCheckItem = (item: string) => {
+    setCheckedItems(prev => ({
+      ...prev,
+      [item]: !prev[item]
+    }));
+  };
+
+  const resetChecklist = () => {
+    const cleared = { ...checkedItems };
+    packingList.forEach(item => {
+      cleared[item] = false;
+    });
+    setCheckedItems(cleared);
+  };
 
   // Filter items based on active category and search query
   const filteredFAQs = useMemo(() => {
@@ -133,149 +275,407 @@ export default function OraclesWisdomFAQ() {
           </p>
         </div>
 
-        {/* Search Bar & Categories layout */}
-        <div className="space-y-4">
-          <div className="relative max-w-md mx-auto">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-500 w-4 h-4" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search help topics..."
-              className="w-full bg-[#1c1611] border border-[#d4af37]/35 rounded-xl py-2.5 pl-10 pr-4 text-stone-200 text-xs focus:outline-none focus:ring-1 focus:ring-[#d4af37] placeholder:text-stone-600 transition-all"
-            />
-            {searchQuery && (
-              <button 
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-stone-500 hover:text-stone-300"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-
-          {/* Horizontal scrollable tab buttons */}
-          <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
-            {categories.map((cat) => {
-              const isActive = activeCategory === cat.value;
-              return (
-                <button
-                  key={cat.value}
-                  onClick={() => {
-                    setActiveCategory(cat.value as any);
-                    // Open the first item of the filtered list automatically
-                    const items = FAQ_DATA.filter(f => cat.value === 'all' || f.category === cat.value);
-                    if (items.length > 0) {
-                      setExpandedId(items[0].id);
-                    }
-                  }}
-                  className={`px-3 py-1.5 rounded-full border text-[10px] font-mono transition-all uppercase tracking-wider cursor-pointer flex items-center gap-1 ${
-                    isActive
-                      ? 'bg-[#d4af37] text-stone-950 border-[#d4af37] font-bold shadow-md shadow-[#d4af37]/10'
-                      : 'bg-[#1a1410] border-stone-800 text-stone-400 hover:text-stone-200 hover:border-stone-700'
-                  }`}
-                >
-                  <span>{cat.label}</span>
-                  <span className={`inline-block text-[8px] font-bold px-1.5 py-0.2 rounded-full ${isActive ? 'bg-stone-950/25 text-stone-950' : 'bg-stone-900 text-stone-500'}`}>
-                    {cat.count}
-                  </span>
-                </button>
-              );
-            })}
+        {/* View Switcher Toggle */}
+        <div className="flex justify-center" id="faq-view-toggle">
+          <div className="bg-[#1a1410] border border-[#d4af37]/25 rounded-full p-1 flex gap-1">
+            <button
+              onClick={() => setViewMode('faq')}
+              className={`px-5 py-2 rounded-full text-xs font-serif font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 ${
+                viewMode === 'faq'
+                  ? 'bg-[#d4af37] text-stone-950 font-black shadow-md shadow-[#d4af37]/20'
+                  : 'text-stone-400 hover:text-stone-200'
+              }`}
+            >
+              <HelpCircle className="w-3.5 h-3.5" />
+              𓋹 Oracle FAQs
+            </button>
+            <button
+              onClick={() => setViewMode('advice')}
+              className={`px-5 py-2 rounded-full text-xs font-serif font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 ${
+                viewMode === 'advice'
+                  ? 'bg-[#d4af37] text-stone-950 font-black shadow-md shadow-[#d4af37]/20'
+                  : 'text-stone-400 hover:text-stone-200'
+              }`}
+            >
+              <Compass className="w-3.5 h-3.5" />
+              𓊡 Traveler's Advice
+            </button>
           </div>
         </div>
 
-        {/* FAQs Accordion */}
-        <div className="space-y-3 pt-2">
-          {filteredFAQs.length === 0 ? (
-            <div className="text-center py-10 text-stone-500 italic text-xs border border-stone-800/80 rounded-xl bg-black/10">
-              𓀞 We could not find any topics matching your search. Try searching for other keywords.
-            </div>
-          ) : (
-            <div className="space-y-2.5">
-              {filteredFAQs.map((faq) => {
-                const isExpanded = expandedId === faq.id;
-                return (
-                  <div
-                    key={faq.id}
-                    className={`border rounded-xl overflow-hidden transition-all duration-300 ${
-                      isExpanded
-                        ? 'border-[#d4af37] bg-[#1e150f]'
-                        : 'border-stone-850 bg-[#16110c]/80 hover:border-stone-750'
-                    }`}
+        {/* FAQ Accordion Mode */}
+        {viewMode === 'faq' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="space-y-6"
+          >
+            {/* Search Bar & Categories layout */}
+            <div className="space-y-4">
+              <div className="relative max-w-md mx-auto">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-500 w-4 h-4" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search help topics..."
+                  className="w-full bg-[#1c1611] border border-[#d4af37]/35 rounded-xl py-2.5 pl-10 pr-4 text-stone-200 text-xs focus:outline-none focus:ring-1 focus:ring-[#d4af37] placeholder:text-stone-600 transition-all"
+                />
+                {searchQuery && (
+                  <button 
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-stone-500 hover:text-stone-300"
                   >
-                    
-                    {/* FAQ Accordion Header */}
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              {/* Horizontal scrollable tab buttons */}
+              <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                {categories.map((cat) => {
+                  const isActive = activeCategory === cat.value;
+                  return (
                     <button
-                      onClick={() => toggleExpand(faq.id)}
-                      className="w-full flex items-center justify-between p-4 text-left cursor-pointer transition-colors"
+                      key={cat.value}
+                      onClick={() => {
+                        setActiveCategory(cat.value as any);
+                        // Open the first item of the filtered list automatically
+                        const items = FAQ_DATA.filter(f => cat.value === 'all' || f.category === cat.value);
+                        if (items.length > 0) {
+                          setExpandedId(items[0].id);
+                        }
+                      }}
+                      className={`px-3 py-1.5 rounded-full border text-[10px] font-mono transition-all uppercase tracking-wider cursor-pointer flex items-center gap-1 ${
+                        isActive
+                          ? 'bg-[#d4af37] text-stone-950 border-[#d4af37] font-bold shadow-md shadow-[#d4af37]/10'
+                          : 'bg-[#1a1410] border-stone-800 text-stone-400 hover:text-stone-200 hover:border-stone-700'
+                      }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <span className="text-lg bg-[#241c14] border border-[#d4af37]/25 w-8 h-8 rounded-full flex items-center justify-center text-[#d4af37] select-none font-serif shadow-sm">
-                          {faq.glyph}
-                        </span>
-                        <span className={`font-serif text-sm font-bold uppercase tracking-wide transition-colors ${
-                          isExpanded ? 'text-[#e6c280]' : 'text-stone-300 hover:text-stone-100'
-                        }`}>
-                          {faq.question}
-                        </span>
-                      </div>
-                      <ChevronDown className={`w-4 h-4 text-stone-500 transition-transform duration-300 ${
-                        isExpanded ? 'transform rotate-180 text-[#d4af37]' : ''
-                      }`} />
+                      <span>{cat.label}</span>
+                      <span className={`inline-block text-[8px] font-bold px-1.5 py-0.2 rounded-full ${isActive ? 'bg-stone-950/25 text-stone-950' : 'bg-stone-900 text-stone-500'}`}>
+                        {cat.count}
+                      </span>
                     </button>
+                  );
+                })}
+              </div>
+            </div>
 
-                    {/* FAQ Accordion Body */}
-                    <AnimatePresence initial={false}>
-                      {isExpanded && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.25, ease: 'easeInOut' }}
+            {/* FAQs Accordion */}
+            <div className="space-y-3 pt-2">
+              {filteredFAQs.length === 0 ? (
+                <div className="text-center py-10 text-stone-500 italic text-xs border border-stone-800/80 rounded-xl bg-black/10">
+                  𓀞 We could not find any topics matching your search. Try searching for other keywords.
+                </div>
+              ) : (
+                <div className="space-y-2.5">
+                  {filteredFAQs.map((faq) => {
+                    const isExpanded = expandedId === faq.id;
+                    return (
+                      <div
+                        key={faq.id}
+                        className={`border rounded-xl overflow-hidden transition-all duration-300 ${
+                          isExpanded
+                            ? 'border-[#d4af37] bg-[#1e150f]'
+                            : 'border-stone-850 bg-[#16110c]/80 hover:border-stone-750'
+                        }`}
+                      >
+                        
+                        {/* FAQ Accordion Header */}
+                        <button
+                          onClick={() => toggleExpand(faq.id)}
+                          className="w-full flex items-center justify-between p-4 text-left cursor-pointer transition-colors"
                         >
-                          <div className="px-4 pb-4 pt-1 space-y-4 border-t border-stone-900/50">
-                            
-                            {/* Answer Text */}
-                            <p className="text-stone-300 text-xs leading-relaxed font-sans">
-                              {faq.answer}
-                            </p>
-
-                            {/* Lore Quote snippet */}
-                            {faq.loreQuote && (
-                              <div className="bg-[#2a1e14]/40 border border-[#d4af37]/15 rounded-xl p-3 text-[11px] text-[#e6c280]/90 italic relative overflow-hidden pl-8">
-                                <span className="absolute left-3 top-3.5 text-[#d4af37]/55 text-base select-none font-serif">𓂀</span>
-                                <strong className="not-italic block text-[9px] uppercase font-mono tracking-wider text-[#d4af37] mb-0.5">
-                                  Quick Travel Tip:
-                                </strong>
-                                "{faq.loreQuote}"
-                              </div>
-                            )}
-
-                            {/* Highlight Bullet badges */}
-                            <div className="flex flex-wrap gap-2 pt-1">
-                              {faq.highlights.map((highlight, index) => (
-                                <span
-                                  key={index}
-                                  className="text-[9px] font-mono uppercase bg-[#140f0b] border border-stone-800 text-stone-400 px-2.5 py-1 rounded-full flex items-center gap-1.5"
-                                >
-                                  <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]/80 animate-ping"></span>
-                                  {highlight}
-                                </span>
-                              ))}
-                            </div>
-
+                          <div className="flex items-center gap-3">
+                            <span className="text-lg bg-[#241c14] border border-[#d4af37]/25 w-8 h-8 rounded-full flex items-center justify-center text-[#d4af37] select-none font-serif shadow-sm">
+                              {faq.glyph}
+                            </span>
+                            <span className={`font-serif text-sm font-bold uppercase tracking-wide transition-colors ${
+                              isExpanded ? 'text-[#e6c280]' : 'text-stone-300 hover:text-stone-100'
+                            }`}>
+                              {faq.question}
+                            </span>
                           </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                          <ChevronDown className={`w-4 h-4 text-stone-500 transition-transform duration-300 ${
+                            isExpanded ? 'transform rotate-180 text-[#d4af37]' : ''
+                          }`} />
+                        </button>
+
+                        {/* FAQ Accordion Body */}
+                        <AnimatePresence initial={false}>
+                          {isExpanded && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.25, ease: 'easeInOut' }}
+                            >
+                              <div className="px-4 pb-4 pt-1 space-y-4 border-t border-stone-900/50">
+                                
+                                {/* Answer Text */}
+                                <p className="text-stone-300 text-xs leading-relaxed font-sans">
+                                  {faq.answer}
+                                </p>
+
+                                {/* Lore Quote snippet */}
+                                {faq.loreQuote && (
+                                  <div className="bg-[#2a1e14]/40 border border-[#d4af37]/15 rounded-xl p-3 text-[11px] text-[#e6c280]/90 italic relative overflow-hidden pl-8">
+                                    <span className="absolute left-3 top-3.5 text-[#d4af37]/55 text-base select-none font-serif">𓂀</span>
+                                    <strong className="not-italic block text-[9px] uppercase font-mono tracking-wider text-[#d4af37] mb-0.5">
+                                      Quick Travel Tip:
+                                    </strong>
+                                    "{faq.loreQuote}"
+                                  </div>
+                                )}
+
+                                {/* Highlight Bullet badges */}
+                                <div className="flex flex-wrap gap-2 pt-1">
+                                  {faq.highlights.map((highlight, index) => (
+                                    <span
+                                      key={index}
+                                      className="text-[9px] font-mono uppercase bg-[#140f0b] border border-stone-800 text-stone-400 px-2.5 py-1 rounded-full flex items-center gap-1.5"
+                                    >
+                                      <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]/80 animate-ping"></span>
+                                      {highlight}
+                                    </span>
+                                  ))}
+                                </div>
+
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Traveler's Advice Section */}
+        {viewMode === 'advice' && (
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="space-y-6 pt-2"
+            id="traveler-advice-panel"
+          >
+            {/* Introduction */}
+            <div className="text-center bg-[#1c1611]/80 border border-[#d4af37]/15 rounded-xl p-4">
+              <p className="text-xs text-stone-300 leading-relaxed max-w-2xl mx-auto">
+                𓋹 Prepare your mortal caravan with the right equipment and respect the sacred ways of Egypt. Select your intended environment and season to generate a customized packing list and cultural etiquette guide.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+              
+              {/* Left Column: Selectors & Dynamic Packing List Checklist */}
+              <div className="md:col-span-6 space-y-6">
+                
+                {/* Selectors card */}
+                <div className="bg-[#1a1410] border border-[#d4af37]/20 rounded-xl p-4 space-y-4">
+                  <h4 className="font-serif text-xs font-bold text-[#e6c280] uppercase tracking-wider flex items-center gap-2">
+                    <Compass className="w-4 h-4 text-[#d4af37]" />
+                    1. Voyage Parameters
+                  </h4>
+
+                  {/* Environment select */}
+                  <div className="space-y-2">
+                    <span className="text-[10px] font-mono text-stone-400 uppercase tracking-widest block">Environment / Activity</span>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { value: 'diving', label: '𓆛 Diving', icon: Waves },
+                        { value: 'desert', label: '𓅓 Desert', icon: Compass },
+                        { value: 'temples', label: '𓉐 Temples', icon: BookOpen }
+                      ].map((env) => {
+                        const IconComp = env.icon;
+                        const isSelected = selectedEnv === env.value;
+                        return (
+                          <button
+                            key={env.value}
+                            onClick={() => setSelectedEnv(env.value as EnvironmentType)}
+                            className={`py-2 px-1 rounded-lg border text-[10px] font-mono uppercase tracking-wider flex flex-col items-center gap-1 cursor-pointer transition-all ${
+                              isSelected
+                                ? 'bg-[#d4af37]/15 border-[#d4af37] text-[#e6c280]'
+                                : 'bg-[#140f0c] border-stone-850 text-stone-500 hover:text-stone-300 hover:border-stone-700'
+                            }`}
+                          >
+                            <IconComp className="w-3.5 h-3.5" />
+                            <span>{env.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Season select */}
+                  <div className="space-y-2">
+                    <span className="text-[10px] font-mono text-stone-400 uppercase tracking-widest block">Season</span>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { value: 'spring_autumn', label: '𓊟 Spring/Fall', icon: Calendar },
+                        { value: 'summer', label: '𓊡 Summer', icon: Sparkles },
+                        { value: 'winter', label: '𓎬 Winter', icon: Shield }
+                      ].map((seas) => {
+                        const IconComp = seas.icon;
+                        const isSelected = selectedSeason === seas.value;
+                        return (
+                          <button
+                            key={seas.value}
+                            onClick={() => setSelectedSeason(seas.value as SeasonType)}
+                            className={`py-2 px-1 rounded-lg border text-[10px] font-mono uppercase tracking-wider flex flex-col items-center gap-1 cursor-pointer transition-all ${
+                              isSelected
+                                ? 'bg-[#d4af37]/15 border-[#d4af37] text-[#e6c280]'
+                                : 'bg-[#140f0c] border-stone-850 text-stone-500 hover:text-stone-300 hover:border-stone-700'
+                            }`}
+                          >
+                            <IconComp className="w-3.5 h-3.5" />
+                            <span>{seas.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dynamic Packing Checklist */}
+                <div className="bg-[#1a1410] border border-[#d4af37]/20 rounded-xl p-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-serif text-xs font-bold text-[#e6c280] uppercase tracking-wider flex items-center gap-2">
+                      <Luggage className="w-4 h-4 text-[#d4af37]" />
+                      2. Sacred Packing List ({checkedItemsCount}/{packingList.length})
+                    </h4>
+                    {checkedItemsCount > 0 && (
+                      <button
+                        onClick={resetChecklist}
+                        className="text-[9px] font-mono uppercase text-stone-500 hover:text-[#d4af37] transition-colors flex items-center gap-1 cursor-pointer"
+                      >
+                        <RotateCcw className="w-2.5 h-2.5" /> Reset
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Checklist Progress Bar */}
+                  <div className="space-y-1.5">
+                    <div className="h-1.5 w-full bg-stone-900 rounded-full overflow-hidden border border-stone-850">
+                      <motion.div
+                        className="h-full bg-gradient-to-r from-amber-600 to-[#d4af37]"
+                        style={{ width: `${packingProgress}%` }}
+                        transition={{ duration: 0.3 }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[8px] font-mono text-stone-500 uppercase tracking-widest">
+                      <span>Vessel Empty</span>
+                      <span>{Math.round(packingProgress)}% Prepared</span>
+                    </div>
+                  </div>
+
+                  {/* Checked items list */}
+                  <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-amber-950">
+                    {packingList.map((item, idx) => {
+                      const isChecked = checkedItems[item] || false;
+                      return (
+                        <div
+                          key={idx}
+                          onClick={() => toggleCheckItem(item)}
+                          className={`flex items-start gap-3 p-2.5 rounded-lg border cursor-pointer transition-all ${
+                            isChecked
+                              ? 'bg-[#1f1913] border-[#d4af37]/30 opacity-60'
+                              : 'bg-[#130f0b] border-stone-850 hover:border-[#d4af37]/15'
+                          }`}
+                        >
+                          <button
+                            type="button"
+                            className="text-[#d4af37] focus:outline-none flex-shrink-0 mt-0.5"
+                          >
+                            {isChecked ? (
+                              <CheckSquare className="w-3.5 h-3.5 fill-[#d4af37]/10" />
+                            ) : (
+                              <Square className="w-3.5 h-3.5 text-stone-700" />
+                            )}
+                          </button>
+                          <span className={`text-[11px] font-sans transition-colors ${isChecked ? 'text-stone-500 line-through' : 'text-stone-200'}`}>
+                            {item}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Right Column: Cultural Etiquette */}
+              <div className="md:col-span-6 flex flex-col justify-between space-y-6">
+                
+                <div className="bg-[#1a1410] border border-[#d4af37]/20 rounded-xl p-4 flex-grow space-y-4">
+                  <div className="border-b border-[#d4af37]/15 pb-2.5">
+                    <span className="text-[9px] font-mono text-[#d4af37] uppercase tracking-[0.2em] block">Pharaonic Decorum</span>
+                    <h4 className="font-serif text-sm font-bold text-[#e6c280] uppercase tracking-wide flex items-center gap-2">
+                      <BookOpen className="w-4 h-4 text-[#d4af37]" />
+                      3. Cultural Etiquette & Customs
+                    </h4>
+                  </div>
+
+                  <div className="space-y-4">
+                    
+                    {/* DOs Section */}
+                    <div className="space-y-2.5">
+                      <div className="flex items-center gap-1.5 text-emerald-400 font-mono text-[10px] font-bold uppercase tracking-wider">
+                        <ThumbsUp className="w-3.5 h-3.5 text-emerald-500" />
+                        <span>The Path of Ma'at (Sacred Do's)</span>
+                      </div>
+                      <div className="space-y-2">
+                        {etiquetteRules.dos.map((doTip, idx) => (
+                          <div key={idx} className="bg-[#141d16]/30 border border-emerald-950/40 rounded-lg p-2.5 flex gap-2.5 items-start">
+                            <span className="text-emerald-500 font-serif text-[10px] mt-0.5 select-none">𓋹</span>
+                            <p className="text-stone-300 text-[11px] leading-relaxed font-sans">{doTip}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* DONTs Section */}
+                    <div className="space-y-2.5">
+                      <div className="flex items-center gap-1.5 text-red-400 font-mono text-[10px] font-bold uppercase tracking-wider">
+                        <ThumbsDown className="w-3.5 h-3.5 text-red-500" />
+                        <span>The Path of Chaos (Sacred Don'ts)</span>
+                      </div>
+                      <div className="space-y-2">
+                        {etiquetteRules.donts.map((dontTip, idx) => (
+                          <div key={idx} className="bg-[#241311]/30 border border-red-950/40 rounded-lg p-2.5 flex gap-2.5 items-start">
+                            <span className="text-red-500 font-serif text-[10px] mt-0.5 select-none">𓅓</span>
+                            <p className="text-stone-300 text-[11px] leading-relaxed font-sans">{dontTip}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
 
                   </div>
-                );
-              })}
+                </div>
+
+                {/* Quick Informational Tip Banner */}
+                <div className="bg-[#1e1711] border border-dashed border-[#d4af37]/20 rounded-xl p-3.5 flex gap-3 items-start">
+                  <Info className="w-4 h-4 text-[#d4af37] flex-shrink-0 mt-0.5" />
+                  <div className="space-y-0.5">
+                    <span className="text-[9px] font-mono text-[#d4af37] uppercase tracking-wider block">Universal Advice</span>
+                    <p className="text-[10px] text-stone-400 leading-relaxed font-sans">
+                      In Egypt, hospitality is a cornerstone of daily life. Showing a friendly, patient attitude and expressing gratitude with a warm <span className="text-stone-200 font-serif italic">"Shukran"</span> (Thank you) will open many hearts and doors on your voyage.
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+
             </div>
-          )}
-        </div>
+          </motion.div>
+        )}
 
         {/* Footer help note */}
         <div className="bg-[#1a140f] border border-[#d4af37]/10 rounded-xl p-3 text-center">

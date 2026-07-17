@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { FileText, Clock, MessageSquare, CheckCircle, Sparkles, Printer, QrCode, Ticket, Camera } from 'lucide-react';
 import { Booking, Excursion } from '../types';
@@ -8,6 +8,7 @@ import BookingQRCode from './BookingQRCode';
 import DetailedTicketCard from './DetailedTicketCard';
 import ExcursionFeedbackForm from './ExcursionFeedbackForm';
 import TicketScanner from './TicketScanner';
+import ExcursionExpenseCalculator from './ExcursionExpenseCalculator';
 
 const STATUS_CONFIG = {
   'Pending Oracle Approval': {
@@ -46,9 +47,22 @@ export default function BookingManager({ bookings, excursions, onCancelBooking, 
   const [expandedTicketId, setExpandedTicketId] = useState<string | null>(null);
   const [expandedFeedbackId, setExpandedFeedbackId] = useState<string | null>(null);
   const [isScannerOpen, setIsScannerOpen] = useState<boolean>(false);
+  const [isManagerLoading, setIsManagerLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsManagerLoading(false);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8" id="ledger-manager-grid">
+    <div className="space-y-10" id="booking-manager-wrapper">
+      
+      {/* Excursion Expense Calculator */}
+      <ExcursionExpenseCalculator bookings={bookings} />
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8" id="ledger-manager-grid">
       
       {/* LEFT COLUMN: Sacred Booking Ledger (Pending Statuses) */}
       <div className="lg:col-span-6 space-y-6" id="bookings-ledger-col">
@@ -91,7 +105,61 @@ export default function BookingManager({ bookings, excursions, onCancelBooking, 
         </AnimatePresence>
 
         <div className="space-y-4">
-          {bookings.length === 0 ? (
+          {isManagerLoading ? (
+            <div className="space-y-4" id="booking-manager-skeleton">
+              {[1, 2].map((idx) => (
+                <div
+                  key={idx}
+                  className="bg-[#1f1a14] border border-[#d4af37]/15 rounded-xl p-5 space-y-4 shadow-md relative overflow-hidden"
+                >
+                  {/* Shimmer effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#d4af37]/15 to-transparent -translate-x-full animate-shimmer pointer-events-none" />
+                  
+                  {/* Status Indicator Bar Skeleton */}
+                  <div className="absolute top-0 right-0 h-1.5 w-1/3 bg-[#d4af37]/20 rounded-bl-md animate-pulse"></div>
+
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-2 w-2/3">
+                      <div className="w-24 h-3 bg-[#140f0c] rounded-md animate-pulse" />
+                      <div className="w-48 h-5 bg-[#140f0c] rounded-md animate-pulse" />
+                    </div>
+                    
+                    {/* Status badge skeleton */}
+                    <div className="w-24 h-5 bg-[#d4af37]/10 border border-[#d4af37]/25 rounded-full flex items-center justify-center gap-1.5">
+                      <span className="text-[#d4af37]/40 text-[10px] animate-pulse">{idx % 2 === 0 ? '𓋹' : '𓂀'}</span>
+                      <div className="w-10 h-2 bg-[#d4af37]/20 rounded-md animate-pulse" />
+                    </div>
+                  </div>
+
+                  {/* Info grid skeleton */}
+                  <div className="grid grid-cols-2 gap-3 pt-2 border-t border-[#d4af37]/10 font-sans">
+                    <div className="space-y-1">
+                      <div className="w-16 h-2 bg-[#140f0c] rounded-md animate-pulse" />
+                      <div className="w-24 h-3.5 bg-[#140f0c] rounded-md animate-pulse" />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="w-16 h-2 bg-[#140f0c] rounded-md animate-pulse" />
+                      <div className="w-20 h-3.5 bg-[#140f0c] rounded-md animate-pulse" />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="w-16 h-2 bg-[#140f0c] rounded-md animate-pulse" />
+                      <div className="w-14 h-3.5 bg-[#140f0c] rounded-md animate-pulse" />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="w-16 h-2 bg-[#140f0c] rounded-md animate-pulse" />
+                      <div className="w-12 h-3.5 bg-[#d4af37]/20 rounded-md animate-pulse" />
+                    </div>
+                  </div>
+
+                  {/* Actions skeleton */}
+                  <div className="flex justify-between items-center pt-2">
+                    <div className="w-28 h-3.5 bg-[#140f0c] rounded-md animate-pulse" />
+                    <div className="w-24 h-7 bg-[#d4af37]/10 rounded-md animate-pulse" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : bookings.length === 0 ? (
             <div className="text-center py-12 bg-[#1a1410] border border-[#d4af37]/15 rounded-2xl text-stone-500 italic text-sm">
               𓀞 You haven't booked any trips yet. Browse our tours above to plan your adventure!
             </div>
@@ -140,6 +208,12 @@ export default function BookingManager({ bookings, excursions, onCancelBooking, 
                           <StatusIcon className="w-3 h-3" />
                           {config.labelText}
                         </div>
+                        {booking.status === 'Confirmed by High Priest' && (
+                          <div className="flex items-center gap-1 bg-[#d4af37]/15 border border-[#d4af37]/35 text-[#d4af37] rounded-full px-2 py-0.5 text-[8px] font-mono uppercase tracking-wider font-bold shadow-[0_0_8px_rgba(212,175,55,0.15)]">
+                            <QrCode className="w-2.5 h-2.5 animate-pulse" />
+                            <span>Mobile QR Ready</span>
+                          </div>
+                        )}
                         {booking.checkedIn && (
                           <div className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-full px-2 py-0.5 text-[8px] font-mono uppercase tracking-wider font-bold">
                             <span className="text-[10px]">𓋹</span> Verified Check-In
@@ -191,33 +265,37 @@ export default function BookingManager({ bookings, excursions, onCancelBooking, 
                         <span>🎟️ Expand to Ticket</span>
                       </button>
 
-                      {/* Ticket QR Toggle Button */}
-                      <button
-                        onClick={() => setExpandedQrId(expandedQrId === booking.id ? null : booking.id)}
-                        className={`px-3 py-1 border rounded-md transition-all cursor-pointer flex items-center gap-1.5 font-bold text-[10px] uppercase tracking-wider ${
-                          expandedQrId === booking.id
-                            ? 'bg-[#d4af37] text-[#140f0c] border-[#d4af37]'
-                            : 'text-[#d4af37] border-[#d4af37]/35 hover:bg-[#d4af37]/10 hover:border-[#d4af37]/60'
-                        }`}
-                        title="Display check-in ticket QR"
-                      >
-                        <QrCode className="w-3 h-3" />
-                        <span>{expandedQrId === booking.id ? 'Hide QR Code' : 'Check-In QR'}</span>
-                      </button>
+                      {/* Ticket QR Toggle Button - Only for Confirmed Bookings */}
+                      {booking.status === 'Confirmed by High Priest' && (
+                        <button
+                          onClick={() => setExpandedQrId(expandedQrId === booking.id ? null : booking.id)}
+                          className={`px-3 py-1 border rounded-md transition-all cursor-pointer flex items-center gap-1.5 font-bold text-[10px] uppercase tracking-wider ${
+                            expandedQrId === booking.id
+                              ? 'bg-[#d4af37] text-[#140f0c] border-[#d4af37]'
+                              : 'text-[#d4af37] border-[#d4af37]/35 hover:bg-[#d4af37]/10 hover:border-[#d4af37]/60'
+                          }`}
+                          title="Display unique check-in ticket QR"
+                        >
+                          <QrCode className="w-3 h-3" />
+                          <span>{expandedQrId === booking.id ? 'Hide QR Code' : 'Mobile QR'}</span>
+                        </button>
+                      )}
 
-                      {/* Excursion Feedback Toggle Button */}
-                      <button
-                        onClick={() => setExpandedFeedbackId(expandedFeedbackId === booking.id ? null : booking.id)}
-                        className={`px-3 py-1 border rounded-md transition-all cursor-pointer flex items-center gap-1.5 font-bold text-[10px] uppercase tracking-wider ${
-                          expandedFeedbackId === booking.id
-                            ? 'bg-[#d4af37] text-[#140f0c] border-[#d4af37]'
-                            : 'text-[#d4af37] border-[#d4af37]/35 hover:bg-[#d4af37]/10 hover:border-[#d4af37]/60'
-                        }`}
-                        title="Inscribe a testimony or rating for this excursion"
-                      >
-                        <MessageSquare className="w-3 h-3" />
-                        <span>{expandedFeedbackId === booking.id ? 'Hide Feedback Form' : '𓏞 Leave Review'}</span>
-                      </button>
+                      {/* Excursion Feedback Toggle Button - Only for Completed Bookings */}
+                      {booking.status === 'Completed' && (
+                        <button
+                          onClick={() => setExpandedFeedbackId(expandedFeedbackId === booking.id ? null : booking.id)}
+                          className={`px-3 py-1 border rounded-md transition-all cursor-pointer flex items-center gap-1.5 font-bold text-[10px] uppercase tracking-wider ${
+                            expandedFeedbackId === booking.id
+                              ? 'bg-[#d4af37] text-[#140f0c] border-[#d4af37]'
+                              : 'text-[#d4af37] border-[#d4af37]/35 hover:bg-[#d4af37]/10 hover:border-[#d4af37]/60'
+                          }`}
+                          title="Inscribe a testimony or rating for this completed excursion"
+                        >
+                          <MessageSquare className="w-3 h-3" />
+                          <span>{expandedFeedbackId === booking.id ? 'Hide Feedback Form' : '𓏞 Leave Review'}</span>
+                        </button>
+                      )}
                       
                       {/* Print Scroll Button for Confirmed/Completed Bookings */}
                       {(booking.status === 'Confirmed by High Priest' || booking.status === 'Completed') && (
@@ -309,6 +387,7 @@ export default function BookingManager({ bookings, excursions, onCancelBooking, 
         />
       )}
 
+    </div>
     </div>
   );
 }

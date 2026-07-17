@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, Calendar, Compass, User, Zap, Send, MessageCircle, HelpCircle, Loader2, BookOpen, Printer, X } from 'lucide-react';
-import { CustomItinerary, ScribeMessage } from '../types';
+import { Booking, CustomItinerary, ScribeMessage } from '../types';
 
 interface ScribeOracleProps {
   onScribeSuccess?: () => void;
+  onAddBooking?: (newBooking: Booking) => Promise<void>;
 }
 
-export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
+export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOracleProps) {
   // Tabs: 'planner' or 'chat'
   const [activeTab, setActiveTab] = useState<'planner' | 'chat'>('planner');
 
@@ -21,6 +22,86 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [plannerError, setPlannerError] = useState<string | null>(null);
   const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
+  
+  // Export to BookingManager States
+  const [showExportBookingModal, setShowExportBookingModal] = useState<boolean>(false);
+  const [bookingTravelerName, setBookingTravelerName] = useState<string>('');
+  const [bookingTravelerEmail, setBookingTravelerEmail] = useState<string>('');
+  const [bookingTravelDate, setBookingTravelDate] = useState<string>('');
+  const [bookingGuestsCount, setBookingGuestsCount] = useState<number>(2);
+  const [bookingSpecialRequests, setBookingSpecialRequests] = useState<string>('');
+  const [isExportingBooking, setIsExportingBooking] = useState<boolean>(false);
+  const [exportBookingError, setExportBookingError] = useState<string | null>(null);
+  const [exportBookingSuccess, setExportBookingSuccess] = useState<boolean>(false);
+
+  const computedCost = duration * 125 * bookingGuestsCount;
+
+  const initExportBooking = () => {
+    if (!itinerary) return;
+    const activitiesList = itinerary.days.map(d => `Day ${d.dayNumber} (${d.theme}): ${d.activities.join('; ')}`).join(' | ');
+    setBookingSpecialRequests(`Custom Itinerary: ${itinerary.title}. Plan: ${activitiesList}`);
+    
+    // Set default travel date to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    setBookingTravelDate(tomorrow.toISOString().split('T')[0]);
+    
+    setExportBookingError(null);
+    setExportBookingSuccess(false);
+    setShowExportBookingModal(true);
+  };
+
+  const handleExportBookingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!itinerary || !onAddBooking) return;
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!bookingTravelerName.trim()) {
+      setExportBookingError("Please provide your noble explorer name.");
+      return;
+    }
+    if (!bookingTravelerEmail.trim() || !emailRegex.test(bookingTravelerEmail)) {
+      setExportBookingError("Please provide a valid email so the Scribe may contact you.");
+      return;
+    }
+    if (!bookingTravelDate) {
+      setExportBookingError("Please select a valid scheduled date for your voyage.");
+      return;
+    }
+
+    setIsExportingBooking(true);
+    setExportBookingError(null);
+
+    const bookingPayload: Booking = {
+      id: `b-custom-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      excursionId: 'custom-itinerary',
+      excursionTitle: `Custom: ${itinerary.title}`,
+      travelerName: bookingTravelerName.trim(),
+      travelerEmail: bookingTravelerEmail.trim(),
+      date: bookingTravelDate,
+      numberOfGuests: bookingGuestsCount,
+      totalCost: computedCost,
+      specialRequests: bookingSpecialRequests.trim(),
+      status: 'Pending Oracle Approval',
+      createdAt: new Date().toISOString()
+    };
+
+    try {
+      await onAddBooking(bookingPayload);
+      setExportBookingSuccess(true);
+      setTimeout(() => {
+        setShowExportBookingModal(false);
+        setExportBookingSuccess(false);
+        setBookingTravelerName('');
+        setBookingTravelerEmail('');
+        setBookingSpecialRequests('');
+      }, 2000);
+    } catch (err: any) {
+      setExportBookingError(err.message || "Failed to create booking ledger request.");
+    } finally {
+      setIsExportingBooking(false);
+    }
+  };
   
   // Custom Activity Builder States & Methods
   const [newActivityInputs, setNewActivityInputs] = useState<{[key: number]: string}>({});
@@ -512,7 +593,7 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_30%,_rgba(139,101,8,0.06)_100%)] pointer-events-none"></div>
 
                     {/* Actions bar */}
-                    <div className="md:absolute md:top-6 md:right-6 mb-6 md:mb-0 flex justify-center z-10">
+                    <div className="md:absolute md:top-6 md:right-6 mb-6 md:mb-0 flex justify-center gap-2 z-10">
                       <button
                         onClick={() => setShowPrintModal(true)}
                         className="bg-[#8b6508] hover:bg-[#6e4e03] text-white px-4 py-2 rounded-xl text-xs font-serif font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer active:scale-95 group/btn border border-yellow-600/30"
@@ -521,6 +602,17 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
                         <Printer className="w-3.5 h-3.5 text-yellow-200 group-hover/btn:scale-110 transition-transform" />
                         <span>Export Itinerary</span>
                       </button>
+
+                      {onAddBooking && (
+                        <button
+                          onClick={initExportBooking}
+                          className="bg-gradient-to-r from-[#d4af37] to-[#b08e23] hover:from-[#e6c280] hover:to-[#d4af37] text-[#140f0a] px-4 py-2 rounded-xl text-xs font-serif font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer active:scale-95 group/btn border border-yellow-600/30"
+                          title="Submit booking request for this itinerary"
+                        >
+                          <Calendar className="w-3.5 h-3.5 text-[#140f0a] group-hover/btn:scale-110 transition-transform" />
+                          <span>Book Itinerary</span>
+                        </button>
+                      )}
                     </div>
 
                     <div className="text-center border-b-2 border-[#8b6508]/20 pb-6 mb-6 md:pr-48">
@@ -893,6 +985,185 @@ export default function ScribeOracle({ onScribeSuccess }: ScribeOracleProps) {
                   <span>Print Itinerary (or Save as PDF)</span>
                 </button>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal Overlay for Exporting Itinerary to Booking Ledger */}
+      <AnimatePresence>
+        {showExportBookingModal && itinerary && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[110] overflow-y-auto flex items-center justify-center p-4 md:p-8">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-[#17120e] border-2 border-[#d4af37]/45 rounded-3xl p-6 md:p-8 text-[#fbf5e6] relative shadow-[0_0_60px_rgba(0,0,0,0.85)] max-w-lg w-full my-8 overflow-hidden font-sans"
+            >
+              {/* Ancient Egyptian Design Borders */}
+              <div className="absolute top-0 right-0 p-3 opacity-[0.03] text-8xl font-serif select-none pointer-events-none">
+                𓂀
+              </div>
+
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={() => setShowExportBookingModal(false)}
+                className="absolute top-4 right-4 text-stone-400 hover:text-red-400 p-2 rounded-full transition-colors cursor-pointer z-20"
+                title="Cancel"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="text-center border-b border-[#d4af37]/25 pb-4 mb-5">
+                <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.25em] block mb-1">
+                  𓋹 Sacred Ledger Inscription 𓋹
+                </span>
+                <h3 className="font-serif text-xl font-bold text-[#e6c280] uppercase tracking-wide">
+                  Book Custom Itinerary
+                </h3>
+                <p className="text-stone-400 text-xs mt-1">
+                  Submit a pending booking request for: <span className="text-amber-300 font-semibold">{itinerary.title}</span>
+                </p>
+              </div>
+
+              {exportBookingSuccess ? (
+                <div className="py-12 text-center space-y-4">
+                  <motion.div
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="w-16 h-16 rounded-full bg-emerald-500/10 border-2 border-emerald-500 flex items-center justify-center mx-auto text-emerald-400 text-3xl"
+                  >
+                    𓋹
+                  </motion.div>
+                  <h4 className="font-serif text-lg font-bold text-emerald-400 uppercase tracking-wider">
+                    Inscribed Successfully!
+                  </h4>
+                  <p className="text-stone-300 text-xs max-w-sm mx-auto leading-relaxed">
+                    Your custom voyage request is now sealed inside the sacred Booking Ledger. The high priests are reviewing your petition.
+                  </p>
+                </div>
+              ) : (
+                <form onSubmit={handleExportBookingSubmit} className="space-y-4 text-left">
+                  {exportBookingError && (
+                    <div className="bg-red-950/40 border border-red-500/30 rounded-xl p-3 text-red-400 text-[11px] leading-relaxed font-mono">
+                      ⚠️ {exportBookingError}
+                    </div>
+                  )}
+
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-400">
+                      Explorer Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Noble Scribe Sophia"
+                      value={bookingTravelerName}
+                      onChange={(e) => setBookingTravelerName(e.target.value)}
+                      className="w-full bg-[#110d0a] border border-[#d4af37]/25 rounded-xl p-3 text-stone-200 text-xs focus:outline-none focus:border-[#d4af37] transition-colors"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-400">
+                      Explorer Email
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="e.g. sophia@traveler.com"
+                      value={bookingTravelerEmail}
+                      onChange={(e) => setBookingTravelerEmail(e.target.value)}
+                      className="w-full bg-[#110d0a] border border-[#d4af37]/25 rounded-xl p-3 text-stone-200 text-xs focus:outline-none focus:border-[#d4af37] transition-colors"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-400">
+                        Departure Date
+                      </label>
+                      <input
+                        type="date"
+                        required
+                        value={bookingTravelDate}
+                        onChange={(e) => setBookingTravelDate(e.target.value)}
+                        className="w-full bg-[#110d0a] border border-[#d4af37]/25 rounded-xl p-3 text-stone-200 text-xs focus:outline-none focus:border-[#d4af37] transition-colors"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-400">
+                        Number of Guests
+                      </label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={10}
+                        required
+                        value={bookingGuestsCount}
+                        onChange={(e) => setBookingGuestsCount(Math.max(1, parseInt(e.target.value) || 1))}
+                        className="w-full bg-[#110d0a] border border-[#d4af37]/25 rounded-xl p-3 text-stone-200 text-xs focus:outline-none focus:border-[#d4af37] transition-colors"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-400">
+                      Special Requests & Custom Inscription
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={bookingSpecialRequests}
+                      onChange={(e) => setBookingSpecialRequests(e.target.value)}
+                      className="w-full bg-[#110d0a] border border-[#d4af37]/25 rounded-xl p-3 text-stone-300 text-xs focus:outline-none focus:border-[#d4af37] transition-colors leading-relaxed"
+                    />
+                  </div>
+
+                  {/* Pricing dynamic calculation */}
+                  <div className="bg-[#241c14] border border-[#d4af37]/20 rounded-xl p-3.5 flex justify-between items-center">
+                    <div>
+                      <span className="text-[10px] font-mono text-stone-400 uppercase tracking-wider block">
+                        Estimated Offering Cost
+                      </span>
+                      <span className="text-[11px] text-stone-500">
+                        ({duration} Days • {bookingGuestsCount} Guests)
+                      </span>
+                    </div>
+                    <span className="font-mono text-xl font-bold text-[#d4af37]">
+                      ${computedCost}
+                    </span>
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowExportBookingModal(false)}
+                      className="flex-1 border border-stone-800 hover:bg-stone-900 text-stone-400 py-3 rounded-xl text-xs font-mono uppercase tracking-widest transition-colors cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isExportingBooking}
+                      className="flex-1 bg-gradient-to-r from-[#d4af37] to-[#b08e23] hover:from-[#e6c280] hover:to-[#d4af37] text-[#140f0a] font-serif font-black text-xs uppercase tracking-widest py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    >
+                      {isExportingBooking ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-[#140f0a]" />
+                          <span>Sealing...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-3.5 h-3.5 text-[#140f0a]" />
+                          <span>Confirm Request</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              )}
             </motion.div>
           </div>
         )}

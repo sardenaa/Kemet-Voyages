@@ -13,6 +13,7 @@ import OraclesWisdomFAQ from './components/OraclesWisdomFAQ';
 import MobileBottomNav from './components/MobileBottomNav';
 import ScarabCelebration from './components/ScarabCelebration';
 import PapyrusScrollCelebration from './components/PapyrusScrollCelebration';
+import AncientSitesMap from './components/AncientSitesMap';
 
 export default function App() {
   const [theme, setTheme] = useState<'desert' | 'nile'>(() => {
@@ -87,6 +88,53 @@ export default function App() {
   const [celebrationCount, setCelebrationCount] = useState<number>(0);
   const [newlyCreatedBooking, setNewlyCreatedBooking] = useState<Booking | null>(null);
 
+  // 24-Hour Travel Departure Notification System States & Helpers
+  const [activeReminders, setActiveReminders] = useState<Booking[]>([]);
+  const [dismissedReminders, setDismissedReminders] = useState<string[]>(() => {
+    try {
+      const saved = sessionStorage.getItem('kemet_dismissed_reminders');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    if (!bookings || bookings.length === 0) {
+      setActiveReminders([]);
+      return;
+    }
+
+    const now = new Date();
+    const upcoming = bookings.filter(booking => {
+      if (booking.checkedIn || booking.status === 'Completed') return false;
+      if (dismissedReminders.includes(booking.id)) return false;
+
+      try {
+        const bookingDate = new Date(booking.date + "T00:00:00");
+        const diffMs = bookingDate.getTime() - now.getTime();
+        const diffHours = diffMs / (1000 * 60 * 60);
+        
+        // Starts within 28 hours (covering timezone offsets and tomorrow departure)
+        return diffHours >= 0 && diffHours <= 28;
+      } catch (e) {
+        return false;
+      }
+    });
+
+    setActiveReminders(upcoming);
+  }, [bookings, dismissedReminders]);
+
+  const handleDismissReminder = (bookingId: string) => {
+    const updated = [...dismissedReminders, bookingId];
+    setDismissedReminders(updated);
+    try {
+      sessionStorage.setItem('kemet_dismissed_reminders', JSON.stringify(updated));
+    } catch (e) {
+      // ignore
+    }
+  };
+
   // Scroll listener to update the active stage in progress tracker
   useEffect(() => {
     if (isAdminMode) return;
@@ -94,6 +142,7 @@ export default function App() {
     const handleScrollStage = () => {
       const sections = [
         { id: 'excursions-section', stage: 'browsing' as const },
+        { id: 'map-section', stage: 'browsing' as const },
         { id: 'gallery-section', stage: 'browsing' as const },
         { id: 'scribe-section', stage: 'itinerary' as const },
         { id: 'cartouche-section', stage: 'itinerary' as const },
@@ -451,6 +500,7 @@ export default function App() {
               <div className="flex flex-wrap items-center justify-center gap-4 md:gap-5 text-xs font-mono uppercase tracking-widest">
                 {!isAdminMode && [
                   { label: '𓆛 Tours & Excursions', target: 'excursions-section' },
+                  { label: '𓉶 Ancient Map', target: 'map-section' },
                   { label: '𓋹 AI Travel Planner', target: 'scribe-section' },
                   { label: '𓅓 Photo Gallery', target: 'gallery-section' },
                   { label: '𓉐 Name Translator', target: 'cartouche-section' },
@@ -731,6 +781,18 @@ export default function App() {
                 <ExcursionCatalog onAddBooking={handleAddBooking} excursions={excursions} />
               </motion.section>
 
+              {/* SECTION 1.5: INTERACTIVE ANCIENT SITES MAP */}
+              <motion.section
+                id="map-section"
+                className="scroll-mt-24"
+                initial={{ opacity: 0, y: 35 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+              >
+                <AncientSitesMap />
+              </motion.section>
+
               {/* SECTION 2: AI SCRIBE ORACLE */}
               <motion.section
                 id="scribe-section"
@@ -749,7 +811,7 @@ export default function App() {
                     Ask our AI helper any questions or generate a custom day-by-day travel plan.
                   </p>
                 </div>
-                <ScribeOracle onScribeSuccess={triggerCelebration} />
+                <ScribeOracle onScribeSuccess={triggerCelebration} onAddBooking={handleAddBooking} />
               </motion.section>
 
               {/* SECTION 3: IMMERSIVE GALLERY */}
@@ -907,6 +969,75 @@ export default function App() {
               booking={newlyCreatedBooking}
               onClose={() => setNewlyCreatedBooking(null)}
             />
+          )}
+        </AnimatePresence>
+
+        {/* Sacred Travel Departure Reminder Modal Overlay */}
+        <AnimatePresence>
+          {activeReminders.length > 0 && (
+            <div className="fixed inset-0 bg-black/85 backdrop-blur-sm z-[150] flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                transition={{ type: "spring", duration: 0.5 }}
+                className="bg-[#15110d] border-4 border-double border-[#d4af37] rounded-2xl p-6 md:p-8 max-w-md w-full shadow-[0_0_50px_rgba(212,175,55,0.3)] text-center relative overflow-hidden"
+              >
+                {/* Visual Theme Background Pattern */}
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#d4af37] to-transparent"></div>
+                <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#d4af37]/5 rounded-full blur-2xl pointer-events-none"></div>
+
+                {/* Ancient Seal Icon */}
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#d4af37]/10 to-amber-950/20 border border-[#d4af37]/40 flex items-center justify-center mx-auto text-2xl text-[#d4af37] shadow-inner mb-4 animate-pulse">
+                  𓋹
+                </div>
+
+                <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.25em] block mb-1">
+                  Sacred Departure Warning
+                </span>
+                <h3 className="font-serif text-xl font-bold text-[#e6c280] uppercase tracking-wide">
+                  Expedition Departing Tomorrow
+                </h3>
+
+                <div className="my-5 border-y border-[#d4af37]/10 py-4 text-left space-y-3 max-h-[40vh] overflow-y-auto">
+                  {activeReminders.map(booking => (
+                    <div key={booking.id} className="bg-amber-950/20 border border-[#d4af37]/15 rounded-xl p-3.5 space-y-1.5">
+                      <div className="flex justify-between items-start gap-2">
+                        <span className="font-serif text-xs font-bold text-[#e6c280] uppercase leading-snug">
+                          {booking.excursionTitle}
+                        </span>
+                        <span className="font-mono text-[9px] bg-[#2a2016] text-[#d4af37] border border-[#d4af37]/20 px-2 py-0.5 rounded uppercase">
+                          {booking.status}
+                        </span>
+                      </div>
+                      
+                      <p className="text-stone-300 text-[11px] leading-relaxed">
+                        Greetings, noble traveler <span className="text-[#e6c280] font-semibold">{booking.travelerName}</span>. Your caravan is scheduled to depart on <span className="text-[#d4af37] font-semibold font-mono">{booking.date}</span> (less than 24 hours from now).
+                      </p>
+
+                      <div className="flex items-center gap-2 text-[10px] text-stone-400 pt-1">
+                        <span className="text-[#d4af37]">𓀚</span>
+                        <span>Guests: {booking.numberOfGuests} • Cost: ${booking.totalCost}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <p className="text-stone-400 text-[11px] leading-relaxed mb-6 italic">
+                  "Ensure your water skins are full and your sun shields are ready, for Ra shines hot upon the valley."
+                </p>
+
+                <button
+                  onClick={() => {
+                    // Dismiss all active reminders shown
+                    activeReminders.forEach(booking => handleDismissReminder(booking.id));
+                  }}
+                  className="w-full bg-gradient-to-r from-[#d4af37] to-[#b08e23] hover:from-[#e6c280] hover:to-[#d4af37] text-[#140f0a] font-serif font-black text-xs uppercase tracking-widest py-3.5 rounded-xl shadow-md transition-all cursor-pointer active:scale-95"
+                >
+                  I am Prepared (Dismiss Alert)
+                </button>
+              </motion.div>
+            </div>
           )}
         </AnimatePresence>
 

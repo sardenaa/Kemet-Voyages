@@ -169,7 +169,35 @@ interface DatabaseSchema {
   reviews: any[];
   newsletter_signups: any[];
   oracle_logs: any[];
+  community_photos?: any[];
 }
+
+const SEED_COMMUNITY_PHOTOS = [
+  {
+    id: "photo-seed-1",
+    caption: "Catching the golden hour on our beautiful Felucca boat ride across the Nile!",
+    author: "Amelia & Mark",
+    location: "Luxor, Egypt",
+    image: "/src/assets/images/egypt_boat_trip_1784071711626.jpg",
+    createdAt: "2026-07-15T18:30:00.000Z"
+  },
+  {
+    id: "photo-seed-2",
+    caption: "Stunning desert sunset. Racing across the Sinai sand dunes was the highlight of our summer!",
+    author: "Sebastian Vance",
+    location: "Sinai Desert",
+    image: "/src/assets/images/egypt_desert_safari_1784070379685.jpg",
+    createdAt: "2026-07-16T19:15:00.000Z"
+  },
+  {
+    id: "photo-seed-3",
+    caption: "Dived with thousands of glassfish and swam past a submerged statue of Osiris. Breathtaking!",
+    author: "Elena Rostov",
+    location: "Ras Mohammed Seabed",
+    image: "/src/assets/images/egypt_sea_diving_1784070366165.jpg",
+    createdAt: "2026-07-17T09:00:00.000Z"
+  }
+];
 
 const DB_FILE_PATH = path.join(process.cwd(), "kemet_db.json");
 const DB_FILE_FALLBACK_PATH = "/tmp/kemet_db.json";
@@ -190,13 +218,19 @@ function loadDb(): DatabaseSchema {
         bookings: [],
         reviews: INITIAL_REVIEWS_SEED,
         newsletter_signups: [],
-        oracle_logs: []
+        oracle_logs: [],
+        community_photos: SEED_COMMUNITY_PHOTOS
       };
       fs.writeFileSync(activeDbPath, JSON.stringify(defaultDb, null, 2), 'utf8');
       return defaultDb;
     }
     const raw = fs.readFileSync(activeDbPath, 'utf8');
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (!parsed.community_photos || parsed.community_photos.length === 0) {
+      parsed.community_photos = SEED_COMMUNITY_PHOTOS;
+      fs.writeFileSync(activeDbPath, JSON.stringify(parsed, null, 2), 'utf8');
+    }
+    return parsed;
   } catch (err) {
     console.error("Database reading error, resolving with default seed structure:", err);
     return {
@@ -204,7 +238,8 @@ function loadDb(): DatabaseSchema {
       bookings: [],
       reviews: INITIAL_REVIEWS_SEED,
       newsletter_signups: [],
-      oracle_logs: []
+      oracle_logs: [],
+      community_photos: SEED_COMMUNITY_PHOTOS
     };
   }
 }
@@ -309,7 +344,8 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  app.use(express.json());
+  app.use(express.json({ limit: "15mb" }));
+  app.use(express.urlencoded({ limit: "15mb", extended: true }));
   app.use(securityHeaders);
 
   // ==========================================
@@ -497,6 +533,43 @@ async function startServer() {
       db.reviews.unshift(newReview);
       saveDb(db);
       res.json(newReview);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  // ==========================================
+  // COMMUNITY TRAVELS BOARD ENDPOINTS
+  // ==========================================
+  app.get("/api/community-photos", (req, res) => {
+    const db = loadDb();
+    res.json(db.community_photos || []);
+  });
+
+  app.post("/api/community-photos", (req, res) => {
+    try {
+      const { image, caption, author, location } = req.body;
+      if (!image || !author) {
+        return res.status(400).json({ error: "Image data and author name are required." });
+      }
+
+      const db = loadDb();
+      if (!db.community_photos) {
+        db.community_photos = [];
+      }
+
+      const newPhoto = {
+        id: `photo-${Date.now()}`,
+        image, 
+        caption: sanitizeString(caption, 280),
+        author: sanitizeString(author, 100),
+        location: sanitizeString(location, 100),
+        createdAt: new Date().toISOString()
+      };
+
+      db.community_photos.unshift(newPhoto);
+      saveDb(db);
+      res.json(newPhoto);
     } catch (e: any) {
       res.status(500).json({ error: e.message });
     }

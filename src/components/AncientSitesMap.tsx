@@ -1,0 +1,526 @@
+import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Map, MapPin, Compass, BookOpen, Info, Sparkles, ExternalLink, Anchor, ChevronRight, Search, X } from 'lucide-react';
+
+interface SiteData {
+  id: string;
+  name: string;
+  ancientName: string;
+  glyph: string;
+  coordinates: { x: number; y: number }; // SVG Map Coordinates
+  region: string;
+  facts: string[];
+  lore: string;
+  relatedExcursionId?: string;
+  relatedExcursionName?: string;
+}
+
+const ANCIENT_SITES: SiteData[] = [
+  {
+    id: 'giza-pyramids',
+    name: "Giza Plateau",
+    ancientName: "Akhet Khufu",
+    glyph: "𓉴",
+    coordinates: { x: 265, y: 140 },
+    region: "Lower Egypt",
+    facts: [
+      "Home to the Great Pyramid of Giza, the oldest of the Seven Wonders of the Ancient World.",
+      "Guarded by the colossal Great Sphinx of Giza, carved from a single ridge of limestone.",
+      "The pyramids were astronomically aligned with absolute precision to Orion's Belt."
+    ],
+    lore: "Known to the ancients as 'Akhet Khufu' (The Horizon of Khufu), this plateau was believed to be a cosmic launching pad. It allowed the soul of the Pharaoh to ascend into the northern circumpolar stars, joining the undying gods in the afterlife.",
+    relatedExcursionId: undefined, // Mention custom extension
+    relatedExcursionName: "Custom Cairo Extension (Request via Scribe Oracle!)"
+  },
+  {
+    id: 'luxor-waset',
+    name: "Luxor (Karnak & Valley of Kings)",
+    ancientName: "Waset",
+    glyph: "𓉐",
+    coordinates: { x: 308, y: 350 },
+    region: "Upper Egypt",
+    facts: [
+      "Waset was the powerhouse of the New Kingdom, dedicated to the supreme sun creator Amun-Ra.",
+      "Features Karnak, the largest religious temple complex ever constructed by human hands.",
+      "Houses the Valley of the Kings, where pharaohs lay sealed in decorated hypogeum vaults."
+    ],
+    lore: "To cross from the East Bank (sunrise/living) to the West Bank (sunset/tomb) of Luxor is to traverse the mystical veil. The royal tombs are carved deep into the limestone pyramid of Al-Qurn, mimicking Ra's nightly journey into the underworld.",
+    relatedExcursionId: "history-1",
+    relatedExcursionName: "Pharaoh's Pilgrimage to Waset (Luxor)"
+  },
+  {
+    id: 'ras-mohammed',
+    name: "Ras Mohammed Sanctuary",
+    ancientName: "Nun's Deep Sea Basin",
+    glyph: "𓆛",
+    coordinates: { x: 382, y: 205 },
+    region: "Red Sea & Sinai",
+    facts: [
+      "A protected marine national park situated at the extreme tip of the Sinai Peninsula.",
+      "Features spectacular vertical coral walls plunging over 1,000 meters into the deep sea.",
+      "Home to vibrant ecosystems of Napoleon wrasse, sea turtles, and hammerhead sharks."
+    ],
+    lore: "Ancient mariners and priests of Hathor regarded the warm currents of Ras Mohammed as the physical manifestations of Nun—the primeval abyss from which all life emerged. Submerged monuments were left on shorelines to placate the sea spirits.",
+    relatedExcursionId: "diving-1",
+    relatedExcursionName: "Ras Mohammed Royal Coral Diving"
+  },
+  {
+    id: 'hurghada-coast',
+    name: "Hurghada Dunes & Deshret",
+    ancientName: "Set's Deshret Coast",
+    glyph: "𓅓",
+    coordinates: { x: 370, y: 238 },
+    region: "Red Sea & Eastern Desert",
+    facts: [
+      "A majestic frontier where the golden mountains of the Eastern Desert meet the Red Sea shore.",
+      "Famous for rolling desert dunes, bedouin oases, and rugged mountain trail passes.",
+      "Ideal location for fast quad expeditions and slow, stargazing sunset camel rides."
+    ],
+    lore: "This red desert land was called 'Deshret' (The Red Land) by pharaohs, feared yet respected as the chaotic domain of Set, god of storms. Ancient miners crossed these harsh lands to gather gold and turquoise for temple offerings.",
+    relatedExcursionId: "safari-1",
+    relatedExcursionName: "Set's Golden Deshret Safari"
+  },
+  {
+    id: 'giftun-island',
+    name: "Giftun Island (Orange Bay)",
+    ancientName: "Sobek's Turquoise Realm",
+    glyph: "𓍢",
+    coordinates: { x: 388, y: 242 },
+    region: "Red Sea Islands",
+    facts: [
+      "A protected natural reserve island famous for soft white sands and transparent crystal water.",
+      "Surrounded by shallow, circular lagoons teeming with colorful corals.",
+      "Dolphin pods are regularly spotted playing near its pristine shallow sandbars."
+    ],
+    lore: "In ancient times, sailing around the islands of the Red Sea was dedicated to honoring Sobek, the crocodile lord of waterways. Cedarwood pleasure ships decorated in gold leaf were rowed across these turquoise waters to earn divine favor.",
+    relatedExcursionId: "boat-1",
+    relatedExcursionName: "Sobek's Royal Queen Nefertari Cruise"
+  },
+  {
+    id: 'el-gouna',
+    name: "El Gouna & Northern Islands",
+    ancientName: "Horus's Lagoon",
+    glyph: "𓅃",
+    coordinates: { x: 362, y: 218 },
+    region: "Red Sea Lagoons",
+    facts: [
+      "A breathtaking network of shallow turquoise canals, lagoons, and sandy islands.",
+      "Surrounded by secret, untouched offshore coral gardens away from the crowded public spots.",
+      "Offers prime deep blue waters for fast-paced luxury speedboat explorations."
+    ],
+    lore: "The falcon god Horus, symbol of speed and divine sight, was said to patrol the Red Sea waters from the skies. Pharaonic scouts sailed swift papyrus skiffs through these lagoons, flashing mirror signals to protect inland borders.",
+    relatedExcursionId: "speedboat-1",
+    relatedExcursionName: "Horus's Falcon Eye Speedboat Cruise"
+  }
+];
+
+export default function AncientSitesMap() {
+  const [selectedSite, setSelectedSite] = useState<SiteData>(ANCIENT_SITES[1]); // Default to Luxor
+  const [searchQuery, setSearchQuery] = useState('');
+  const [hoveredSite, setHoveredSite] = useState<string | null>(null);
+
+  // Filter sites based on search
+  const filteredSites = useMemo(() => {
+    return ANCIENT_SITES.filter(site => 
+      site.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      site.ancientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      site.region.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery]);
+
+  const handleScrollToExcursion = (excursionId: string) => {
+    const el = document.getElementById(`excursion-card-${excursionId}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Add a brief glow highlight
+      el.classList.add('ring-4', 'ring-[#d4af37]', 'ring-offset-2', 'ring-offset-stone-900');
+      setTimeout(() => {
+        el.classList.remove('ring-4', 'ring-[#d4af37]', 'ring-offset-2', 'ring-offset-stone-900');
+      }, 3000);
+    } else {
+      // Fallback: scroll to excursions list
+      const catalogEl = document.getElementById('excursions-section');
+      if (catalogEl) {
+        catalogEl.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
+  const handleScrollToScribe = () => {
+    const el = document.getElementById('scribe-section');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  return (
+    <div className="bg-[#14100c] border-2 border-[#d4af37]/30 rounded-3xl p-6 md:p-8 relative overflow-hidden shadow-2xl" id="ancient-sites-map-wrapper">
+      {/* Visual Background Grid & Ambient Glows */}
+      <div className="absolute inset-0 bg-[radial-gradient(#d4af37_0.7px,transparent_0.7px)] [background-size:16px_16px] opacity-10 pointer-events-none" />
+      <div className="absolute top-0 right-0 w-64 h-64 bg-[#d4af37]/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#d4af37]/5 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Header Info */}
+      <div className="text-center space-y-2 mb-8">
+        <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em] flex items-center justify-center gap-1.5">
+          <Map className="w-3.5 h-3.5" />
+          𓉶 Kemet Geography Guide 𓋹
+        </span>
+        <h2 className="font-serif text-3xl font-extrabold text-[#e6c280] uppercase">
+          Interactive Ancient Sites Map
+        </h2>
+        <p className="text-stone-400 text-xs max-w-xl mx-auto leading-relaxed">
+          Traverse the land of the Pharaohs. Click on the golden glowing ruins or coral reefs to discover mythological lore, quick facts, and our direct travel excursions.
+        </p>
+      </div>
+
+      {/* Main Layout Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+        
+        {/* Left Column: Interactive Map Display (7/12 width) */}
+        <div className="lg:col-span-7 bg-[#0f0c09] border border-[#d4af37]/20 rounded-2xl p-4 flex flex-col justify-between relative min-h-[400px] md:min-h-[500px]">
+          
+          {/* Compass Rose Accent */}
+          <div className="absolute top-4 left-4 text-[#d4af37]/15 pointer-events-none">
+            <Compass className="w-24 h-24 stroke-1 animate-[spin_120s_infinite_linear]" />
+          </div>
+
+          {/* Scale of Miles Accent */}
+          <div className="absolute bottom-4 left-4 flex flex-col gap-0.5 font-mono text-[8px] text-stone-600 pointer-events-none select-none">
+            <div className="flex items-center gap-1">
+              <span className="w-8 h-[1px] bg-stone-700"></span>
+              <span>100 Km</span>
+            </div>
+            <span>Sinai & Nile Valley Scale</span>
+          </div>
+
+          {/* Egyptology Legends Overlay */}
+          <div className="absolute bottom-4 right-4 bg-[#14100c]/80 border border-[#d4af37]/15 rounded-lg p-2 space-y-1.5 text-[8.5px] font-mono text-stone-400 pointer-events-none select-none backdrop-blur-sm z-10">
+            <div className="text-[#d4af37] uppercase tracking-wider font-bold mb-0.5 border-b border-[#d4af37]/15 pb-0.5">Map Legend</div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+              <span>Ancient Tomb / Ruin</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></span>
+              <span>Red Sea Diving Reef</span>
+            </div>
+          </div>
+
+          {/* Map Search bar */}
+          <div className="relative max-w-xs z-10">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 w-3.5 h-3.5" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search sacred sites..."
+              className="w-full bg-[#14100c]/90 border border-[#d4af37]/30 rounded-lg py-1.5 pl-8 pr-3 text-[11px] text-stone-200 focus:outline-none focus:ring-1 focus:ring-[#d4af37] placeholder:text-stone-600 font-sans"
+            />
+          </div>
+
+          {/* SVG MAP WRAPPER */}
+          <div className="w-full h-full flex items-center justify-center py-4 relative" id="egypt-svg-map-container">
+            <svg
+              viewBox="0 0 600 500"
+              className="w-full max-w-[550px] h-auto text-[#d4af37]/40 select-none"
+              style={{ maxHeight: '460px' }}
+            >
+              {/* Regional Outline - Egypt Borders (abstract representation) */}
+              <rect x="10" y="10" width="580" height="480" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="5,5" className="opacity-20" />
+              
+              {/* Mediterranean Sea outline */}
+              <path d="M 10,50 Q 150,55 300,50 T 590,45" fill="none" stroke="#2563eb" strokeWidth="1.5" className="opacity-15" />
+              <text x="120" y="35" className="fill-stone-600 font-serif text-[10px] tracking-[0.25em] uppercase opacity-40">Mediterranean Sea</text>
+
+              {/* The Nile Delta & River Path (Life of Egypt) */}
+              <path
+                d="M 290,480 
+                   L 290,440 
+                   Q 295,400 300,380 
+                   Q 335,365 330,345 
+                   T 298,325 
+                   Q 280,260 282,210 
+                   T 272,145 
+                   Q 265,130 250,110 
+                   L 220,50 
+                   M 250,110 Q 260,95 280,50
+                   M 250,110 Q 285,95 330,50"
+                fill="none"
+                stroke="#0284c7"
+                strokeWidth="4.5"
+                strokeLinecap="round"
+                className="opacity-40 animate-pulse"
+              />
+              {/* Nile River glow outline */}
+              <path
+                d="M 290,480 
+                   L 290,440 
+                   Q 295,400 300,380 
+                   Q 335,365 330,345 
+                   T 298,325 
+                   Q 280,260 282,210 
+                   T 272,145 
+                   Q 265,130 250,110 
+                   L 220,50 
+                   M 250,110 Q 260,95 280,50
+                   M 250,110 Q 285,95 330,50"
+                fill="none"
+                stroke="#38bdf8"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                className="opacity-60"
+              />
+              <text x="210" y="300" transform="rotate(-78 210 300)" className="fill-[#0284c7] font-serif text-[9px] tracking-[0.15em] uppercase opacity-50">Iteru (The Nile)</text>
+
+              {/* Red Sea & Gulf of Suez & Gulf of Aqaba */}
+              {/* Gulf of Suez path */}
+              <path d="M 315,145 L 382,205" fill="none" stroke="#0f766e" strokeWidth="2.5" strokeLinecap="round" className="opacity-35" />
+              {/* Gulf of Aqaba path */}
+              <path d="M 425,140 L 382,205" fill="none" stroke="#0f766e" strokeWidth="2.5" strokeLinecap="round" className="opacity-35" />
+              {/* Red Sea Proper */}
+              <path d="M 382,205 Q 430,280 495,380 T 580,480" fill="none" stroke="#0f766e" strokeWidth="8" strokeLinecap="round" className="opacity-25" />
+              <path d="M 382,205 Q 430,280 495,380 T 580,480" fill="none" stroke="#14b8a6" strokeWidth="2" strokeLinecap="round" className="opacity-45 animate-pulse" />
+              <text x="450" y="330" transform="rotate(50 450 330)" className="fill-teal-700 font-serif text-[9px] tracking-[0.2em] uppercase opacity-55">The Red Sea</text>
+
+              {/* Sinai Peninsula Label */}
+              <text x="365" y="150" className="fill-stone-600 font-serif text-[8.5px] tracking-[0.2em] uppercase opacity-60">Sinai Desert</text>
+
+              {/* Nubian Desert Label */}
+              <text x="140" y="440" className="fill-stone-700 font-serif text-[9px] tracking-[0.3em] uppercase opacity-35">Western Desert</text>
+              <text x="430" y="450" className="fill-stone-700 font-serif text-[9px] tracking-[0.3em] uppercase opacity-35">Eastern Desert</text>
+
+              {/* Map Sites Grid Layers */}
+              {filteredSites.map((site) => {
+                const isSelected = selectedSite.id === site.id;
+                const isHovered = hoveredSite === site.id;
+                const isDiving = site.id === 'ras-mohammed' || site.id === 'giftun-island' || site.id === 'el-gouna';
+                const pulseColor = isDiving ? 'bg-teal-500' : 'bg-amber-500';
+                
+                return (
+                  <g
+                    key={site.id}
+                    className="cursor-pointer group"
+                    onClick={() => setSelectedSite(site)}
+                    onMouseEnter={() => setHoveredSite(site.id)}
+                    onMouseLeave={() => setHoveredSite(null)}
+                  >
+                    {/* Glowing outer halo ring */}
+                    <circle
+                      cx={site.coordinates.x}
+                      cy={site.coordinates.y}
+                      r={isSelected ? 18 : isHovered ? 14 : 9}
+                      fill="none"
+                      stroke={isDiving ? "#14b8a6" : "#d4af37"}
+                      strokeWidth={isSelected ? 1.5 : isHovered ? 1.2 : 0.8}
+                      className="transition-all duration-300 opacity-40 group-hover:opacity-100"
+                    />
+
+                    {/* Ripple animation circle */}
+                    {(isSelected || isHovered) && (
+                      <circle
+                        cx={site.coordinates.x}
+                        cy={site.coordinates.y}
+                        r={26}
+                        fill="none"
+                        stroke={isDiving ? "#2dd4bf" : "#fbbf24"}
+                        strokeWidth="0.5"
+                        className="animate-ping opacity-15"
+                      />
+                    )}
+
+                    {/* Core Point marker */}
+                    <circle
+                      cx={site.coordinates.x}
+                      cy={site.coordinates.y}
+                      r={isSelected ? 6.5 : 4.5}
+                      fill={isDiving ? "#0d9488" : "#b45309"}
+                      stroke={isDiving ? "#2dd4bf" : "#f59e0b"}
+                      strokeWidth="1"
+                      className="transition-all duration-300"
+                    />
+
+                    {/* Site Hieroglyphic Glyph indicator label on map */}
+                    <text
+                      x={site.coordinates.x}
+                      y={site.coordinates.y - 18}
+                      className={`text-[12px] font-serif transition-all duration-300 text-center select-none ${
+                        isSelected ? 'fill-[#e6c280] font-black' : isHovered ? 'fill-stone-200' : 'fill-stone-500'
+                      }`}
+                      textAnchor="middle"
+                    >
+                      {site.glyph}
+                    </text>
+
+                    {/* Label tooltip (Always visible when selected or hovered, styled elegantly) */}
+                    {(isSelected || isHovered) && (
+                      <g className="transition-all duration-300">
+                        <rect
+                          x={site.coordinates.x - 70}
+                          y={site.coordinates.y + 12}
+                          width="140"
+                          height="22"
+                          rx="4"
+                          fill="#14100c"
+                          stroke={isDiving ? "#14b8a6" : "#d4af37"}
+                          strokeWidth="0.8"
+                          className="opacity-95 shadow-lg"
+                        />
+                        <text
+                          x={site.coordinates.x}
+                          y={site.coordinates.y + 26}
+                          className="fill-[#e6c280] font-serif text-[7.5px] font-bold uppercase tracking-wider text-center"
+                          textAnchor="middle"
+                        >
+                          {site.name.split(' (')[0]}
+                        </text>
+                      </g>
+                    )}
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+
+          {/* Quick instructions */}
+          <div className="text-center md:text-left text-[10px] font-mono text-stone-500 italic pb-1">
+            𓋹 Tip: Hover or tap any location marker above to discover the geography of Egypt!
+          </div>
+
+        </div>
+
+        {/* Right Column: Site Detail Display Card & Quick list (5/12 width) */}
+        <div className="lg:col-span-5 flex flex-col justify-between space-y-6">
+          
+          {/* List sidebar fallback for accessibility and small screen tap targets */}
+          <div className="bg-[#1a1410] border border-[#d4af37]/25 rounded-2xl p-4 space-y-3">
+            <span className="text-[9px] font-mono text-stone-500 uppercase tracking-widest block">Choose Site from Scroll-roll</span>
+            
+            <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-thin scrollbar-thumb-amber-950">
+              {filteredSites.map((site) => {
+                const isSelected = selectedSite.id === site.id;
+                return (
+                  <button
+                    key={site.id}
+                    onClick={() => setSelectedSite(site)}
+                    className={`py-2 px-3.5 rounded-lg border text-[10px] font-mono uppercase tracking-wider flex items-center gap-1.5 whitespace-nowrap cursor-pointer transition-all flex-shrink-0 ${
+                      isSelected
+                        ? 'bg-[#d4af37] text-stone-950 font-bold border-[#d4af37]'
+                        : 'bg-[#120f0c] border-stone-850 text-stone-400 hover:text-stone-200 hover:border-stone-700'
+                    }`}
+                  >
+                    <span>{site.glyph}</span>
+                    <span>{site.name.split(' (')[0]}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Rich Papyrus Site Details Panel */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={selectedSite.id}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+              className="bg-[#1c1510] border-2 border-[#d4af37]/25 rounded-2xl p-5 md:p-6 flex-grow space-y-5 relative overflow-hidden flex flex-col justify-between"
+              id="selected-site-detail-card"
+            >
+              {/* Papyrus decorative side borders */}
+              <div className="absolute top-0 bottom-0 left-0 w-1 bg-gradient-to-b from-[#d4af37]/30 via-transparent to-[#d4af37]/30" />
+              <div className="absolute top-0 bottom-0 right-0 w-1 bg-gradient-to-b from-[#d4af37]/30 via-transparent to-[#d4af37]/30" />
+              
+              <div className="space-y-4">
+                {/* Site Header */}
+                <div className="border-b border-[#d4af37]/15 pb-3.5 flex items-start gap-3">
+                  <span className="text-3xl bg-[#261d15] border border-[#d4af37]/30 w-12 h-12 rounded-full flex items-center justify-center text-[#d4af37] shadow-inner select-none font-serif">
+                    {selectedSite.glyph}
+                  </span>
+                  <div className="space-y-0.5 flex-grow">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[8px] font-mono uppercase bg-amber-950/40 text-[#d4af37] border border-amber-900/40 px-2 py-0.5 rounded">
+                        {selectedSite.region}
+                      </span>
+                    </div>
+                    <h3 className="font-serif text-lg md:text-xl font-bold text-[#e6c280] uppercase tracking-wide">
+                      {selectedSite.name}
+                    </h3>
+                    <p className="text-[10px] font-mono text-[#d4af37]/75 italic uppercase tracking-wider">
+                      Ancient Title: <span className="font-serif text-stone-200">{selectedSite.ancientName}</span>
+                    </p>
+                  </div>
+                </div>
+
+                {/* Mythological Lore Section */}
+                <div className="bg-[#241a12]/50 border border-[#d4af37]/10 rounded-xl p-3.5 space-y-1 relative">
+                  <span className="absolute top-3.5 right-4 font-serif text-[#d4af37]/10 text-3xl select-none">𓂀</span>
+                  <strong className="text-[9.5px] font-mono uppercase text-[#e6c280] tracking-widest block flex items-center gap-1.5">
+                    <BookOpen className="w-3.5 h-3.5 text-[#d4af37]" />
+                    Pharaonic Lore & Myth
+                  </strong>
+                  <p className="text-stone-300 text-[11px] leading-relaxed font-sans italic">
+                    "{selectedSite.lore}"
+                  </p>
+                </div>
+
+                {/* Archaeological Facts */}
+                <div className="space-y-2.5">
+                  <strong className="text-[9.5px] font-mono uppercase text-stone-400 tracking-widest block flex items-center gap-1.5">
+                    <Info className="w-3.5 h-3.5 text-[#d4af37]" />
+                    Historical Facts & Architecture
+                  </strong>
+                  <ul className="space-y-2 text-[11px] text-stone-300 font-sans leading-relaxed">
+                    {selectedSite.facts.map((fact, idx) => (
+                      <li key={idx} className="flex gap-2.5 items-start pl-1">
+                        <span className="text-[#d4af37] font-mono text-[9px] mt-1 select-none">𓋹</span>
+                        <span>{fact}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Action Excursion Link */}
+              <div className="pt-4 border-t border-[#d4af37]/15">
+                {selectedSite.relatedExcursionId ? (
+                  <div className="space-y-2">
+                    <span className="text-[8.5px] font-mono text-stone-500 uppercase tracking-widest block">Available Excursion Offering:</span>
+                    <button
+                      onClick={() => handleScrollToExcursion(selectedSite.relatedExcursionId!)}
+                      className="w-full bg-gradient-to-r from-amber-950/30 via-[#d4af37]/10 to-amber-950/30 hover:via-[#d4af37]/20 border border-[#d4af37]/45 hover:border-[#d4af37] text-[#e6c280] py-3 px-4 rounded-xl text-xs font-serif font-black uppercase tracking-widest flex items-center justify-between transition-all duration-300 cursor-pointer shadow-md"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-[#d4af37] animate-pulse" />
+                        Book {selectedSite.relatedExcursionName?.split(' (')[0]}
+                      </span>
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <span className="text-[8.5px] font-mono text-stone-500 uppercase tracking-widest block">Special Custom Expedition:</span>
+                    <button
+                      onClick={handleScrollToScribe}
+                      className="w-full bg-[#140f0c] hover:bg-[#201812] border border-stone-800 hover:border-stone-700 text-stone-300 py-3 px-4 rounded-xl text-xs font-serif font-bold uppercase tracking-widest flex items-center justify-between transition-all duration-300 cursor-pointer"
+                    >
+                      <span className="flex items-center gap-2 text-[11px] font-mono">
+                        <Anchor className="w-4 h-4 text-[#d4af37]" />
+                        Request Custom Itinerary from AI Guide
+                      </span>
+                      <ExternalLink className="w-3.5 h-3.5 text-stone-500" />
+                    </button>
+                  </div>
+                )}
+              </div>
+
+            </motion.div>
+          </AnimatePresence>
+
+        </div>
+
+      </div>
+    </div>
+  );
+}

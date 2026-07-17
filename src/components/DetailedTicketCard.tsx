@@ -211,12 +211,14 @@ export default function DetailedTicketCard({
             >
               {copiedId ? 'Copied! 𓋹' : 'Copy'}
             </button>
-            <button
-              onClick={() => setShowFeedback(!showFeedback)}
-              className="ml-auto text-[10px] font-mono font-bold text-[#d4af37] hover:text-[#e6c280] underline cursor-pointer uppercase tracking-wider"
-            >
-              {showFeedback ? '𓂀 Hide Review' : '𓏞 Leave Review'}
-            </button>
+            {booking.status === 'Completed' && (
+              <button
+                onClick={() => setShowFeedback(!showFeedback)}
+                className="ml-auto text-[10px] font-mono font-bold text-[#d4af37] hover:text-[#e6c280] underline cursor-pointer uppercase tracking-wider"
+              >
+                {showFeedback ? '𓂀 Hide Review' : '𓏞 Leave Review'}
+              </button>
+            )}
           </div>
 
           {/* Feedback Form Section */}

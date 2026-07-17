@@ -565,7 +565,7 @@ Please seal my booking with the High Priest approval!`;
               id={`excursion-skeleton-${index}`}
             >
               {/* Shimmer sweep effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#d4af37]/5 to-transparent -translate-x-full animate-[shimmer_2s_infinite] pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#d4af37]/15 to-transparent -translate-x-full animate-shimmer pointer-events-none" />
 
               {/* Image Thumbnail Skeleton */}
               <div className="h-56 bg-[#211a13]/80 relative flex items-center justify-center overflow-hidden">
