@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Star, ShieldAlert, CheckCircle, Clock, MapPin, Sparkles, Filter, ChevronRight, X, User, Mail, Calendar, HelpCircle } from 'lucide-react';
+import { Star, ShieldAlert, CheckCircle, Clock, MapPin, Sparkles, Filter, ChevronRight, X, User, Mail, Calendar, HelpCircle, MessageSquare, Send, ThumbsUp, PenTool } from 'lucide-react';
 import { Excursion, Booking } from '../types';
 import ReviewSystem from './ReviewSystem';
+import PromotionalBanner from './PromotionalBanner';
 
 // Let's use our exact generated image paths!
 export const EXCURSIONS_DATA: Excursion[] = [
@@ -128,6 +129,54 @@ export const EXCURSIONS_DATA: Excursion[] = [
   }
 ];
 
+const INITIAL_INLINE_REVIEWS = [
+  {
+    id: 'rev-1',
+    excursionId: 'diving-1',
+    author: "Cleopatra the Diver",
+    avatar: "𓁠 Cleopatra the Diver",
+    rating: 5,
+    comment: "I plunged into Ras Mohammed and was greeted by a massive underwater statue of Osiris, surrounded by thousands of golden glassfish. Truly, Sennedjem has aligned the elements perfectly. It felt like walking through a submerged palace of the Nile!",
+    date: "2026-06-20"
+  },
+  {
+    id: 'rev-2',
+    excursionId: 'safari-1',
+    author: "Ramses the Nomad",
+    avatar: "𓀚 Ramses the Nomad",
+    rating: 5,
+    comment: "Flying across the red dunes on a quad bike was as exhilarating as racing a war chariot in Kadesh! The Bedouin flatbread baked over acacia coals is delicious, and the stargazing is a true communion with Nut.",
+    date: "2026-07-01"
+  },
+  {
+    id: 'rev-3',
+    excursionId: 'history-1',
+    author: "Hatshepsut the Explorer",
+    avatar: "𓁥 Hatshepsut the Scribe",
+    rating: 5,
+    comment: "Visiting the mortuary temple in Luxor left my royal caravan speechless. The columns of Karnak are so wide they command complete silence. The private Felucca cruise on the Nile at sunset was absolute bliss.",
+    date: "2026-07-11"
+  },
+  {
+    id: 'rev-4',
+    excursionId: 'boat-1',
+    author: "Bastet the Voyager",
+    avatar: "𓃠 Bastet the Explorer",
+    rating: 4,
+    comment: "The Queen Nefertari Cruise was splendid. Feasting on fresh red sea bass cooked onboard while watching dolphins leap at the horizon is an experience worthy of the gods. The golden loungers were exceptionally comfortable.",
+    date: "2026-07-13"
+  },
+  {
+    id: 'rev-5',
+    excursionId: 'speedboat-1',
+    author: "Horus the Brave",
+    avatar: "𓅃 Horus the Speedster",
+    rating: 5,
+    comment: "Absolutely thrilling! We flew across the azure waves at breathtaking speeds. Landing on a completely isolated sandbar and diving into virgin reefs felt like entering a pristine secret dimension. Worth every golden coin!",
+    date: "2026-07-14"
+  }
+];
+
 interface CatalogProps {
   onAddBooking: (booking: Booking) => void;
   excursions?: Excursion[];
@@ -138,6 +187,63 @@ export default function ExcursionCatalog({ onAddBooking, excursions }: CatalogPr
   const [selectedExcursion, setSelectedExcursion] = useState<Excursion | null>(null);
   const [isBookingOpen, setIsBookingOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Expanded card reviews state
+  const [expandedReviewsId, setExpandedReviewsId] = useState<string | null>(null);
+
+  // Reviews List State
+  const [reviews, setReviews] = useState<any[]>(() => {
+    const saved = localStorage.getItem('kemet_reviews');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return INITIAL_INLINE_REVIEWS;
+      }
+    }
+    return INITIAL_INLINE_REVIEWS;
+  });
+
+  // Inline Review Form State
+  const [inlineAuthor, setInlineAuthor] = useState<string>("");
+  const [inlineComment, setInlineComment] = useState<string>("");
+  const [inlineRating, setInlineRating] = useState<number>(5);
+  const [inlineAvatar, setInlineAvatar] = useState<string>("𓁠 Cleopatra");
+  const [inlineSuccessId, setInlineSuccessId] = useState<string | null>(null);
+  const [hoveredInlineStar, setHoveredInlineStar] = useState<number | null>(null);
+
+  // Synchronize reviews from localStorage and server
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const response = await fetch('/api/reviews');
+        if (response.ok) {
+          const data = await response.json();
+          setReviews(data);
+          localStorage.setItem('kemet_reviews', JSON.stringify(data));
+        }
+      } catch (err) {
+        console.error("Failed to fetch reviews inside ExcursionCatalog:", err);
+      }
+    };
+    fetchReviews();
+
+    const syncReviews = () => {
+      const saved = localStorage.getItem('kemet_reviews');
+      if (saved) {
+        try {
+          setReviews(JSON.parse(saved));
+        } catch (e) {
+          // ignore
+        }
+      }
+    };
+
+    window.addEventListener('kemet_reviews_updated', syncReviews);
+    return () => {
+      window.removeEventListener('kemet_reviews_updated', syncReviews);
+    };
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -240,6 +346,95 @@ export default function ExcursionCatalog({ onAddBooking, excursions }: CatalogPr
     }, 2200);
   };
 
+  const handleInlineFeedbackSubmit = async (e: React.FormEvent, exId: string) => {
+    e.preventDefault();
+    if (!inlineAuthor.trim() || !inlineComment.trim()) return;
+
+    const avatarLabels: Record<string, string> = {
+      "𓁠 Cleopatra": "Cleopatra the Diver",
+      "𓀚 Ramses": "Ramses the Nomad",
+      "𓁥 Hatshepsut": "Hatshepsut the Scribe",
+      "𓃠 Bastet": "Bastet the Explorer",
+      "𓆛 Sobek": "Sobek the Mariner",
+      "𓅃 Horus": "Horus the Speedster",
+      "𓋹 Anubis": "Anubis the Guardian"
+    };
+    const avatarFull = `${inlineAvatar} ${avatarLabels[inlineAvatar] || 'the Noble'}`;
+
+    const newReview = {
+      id: `rev-${Date.now()}`,
+      excursionId: exId,
+      author: inlineAuthor,
+      avatar: avatarFull,
+      rating: inlineRating,
+      comment: inlineComment,
+      date: new Date().toISOString().split('T')[0]
+    };
+
+    try {
+      await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          excursionId: exId,
+          author: inlineAuthor,
+          avatar: avatarFull,
+          rating: inlineRating,
+          comment: inlineComment
+        })
+      });
+    } catch (err) {
+      console.error("Failed to post inline review to database:", err);
+    }
+
+    const savedReviewsStr = localStorage.getItem('kemet_reviews');
+    let allReviews = [];
+    if (savedReviewsStr) {
+      try {
+        allReviews = JSON.parse(savedReviewsStr);
+      } catch (err) {
+        allReviews = [];
+      }
+    }
+    allReviews = [newReview, ...allReviews];
+    localStorage.setItem('kemet_reviews', JSON.stringify(allReviews));
+    setReviews(allReviews);
+
+    // Recalculate average rating for this excursion
+    const excursionReviews = allReviews.filter((r: any) => r.excursionId === exId);
+    const sum = excursionReviews.reduce((acc: number, r: any) => acc + r.rating, 0);
+    const average = Math.round((sum / excursionReviews.length) * 100) / 100;
+
+    const savedExStr = localStorage.getItem('kemet_excursions');
+    if (savedExStr) {
+      try {
+        const localExcursions = JSON.parse(savedExStr);
+        const updatedExcursions = localExcursions.map((ex: any) => {
+          if (ex.id === exId) {
+            return { ...ex, rating: average };
+          }
+          return ex;
+        });
+        localStorage.setItem('kemet_excursions', JSON.stringify(updatedExcursions));
+      } catch (err) {
+        console.error("Could not update excursion rating locally", err);
+      }
+    }
+
+    window.dispatchEvent(new Event('kemet_reviews_updated'));
+    window.dispatchEvent(new Event('kemet_excursions_updated'));
+    window.dispatchEvent(new Event('kemet_celebrate'));
+
+    setInlineSuccessId(exId);
+    setInlineAuthor("");
+    setInlineComment("");
+    setInlineRating(5);
+
+    setTimeout(() => {
+      setInlineSuccessId(null);
+    }, 2500);
+  };
+
   const activeCatalog = excursions && excursions.length > 0 ? excursions : EXCURSIONS_DATA;
 
   const filteredExcursions = activeCatalog.filter(
@@ -315,6 +510,9 @@ Please seal my booking with the High Priest approval!`;
           Hand-curated, highly immersive voyages matching the golden standards of the Ancient Egyptian pharaohs.
         </p>
       </div>
+
+      {/* Promotional Seasonal Discount Banner */}
+      <PromotionalBanner />
 
       {/* Filter Tabs */}
       <div className="flex flex-wrap gap-2 justify-center">
@@ -520,25 +718,178 @@ Please seal my booking with the High Priest approval!`;
                 </div>
 
                 {/* Buttons */}
-                <div className="flex gap-2.5 pt-2">
+                <div className="flex flex-col gap-2 pt-2">
+                  <div className="flex gap-2.5">
+                    <button
+                      onClick={() => {
+                        setSelectedExcursion(ex);
+                        setIsBookingOpen(false); // just detail view
+                      }}
+                      className="flex-1 bg-[#221c14] hover:bg-[#32281d] border border-[#d4af37]/30 text-[#e6c280] font-mono text-[11px] uppercase tracking-widest py-2.5 rounded-xl transition-all cursor-pointer text-center"
+                    >
+                      View Details
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSelectedExcursion(ex);
+                        setIsBookingOpen(true);
+                      }}
+                      className="flex-1 bg-gradient-to-r from-[#d4af37] to-[#b08e23] hover:from-[#e5c250] hover:to-[#c5a02e] text-[#140f0a] font-serif font-bold text-xs uppercase tracking-wide py-2.5 rounded-xl transition-all hover:scale-[1.02] shadow-md shadow-[#d4af37]/10 cursor-pointer"
+                    >
+                      Book Expedition
+                    </button>
+                  </div>
                   <button
                     onClick={() => {
-                      setSelectedExcursion(ex);
-                      setIsBookingOpen(false); // just detail view
+                      const msg = `𓂀 KEMET VOYAGES - EXPEDITION INQUIRY 𓂀\n\nGreetings Scribe! I am interested in embarking on the beautiful "${ex.title}" (${ex.duration}) expedition. Can you please tell me more about availability and itineraries?`;
+                      const url = `https://wa.me/201202181834?text=${encodeURIComponent(msg)}`;
+                      window.open(url, '_blank') || (window.location.href = url);
                     }}
-                    className="flex-1 bg-[#221c14] hover:bg-[#32281d] border border-[#d4af37]/30 text-[#e6c280] font-mono text-[11px] uppercase tracking-widest py-2.5 rounded-xl transition-all cursor-pointer text-center"
+                    className="w-full bg-[#140f0a] hover:bg-emerald-950/15 border border-emerald-500/30 hover:border-emerald-400 text-emerald-400 hover:text-emerald-300 text-[10px] font-mono uppercase tracking-widest py-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5"
                   >
-                    View Details
+                    <span className="text-emerald-400 text-xs">𓍢</span> Inquire on WhatsApp (+201202181834)
                   </button>
+                </div>
+
+                {/* Collapsible Reviews & Comments Accordion */}
+                <div className="pt-2.5 border-t border-stone-800/60">
                   <button
-                    onClick={() => {
-                      setSelectedExcursion(ex);
-                      setIsBookingOpen(true);
-                    }}
-                    className="flex-1 bg-gradient-to-r from-[#d4af37] to-[#b08e23] hover:from-[#e5c250] hover:to-[#c5a02e] text-[#140f0a] font-serif font-bold text-xs uppercase tracking-wide py-2.5 rounded-xl transition-all hover:scale-[1.02] shadow-md shadow-[#d4af37]/10 cursor-pointer"
+                    onClick={() => setExpandedReviewsId(expandedReviewsId === ex.id ? null : ex.id)}
+                    className="w-full text-center text-[10px] font-mono text-[#d4af37]/80 hover:text-[#d4af37] flex items-center justify-center gap-1.5 py-1.5 hover:bg-[#d4af37]/5 rounded-lg transition-all border border-dashed border-[#d4af37]/25 cursor-pointer uppercase tracking-widest"
                   >
-                    Book Expedition
+                    <MessageSquare className="w-3.5 h-3.5 text-[#d4af37]" />
+                    <span>
+                      {expandedReviewsId === ex.id 
+                        ? 'Hide Reviews' 
+                        : `Read & Write Reviews (${reviews.filter((r: any) => r.excursionId === ex.id).length})`}
+                    </span>
                   </button>
+
+                  <AnimatePresence>
+                    {expandedReviewsId === ex.id && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden mt-3 space-y-4"
+                      >
+                        {/* List of existing reviews for this specific excursion */}
+                        <div className="space-y-2.5 max-h-[180px] overflow-y-auto pr-1">
+                          {reviews.filter((r: any) => r.excursionId === ex.id).length === 0 ? (
+                            <p className="text-[10px] italic text-stone-500 text-center py-2">
+                              No travelers have inscribed testimony yet. Be the first!
+                            </p>
+                          ) : (
+                            reviews.filter((r: any) => r.excursionId === ex.id).map((r: any) => (
+                              <div key={r.id} className="bg-[#120d09]/80 border border-stone-850 rounded-xl p-2.5 space-y-1">
+                                <div className="flex justify-between items-center text-[10px]">
+                                  <span className="font-serif font-bold text-[#e6c280]">{r.author}</span>
+                                  <div className="flex gap-0.5">
+                                    {Array.from({ length: r.rating }).map((_, i) => (
+                                      <Star key={i} className="w-2.5 h-2.5 fill-current text-amber-500" />
+                                    ))}
+                                  </div>
+                                </div>
+                                <p className="text-[10px] text-stone-300 leading-normal italic">
+                                  "{r.comment}"
+                                </p>
+                                <span className="text-[8px] font-mono text-stone-500 block text-right">
+                                  {r.date}
+                                </span>
+                              </div>
+                            ))
+                          )}
+                        </div>
+
+                        {/* Inline Review Form */}
+                        <div className="border-t border-[#d4af37]/15 pt-3 space-y-3 bg-[#110c08]/50 p-3 rounded-xl border border-stone-850">
+                          {inlineSuccessId === ex.id ? (
+                            <div className="text-center py-4 space-y-1.5">
+                              <CheckCircle className="w-6 h-6 text-emerald-400 mx-auto animate-bounce" />
+                              <p className="text-xs font-serif font-semibold text-emerald-400 uppercase tracking-wider">
+                                Testimony Inscribed!
+                              </p>
+                              <p className="text-[9px] font-mono text-stone-400">
+                                Thy review has been saved in the ledger.
+                              </p>
+                            </div>
+                          ) : (
+                            <form onSubmit={(e) => handleInlineFeedbackSubmit(e, ex.id)} className="space-y-2.5">
+                              <h4 className="text-[10px] font-mono uppercase tracking-widest text-[#e6c280] flex items-center gap-1.5 font-bold">
+                                <PenTool className="w-3 h-3 text-[#d4af37]" /> Write Review
+                              </h4>
+
+                              {/* Star Picker */}
+                              <div className="flex items-center justify-between bg-stone-950/40 p-1.5 rounded-lg border border-stone-850">
+                                <span className="text-[9px] font-mono text-stone-400 uppercase">Rating</span>
+                                <div className="flex gap-1">
+                                  {[1, 2, 3, 4, 5].map((num) => (
+                                    <button
+                                      key={num}
+                                      type="button"
+                                      onClick={() => setInlineRating(num)}
+                                      onMouseEnter={() => setHoveredInlineStar(num)}
+                                      onMouseLeave={() => setHoveredInlineStar(null)}
+                                      className="cursor-pointer transition-transform hover:scale-110 focus:outline-none text-stone-600"
+                                    >
+                                      <Star
+                                        className={`w-4 h-4 transition-colors ${
+                                          num <= (hoveredInlineStar ?? inlineRating)
+                                            ? 'text-amber-400 fill-current drop-shadow-[0_0_3px_rgba(251,191,36,0.5)]'
+                                            : 'text-stone-800'
+                                        }`}
+                                      />
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-2">
+                                <input
+                                  type="text"
+                                  required
+                                  placeholder="Thy Name"
+                                  value={inlineAuthor}
+                                  onChange={(e) => setInlineAuthor(e.target.value)}
+                                  className="w-full bg-stone-950/40 border border-[#d4af37]/20 rounded-lg p-2 text-stone-200 text-[10px] focus:outline-none focus:border-[#d4af37] transition-colors"
+                                />
+
+                                <select
+                                  value={inlineAvatar}
+                                  onChange={(e) => setInlineAvatar(e.target.value)}
+                                  className="w-full bg-stone-950/40 border border-[#d4af37]/20 rounded-lg p-1.5 text-stone-200 text-[10px] focus:outline-none focus:border-[#d4af37] transition-colors"
+                                >
+                                  <option value="𓁠 Cleopatra">𓁠 Cleopatra</option>
+                                  <option value="𓀚 Ramses">𓀚 Ramses</option>
+                                  <option value="𓁥 Hatshepsut">𓁥 Hatshepsut</option>
+                                  <option value="𓃠 Bastet">𓃠 Bastet</option>
+                                  <option value="𓆛 Sobek">𓆛 Sobek</option>
+                                  <option value="𓅃 Horus">𓅃 Horus</option>
+                                  <option value="𓋹 Anubis">𓋹 Anubis</option>
+                                </select>
+                              </div>
+
+                              <textarea
+                                required
+                                rows={2}
+                                placeholder="Share details of your excursion..."
+                                value={inlineComment}
+                                onChange={(e) => setInlineComment(e.target.value)}
+                                className="w-full bg-stone-950/40 border border-[#d4af37]/20 rounded-lg p-2 text-stone-200 text-[10px] focus:outline-none focus:border-[#d4af37] transition-colors leading-relaxed"
+                              />
+
+                              <button
+                                type="submit"
+                                className="w-full bg-gradient-to-r from-[#d4af37]/15 to-[#b08e23]/15 hover:from-[#d4af37]/30 hover:to-[#b08e23]/30 border border-[#d4af37]/35 text-[#e6c280] rounded-lg py-1.5 text-[9px] font-mono uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-1 font-bold"
+                              >
+                                <Send className="w-3 h-3 text-[#d4af37]" /> Submit Review
+                              </button>
+                            </form>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
             </motion.div>
@@ -680,18 +1031,30 @@ Please seal my booking with the High Priest approval!`;
                   </div>
 
                   {/* Pricing and Action */}
-                  <div className="flex items-center justify-between pt-4 border-t border-stone-800">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-stone-800">
                     <div>
                       <span className="text-stone-500 text-xs uppercase tracking-widest block font-mono">Total Rate</span>
                       <strong className="text-3xl font-mono text-[#d4af37]">${selectedExcursion.price}</strong>
                       <span className="text-stone-400 text-xs font-normal"> / person</span>
                     </div>
-                    <button
-                      onClick={() => setIsBookingOpen(true)}
-                      className="bg-gradient-to-r from-[#d4af37] to-[#b08e23] hover:from-[#e5c250] hover:to-[#c5a02e] text-[#140f0a] font-serif font-black text-sm uppercase tracking-widest px-8 py-3.5 rounded-xl shadow-lg shadow-[#d4af37]/20 cursor-pointer"
-                    >
-                      Book Expedition Now
-                    </button>
+                    <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto">
+                      <button
+                        onClick={() => {
+                          const msg = `𓂀 KEMET VOYAGES - EXPEDITION DOSSIER INQUIRY 𓂀\n\nGreetings Scribe! I was reviewing the beautiful details of "${selectedExcursion.title}" (${selectedExcursion.duration}) located in "${selectedExcursion.location}". Can you please advise me on availability, customization options, and seasonal discounts?`;
+                          const url = `https://wa.me/201202181834?text=${encodeURIComponent(msg)}`;
+                          window.open(url, '_blank') || (window.location.href = url);
+                        }}
+                        className="bg-emerald-950/25 hover:bg-emerald-900/35 border border-emerald-500/40 hover:border-emerald-400 text-emerald-400 hover:text-emerald-300 font-mono text-xs uppercase tracking-widest py-3 px-5 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <span className="text-emerald-400 text-xs">𓍢</span> Inquire on WhatsApp
+                      </button>
+                      <button
+                        onClick={() => setIsBookingOpen(true)}
+                        className="bg-gradient-to-r from-[#d4af37] to-[#b08e23] hover:from-[#e5c250] hover:to-[#c5a02e] text-[#140f0a] font-serif font-black text-sm uppercase tracking-widest px-8 py-3.5 rounded-xl shadow-lg shadow-[#d4af37]/20 cursor-pointer text-center"
+                      >
+                        Book Expedition Now
+                      </button>
+                    </div>
                   </div>
                 </div>
               ) : (

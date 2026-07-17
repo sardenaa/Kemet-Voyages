@@ -176,6 +176,21 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
 
               </div>
 
+              {/* WhatsApp Quick Chat Integration */}
+              <div className="pt-1">
+                <button
+                  onClick={() => {
+                    const msg = "𓂀 KEMET VOYAGES 𓂀\n\nGreetings Scribe! I am visiting your temple dashboard and would like to ask a general question about excursions, bookings, or custom travel plans!";
+                    const url = `https://wa.me/201202181834?text=${encodeURIComponent(msg)}`;
+                    window.open(url, '_blank') || (window.location.href = url);
+                  }}
+                  className="w-full py-3.5 px-4 rounded-xl border font-mono text-xs uppercase tracking-widest font-bold transition-all duration-300 cursor-pointer flex items-center justify-center gap-2 bg-emerald-950/20 text-emerald-400 border-emerald-500/35 hover:border-emerald-500 hover:bg-emerald-950/40"
+                >
+                  <span className="text-emerald-400 text-sm">𓍢</span>
+                  <span>WhatsApp Chat (+201202181834)</span>
+                </button>
+              </div>
+
               {/* Theme Toggle (Mobile Drawer) */}
               <div className="pt-2">
                 <button
