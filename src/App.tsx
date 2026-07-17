@@ -43,6 +43,7 @@ export default function App() {
 
   const [isAdminMode, setIsAdminMode] = useState<boolean>(false);
   const [activeStage, setActiveStage] = useState<'browsing' | 'itinerary' | 'finalizing'>('browsing');
+  const [activePage, setActivePage] = useState<'home' | 'faq'>('home');
   const [isAdminVerified, setIsAdminVerified] = useState<boolean>(() => {
     return localStorage.getItem('kemet_admin_verified') === 'true';
   });
@@ -334,14 +335,33 @@ export default function App() {
   };
 
   const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+    if (id === 'faq-section') {
+      setActivePage('faq');
+      setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        } else {
+          window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+      }, 100);
+    } else {
+      setActivePage('home');
+      setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
     }
   };
 
   return (
-    <div className={`min-h-screen bg-[#100c08] text-stone-200 font-sans selection:bg-[#d4af37]/30 selection:text-white overflow-x-hidden relative ${theme === 'nile' ? 'theme-nile' : 'theme-desert'}`} id="app-root">
+    <div 
+      className={`min-h-screen bg-[#100c08] text-stone-200 font-sans selection:bg-[#d4af37]/30 selection:text-white overflow-x-hidden relative ${theme === 'nile' ? 'theme-nile' : 'theme-desert'}`} 
+      id="app-root"
+      style={theme === 'nile' ? { '--nile-bg-x': `${scrollY * 0.05}px` } as React.CSSProperties : undefined}
+    >
       
       {/* Scroll-Triggered Parallax Background Hieroglyphs */}
       <div className="absolute inset-y-0 left-0 right-0 pointer-events-none overflow-hidden select-none z-0">
@@ -399,11 +419,16 @@ export default function App() {
         <header className="relative h-[85vh] flex items-center justify-center overflow-hidden border-b-4 border-[#d4af37] shadow-[0_15px_30px_rgba(212,175,55,0.08)]">
           
           {/* Hero Image Background */}
-          <div className="absolute inset-0">
+          <div className="absolute inset-0 overflow-hidden">
             <img
               src={theme === 'nile' ? "/src/assets/images/nile_midnight_bg_1784129212752.jpg" : "/src/assets/images/egypt_red_sea_hero_1784070351173.jpg"}
               alt={theme === 'nile' ? "Nile River Midnight View" : "Ancient Egypt Red Sea Coast"}
-              className="w-full h-full object-cover object-bottom scale-100"
+              className="w-full h-full object-cover object-bottom transition-transform duration-75 ease-out"
+              style={{
+                transform: theme === 'nile'
+                  ? `translateX(${scrollY * 0.08}px) scale(1.15)`
+                  : `translateX(${scrollY * 0.04}px) scale(1.1)`,
+              }}
               referrerPolicy="no-referrer"
             />
             {/* Dark, glowing gradient overlay */}
@@ -506,15 +531,18 @@ export default function App() {
                   { label: '𓉐 Name Translator', target: 'cartouche-section' },
                   { label: '𓇚 Questions & Answers', target: 'faq-section' },
                   { label: '𓎬 My Bookings', target: 'ledger-section' }
-                ].map((item) => (
-                  <button
-                    key={item.target}
-                    onClick={() => scrollToSection(item.target)}
-                    className="text-stone-400 hover:text-[#d4af37] hover:underline underline-offset-4 transition-all duration-300 cursor-pointer"
-                  >
-                    {item.label}
-                  </button>
-                ))}
+                ].map((item) => {
+                  const isFaqActive = item.target === 'faq-section' && activePage === 'faq';
+                  return (
+                    <button
+                      key={item.target}
+                      onClick={() => scrollToSection(item.target)}
+                      className={`${isFaqActive ? 'text-[#d4af37] underline underline-offset-4 font-bold' : 'text-stone-400'} hover:text-[#d4af37] hover:underline underline-offset-4 transition-all duration-300 cursor-pointer`}
+                    >
+                      {item.label}
+                    </button>
+                  );
+                })}
 
                 {/* Theme Toggle Button */}
                 <button
@@ -768,118 +796,186 @@ export default function App() {
               </motion.div>
             )
           ) : (
-            <div className="space-y-16">
-              {/* SECTION 1: EXCURSIONS CATALOG */}
-              <motion.section
-                id="excursions-section"
-                className="scroll-mt-24"
-                initial={{ opacity: 0, y: 35 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-              >
-                <ExcursionCatalog onAddBooking={handleAddBooking} excursions={excursions} />
-              </motion.section>
-
-              {/* SECTION 1.5: INTERACTIVE ANCIENT SITES MAP */}
-              <motion.section
-                id="map-section"
-                className="scroll-mt-24"
-                initial={{ opacity: 0, y: 35 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-              >
-                <AncientSitesMap />
-              </motion.section>
-
-              {/* SECTION 2: AI SCRIBE ORACLE */}
-              <motion.section
-                id="scribe-section"
-                className="scroll-mt-24 space-y-8"
-                initial={{ opacity: 0, y: 35 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-              >
-                <div className="text-center">
-                  <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">Artificial Intelligence</span>
-                  <h2 className="font-serif text-3xl font-extrabold text-[#e6c280] uppercase mt-1">
-                    AI Travel Guide & Assistant
-                  </h2>
-                  <p className="text-stone-400 text-sm max-w-xl mx-auto mt-2">
-                    Ask our AI helper any questions or generate a custom day-by-day travel plan.
-                  </p>
+            activePage === 'faq' ? (
+              <div className="space-y-16">
+                {/* Back Button and Subheader */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#140f0c]/60 border border-[#d4af37]/20 p-6 rounded-2xl relative overflow-hidden backdrop-blur-md">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.3em] flex items-center gap-1.5">
+                      <span className="animate-pulse">𓇚</span> Egyptian Archives 𓇚
+                    </span>
+                    <h2 className="font-serif text-xl font-bold text-[#e6c280] uppercase">The Scribes' Sanctuary</h2>
+                    <p className="text-stone-400 text-xs">Access critical travel wisdom and sacred records here.</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setActivePage('home');
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="inline-flex items-center gap-2 px-4 py-2 border border-[#d4af37]/40 bg-[#1e1712] hover:bg-[#2e231b] text-[#e6c280] hover:text-white rounded-xl text-xs font-mono uppercase tracking-widest transition-all cursor-pointer"
+                  >
+                    ← Back to Sanctuary
+                  </button>
                 </div>
-                <ScribeOracle onScribeSuccess={triggerCelebration} onAddBooking={handleAddBooking} />
-              </motion.section>
 
-              {/* SECTION 3: IMMERSIVE GALLERY */}
-              <motion.section
-                id="gallery-section"
-                className="scroll-mt-24"
-                initial={{ opacity: 0, y: 35 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-              >
-                <EgyptologyGallery />
-              </motion.section>
+                {/* Decorative Wisdom Column / Travel Tips before the FAQ section */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-[#120e0a]/80 border border-[#d4af37]/15 rounded-2xl p-6 space-y-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl text-[#d4af37]">𓋹</span>
+                      <h4 className="font-serif text-lg font-bold text-[#e6c280] uppercase">Sacred Nile & Desert Safety</h4>
+                    </div>
+                    <ul className="space-y-3.5 text-xs text-stone-400 leading-relaxed">
+                      <li className="flex gap-2">
+                        <span className="text-[#d4af37]">✦</span>
+                        <span><strong>Water Wisdom:</strong> Standard tap water is not fit for consumption. Please enjoy the abundant, complimentary ice-cold bottled mineral water provided across all tours and camps.</span>
+                      </li>
+                      <li className="flex gap-2">
+                        <span className="text-[#d4af37]">✦</span>
+                        <span><strong>Desert Garb:</strong> When riding quad bikes or hiking sand dunes, wear secure closed-toe shoes and wraps. The sun evaporates heat instantly, but temperatures drop rapidly after twilight.</span>
+                      </li>
+                      <li className="flex gap-2">
+                        <span className="text-[#d4af37]">✦</span>
+                        <span><strong>Cultural Respect:</strong> Cover shoulders and knees when visiting ancient shrines, and always request permission before capturing memories of Bedouin hosts.</span>
+                      </li>
+                    </ul>
+                  </div>
 
-              {/* SECTION 4: HIEROGLYPHIC CARTOUCHE GENERATOR */}
-              <motion.section
-                id="cartouche-section"
-                className="scroll-mt-24 space-y-8"
-                initial={{ opacity: 0, y: 35 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-              >
-                <div className="text-center">
-                  <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">Egyptian Cartouche</span>
-                  <h2 className="font-serif text-3xl font-extrabold text-[#e6c280] uppercase mt-1">
-                    Egyptian Name Translator
-                  </h2>
-                  <p className="text-stone-400 text-sm max-w-xl mx-auto mt-2">
-                    Translate your name into ancient Egyptian hieroglyphic symbols inside a beautiful protective cartouche.
-                  </p>
+                  <div className="bg-[#120e0a]/80 border border-[#d4af37]/15 rounded-2xl p-6 space-y-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl text-[#d4af37]">𓅃</span>
+                      <h4 className="font-serif text-lg font-bold text-[#e6c280] uppercase">Diving & Historical Passes</h4>
+                    </div>
+                    <ul className="space-y-3.5 text-xs text-stone-400 leading-relaxed">
+                      <li className="flex gap-2">
+                        <span className="text-[#d4af37]">✦</span>
+                        <span><strong>Corals of Sobek:</strong> Use strictly reef-safe biodegradable sunscreen. Never stand on, touch, or handle corals as it damages sensitive living systems.</span>
+                      </li>
+                      <li className="flex gap-2">
+                        <span className="text-[#d4af37]">✦</span>
+                        <span><strong>Valley Passes:</strong> Standard entry tickets are included and allow entry into 3 major tombs. Specialty tombs like Tutankhamun can be booked through your guide 48 hours in advance.</span>
+                      </li>
+                      <li className="flex gap-2">
+                        <span className="text-[#d4af37]">✦</span>
+                        <span><strong>Pharaonic Photography:</strong> Smartphone photos are free inside tombs, but professional DSLR cameras/tripods are strictly banned without commercial licenses.</span>
+                      </li>
+                    </ul>
+                  </div>
                 </div>
-                <CartoucheGenerator />
-              </motion.section>
 
-              {/* SECTION 5: ORACLE'S WISDOM FAQ */}
-              <motion.section
-                id="faq-section"
-                className="scroll-mt-24"
-                initial={{ opacity: 0, y: 35 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-              >
-                <OraclesWisdomFAQ />
-              </motion.section>
+                {/* THE FAQ SECTION - placed explicitly "in the end of the page" */}
+                <motion.section
+                  id="faq-section"
+                  className="scroll-mt-24 pt-4 border-t border-[#d4af37]/15"
+                  initial={{ opacity: 0, y: 35 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                >
+                  <OraclesWisdomFAQ />
+                </motion.section>
+              </div>
+            ) : (
+              <div className="space-y-16">
+                {/* SECTION 1: EXCURSIONS CATALOG */}
+                <motion.section
+                  id="excursions-section"
+                  className="scroll-mt-24"
+                  initial={{ opacity: 0, y: 35 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                >
+                  <ExcursionCatalog onAddBooking={handleAddBooking} excursions={excursions} />
+                </motion.section>
 
-              {/* SECTION 6: BOOKING LEDGER & REVIEWS */}
-              <motion.section
-                id="ledger-section"
-                className="scroll-mt-24 space-y-8"
-                initial={{ opacity: 0, y: 35 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-              >
-                <div className="text-center">
-                  <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">My Bookings</span>
-                  <h2 className="font-serif text-3xl font-extrabold text-[#e6c280] uppercase mt-1">
-                    Your Bookings & Reviews
-                  </h2>
-                  <p className="text-stone-400 text-sm max-w-xl mx-auto mt-2">
-                    View your pending or confirmed bookings, and read reviews from other travelers.
-                  </p>
-                </div>
-                <BookingManager bookings={bookings} excursions={excursions} onCancelBooking={handleCancelBooking} onVerifyCheckIn={handleVerifyCheckIn} />
-              </motion.section>
-            </div>
+                {/* SECTION 1.5: INTERACTIVE ANCIENT SITES MAP */}
+                <motion.section
+                  id="map-section"
+                  className="scroll-mt-24"
+                  initial={{ opacity: 0, y: 35 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                >
+                  <AncientSitesMap />
+                </motion.section>
+
+                {/* SECTION 2: AI SCRIBE ORACLE */}
+                <motion.section
+                  id="scribe-section"
+                  className="scroll-mt-24 space-y-8"
+                  initial={{ opacity: 0, y: 35 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                >
+                  <div className="text-center">
+                    <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">Artificial Intelligence</span>
+                    <h2 className="font-serif text-3xl font-extrabold text-[#e6c280] uppercase mt-1">
+                      AI Travel Guide & Assistant
+                    </h2>
+                    <p className="text-stone-400 text-sm max-w-xl mx-auto mt-2">
+                      Ask our AI helper any questions or generate a custom day-by-day travel plan.
+                    </p>
+                  </div>
+                  <ScribeOracle onScribeSuccess={triggerCelebration} onAddBooking={handleAddBooking} />
+                </motion.section>
+
+                {/* SECTION 3: IMMERSIVE GALLERY */}
+                <motion.section
+                  id="gallery-section"
+                  className="scroll-mt-24"
+                  initial={{ opacity: 0, y: 35 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                >
+                  <EgyptologyGallery />
+                </motion.section>
+
+                {/* SECTION 4: HIEROGLYPHIC CARTOUCHE GENERATOR */}
+                <motion.section
+                  id="cartouche-section"
+                  className="scroll-mt-24 space-y-8"
+                  initial={{ opacity: 0, y: 35 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                >
+                  <div className="text-center">
+                    <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">Egyptian Cartouche</span>
+                    <h2 className="font-serif text-3xl font-extrabold text-[#e6c280] uppercase mt-1">
+                      Egyptian Name Translator
+                    </h2>
+                    <p className="text-stone-400 text-sm max-w-xl mx-auto mt-2">
+                      Translate your name into ancient Egyptian hieroglyphic symbols inside a beautiful protective cartouche.
+                    </p>
+                  </div>
+                  <CartoucheGenerator />
+                </motion.section>
+
+                {/* SECTION 6: BOOKING LEDGER & REVIEWS */}
+                <motion.section
+                  id="ledger-section"
+                  className="scroll-mt-24 space-y-8"
+                  initial={{ opacity: 0, y: 35 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                >
+                  <div className="text-center">
+                    <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">My Bookings</span>
+                    <h2 className="font-serif text-3xl font-extrabold text-[#e6c280] uppercase mt-1">
+                      Your Bookings & Reviews
+                    </h2>
+                    <p className="text-stone-400 text-sm max-w-xl mx-auto mt-2">
+                      View your pending or confirmed bookings, and read reviews from other travelers.
+                    </p>
+                  </div>
+                  <BookingManager bookings={bookings} excursions={excursions} onCancelBooking={handleCancelBooking} onVerifyCheckIn={handleVerifyCheckIn} />
+                </motion.section>
+              </div>
+            )
           )}
 
         </main>
@@ -926,6 +1022,7 @@ export default function App() {
           setIsAdminMode={setIsAdminMode}
           theme={theme}
           setTheme={setTheme}
+          activePage={activePage}
         />
 
         {/* FLOATING WHATSAPP ASSISTANCE WIDGET */}

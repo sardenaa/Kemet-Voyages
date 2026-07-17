@@ -8,9 +8,10 @@ interface MobileBottomNavProps {
   setIsAdminMode: (mode: boolean) => void;
   theme: 'desert' | 'nile';
   setTheme: (theme: 'desert' | 'nile') => void;
+  activePage: 'home' | 'faq';
 }
 
-export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdminMode, theme, setTheme }: MobileBottomNavProps) {
+export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdminMode, theme, setTheme, activePage }: MobileBottomNavProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const handleNavClick = (targetId: string) => {
@@ -31,7 +32,7 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
         {/* Expeditions button */}
         <button
           onClick={() => handleNavClick('excursions-section')}
-          className="flex flex-col items-center gap-1 text-stone-400 hover:text-[#d4af37] active:text-[#d4af37] transition-all cursor-pointer flex-1"
+          className={`flex flex-col items-center gap-1 ${activePage === 'home' ? 'text-[#d4af37]' : 'text-stone-400'} hover:text-[#d4af37] active:text-[#d4af37] transition-all cursor-pointer flex-1`}
         >
           <Compass className="w-5 h-5" />
           <span className="text-[9px] font-mono uppercase tracking-widest font-medium">Expeditions</span>
@@ -40,7 +41,7 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
         {/* FAQ button */}
         <button
           onClick={() => handleNavClick('faq-section')}
-          className="flex flex-col items-center gap-1 text-stone-400 hover:text-[#d4af37] active:text-[#d4af37] transition-all cursor-pointer flex-1"
+          className={`flex flex-col items-center gap-1 ${activePage === 'faq' ? 'text-[#d4af37]' : 'text-stone-400'} hover:text-[#d4af37] active:text-[#d4af37] transition-all cursor-pointer flex-1`}
         >
           <HelpCircle className="w-5 h-5" />
           <span className="text-[9px] font-mono uppercase tracking-widest font-medium">FAQs</span>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, Info, Download, RefreshCw } from 'lucide-react';
+import { Sparkles, Info, Download, RefreshCw, Share2, Copy, Check, ExternalLink } from 'lucide-react';
 
 interface HieroglyphData {
   symbolName: string;
@@ -364,7 +364,18 @@ interface SavedCartouche {
 }
 
 export default function CartoucheGenerator() {
-  const [name, setName] = useState<string>("KEMET");
+  const [name, setName] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const queryCartouche = params.get('cartouche');
+      if (queryCartouche) {
+        return queryCartouche.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 8);
+      }
+    }
+    return "KEMET";
+  });
+  const [isShareOpen, setIsShareOpen] = useState<boolean>(false);
+  const [copiedLink, setCopiedLink] = useState<boolean>(false);
   const [activeSymbol, setActiveSymbol] = useState<HieroglyphData | null>(null);
   const [isSaved, setIsSaved] = useState<boolean>(false);
   const [isGlowing, setIsGlowing] = useState<boolean>(false);
@@ -555,6 +566,36 @@ export default function CartoucheGenerator() {
     localStorage.setItem('kemet_saved_cartouches', JSON.stringify(updated));
   };
 
+  const getShareUrl = () => {
+    if (typeof window !== 'undefined') {
+      return `${window.location.origin}${window.location.pathname}?cartouche=${encodeURIComponent(cleanName)}`;
+    }
+    return `https://kemet-tours.agency/?cartouche=${encodeURIComponent(cleanName)}`;
+  };
+
+  const copySacredLink = () => {
+    const url = getShareUrl();
+    navigator.clipboard.writeText(url);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+  };
+
+  const shareTwitter = () => {
+    const text = `𓂀 I have inscribed my name into a sacred golden cartouche at Kemet Tours! Check out my pharaonic royal seal here:`;
+    const url = getShareUrl();
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+  };
+
+  const shareWhatsApp = () => {
+    const text = `𓂀 I have inscribed my name into a sacred golden cartouche at Kemet Tours! Check out my pharaonic royal seal here: ${getShareUrl()}`;
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const shareFacebook = () => {
+    const url = getShareUrl();
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+  };
+
   return (
     <div className="bg-[#16120e] border border-[#d4af37]/35 rounded-2xl p-8 md:p-10 shadow-[0_15px_35px_rgba(0,0,0,0.8)] relative overflow-hidden" id="cartouche-creator">
       {/* Decorative Ancient Egyptian Hieroglyphic Border Ribbon around the component */}
@@ -678,6 +719,15 @@ export default function CartoucheGenerator() {
                 <span className="font-mono uppercase text-[10px] tracking-wider">Save SVG File</span>
               </button>
             </div>
+
+            <button
+              onClick={() => setIsShareOpen(true)}
+              disabled={!cleanName}
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#e6c280]/15 via-[#d4af37]/15 to-[#e6c280]/15 hover:from-[#e6c280]/30 hover:via-[#d4af37]/30 hover:to-[#e6c280]/30 border border-[#d4af37]/45 hover:border-[#d4af37] text-[#f3e5c8] rounded-xl py-2.5 text-xs font-semibold transition-all shadow-md active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Share2 className="w-3.5 h-3.5 text-[#d4af37]" />
+              <span className="font-mono uppercase text-[10px] tracking-wider">Share as Papyrus Scroll</span>
+            </button>
 
             {isSaved && (
               <motion.div
@@ -840,6 +890,127 @@ export default function CartoucheGenerator() {
           </div>
         </div>
       )}
+
+      {/* Share as Papyrus Modal Overlay */}
+      <AnimatePresence>
+        {isShareOpen && (
+          <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-[150] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 30 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 30 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="bg-[#f2e6cf] border-8 border-double border-[#b38b3f] rounded-2xl p-6 md:p-8 max-w-lg w-full shadow-[0_0_50px_rgba(212,175,55,0.45)] text-center relative overflow-hidden text-[#4a2e16] bg-[radial-gradient(#d4af37_0.4px,transparent_0.4px)] [background-size:12px_12px]"
+            >
+              {/* Top Wooden Rod Roll Simulation (Ancient Scroll vibe) */}
+              <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-[#8a5d2e] via-[#c69a5a] to-[#8a5d2e] border-b border-[#5a3b1c] flex items-center justify-between px-4">
+                <div className="w-3 h-3 rounded-full bg-[#5a3b1c]"></div>
+                <div className="w-3 h-3 rounded-full bg-[#5a3b1c]"></div>
+              </div>
+
+              {/* Egyptian Ornamentations */}
+              <div className="text-xl text-[#b38b3f] font-serif select-none pointer-events-none tracking-widest mt-4 mb-2">
+                𓋹 𓂀 𓆗 SACRED ROYAL DECREE 𓆗 𓂀 𓋹
+              </div>
+
+              <div className="border border-[#b38b3f]/35 p-4 rounded-xl bg-[#faf3e3]/75 space-y-4 my-4 shadow-inner relative">
+                {/* Vintage stamp */}
+                <div className="absolute -top-3 -right-3 w-10 h-10 rounded-full border-2 border-red-800/25 flex items-center justify-center text-red-800/35 font-serif text-[10px] uppercase font-black tracking-tighter rotate-12 select-none pointer-events-none">
+                  Scribe OK
+                </div>
+
+                <p className="font-serif text-[#5c3c21] leading-relaxed text-sm">
+                  Let it be known to all corners of the Kingdom that the traveler{' '}
+                  <strong className="text-[#8c6020] uppercase font-mono tracking-wider font-bold">
+                    {cleanName}
+                  </strong>{' '}
+                  has been inscribed upon the Eternal Cartouche of <strong>Kemet Tours</strong>.
+                </p>
+
+                <p className="text-[11px] text-stone-600 font-mono italic">
+                  "Written under the celestial favor of Osiris, Ra, and Isis, matching the letters of the West with the hieroglyphs of the East."
+                </p>
+
+                <div className="flex items-center justify-center gap-1 text-[10px] text-[#b38b3f]/90 font-mono tracking-widest uppercase">
+                  <span>𓂀 Status: Eternal Seal Registered 𓂀</span>
+                </div>
+              </div>
+
+              {/* Sharing link input field */}
+              <div className="space-y-2 text-left mb-6">
+                <label className="block text-[10px] font-mono uppercase tracking-wider text-[#634832] font-semibold">
+                  Sacred Direct Link to your Cartouche
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={getShareUrl()}
+                    className="flex-1 bg-[#fffbf2] border border-[#b38b3f]/40 text-[#4a2e16] rounded-xl px-3 py-2 text-xs font-mono select-all focus:outline-none focus:border-[#b38b3f] shadow-inner"
+                  />
+                  <button
+                    onClick={copySacredLink}
+                    className="bg-[#b38b3f] hover:bg-[#8e6b2c] text-[#fbf5e6] px-4 rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-colors flex items-center gap-1 cursor-pointer"
+                  >
+                    {copiedLink ? (
+                      <>
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Social Buttons Grid */}
+              <div className="space-y-3 mb-6">
+                <span className="block text-[10px] font-mono uppercase tracking-widest text-[#634832] font-bold">
+                  Proclaim to the Modern Realm
+                </span>
+                <div className="grid grid-cols-3 gap-2.5">
+                  <button
+                    onClick={shareTwitter}
+                    className="bg-[#1da1f2]/10 hover:bg-[#1da1f2]/20 border border-[#1da1f2]/30 text-[#1a7bb8] rounded-xl py-2 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <span className="font-mono text-[10px] font-bold uppercase">Twitter / X</span>
+                  </button>
+                  <button
+                    onClick={shareWhatsApp}
+                    className="bg-[#25d366]/10 hover:bg-[#25d366]/20 border border-[#25d366]/30 text-[#1b9a45] rounded-xl py-2 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <span className="font-mono text-[10px] font-bold uppercase">WhatsApp</span>
+                  </button>
+                  <button
+                    onClick={shareFacebook}
+                    className="bg-[#1877f2]/10 hover:bg-[#1877f2]/20 border border-[#1877f2]/30 text-[#145dbf] rounded-xl py-2 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <span className="font-mono text-[10px] font-bold uppercase">Facebook</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Close Button */}
+              <button
+                onClick={() => setIsShareOpen(false)}
+                className="w-full bg-[#4a2e16] hover:bg-[#341f0e] text-[#faf3e3] font-serif font-bold text-xs uppercase tracking-widest py-3 rounded-xl shadow-md transition-all cursor-pointer"
+              >
+                𓏛 Complete Rite of Passage 𓏛
+              </button>
+
+              {/* Bottom Wooden Rod Roll Simulation */}
+              <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-r from-[#8a5d2e] via-[#c69a5a] to-[#8a5d2e] border-t border-[#5a3b1c] flex items-center justify-between px-4">
+                <div className="w-3 h-3 rounded-full bg-[#5a3b1c]"></div>
+                <div className="w-3 h-3 rounded-full bg-[#5a3b1c]"></div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

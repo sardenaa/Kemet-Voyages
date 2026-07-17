@@ -119,7 +119,7 @@
   background-image: linear-gradient(to bottom, rgba(5, 8, 18, 0.91), rgba(5, 8, 18, 0.97)), url('/src/assets/images/nile_midnight_bg_1784129212752.jpg') !important;
   background-attachment: fixed !important;
   background-size: cover !important;
-  background-position: center !important;
+  background-position: calc(50% + var(--nile-bg-x, 0px)) center !important;
 }
 
 /* Styling for the selected header content element in theme-nile */
@@ -365,5 +365,58 @@
     box-shadow: inset 0 0 20px rgba(56, 189, 248, 0.10), 0 4px 20px rgba(56, 189, 248, 0.05);
   }
 }
+
+/* Subtle Desert Mirage Heat Distortion Keyframes */
+@keyframes mirage-wave {
+  0%, 100%, 15%, 85% {
+    transform: none;
+    filter: none;
+  }
+  20%, 30% {
+    transform: translateY(-2px) skewX(0.4deg) scale(1.002);
+    filter: blur(0.3px) contrast(0.98) brightness(1.02);
+  }
+  40%, 50% {
+    transform: translateY(1.5px) skewX(-0.4deg) scale(0.998);
+    filter: blur(0.5px) contrast(1.03) brightness(0.98);
+  }
+  60%, 70% {
+    transform: translateY(-1px) skewX(0.2deg) scale(1.001);
+    filter: blur(0.2px) contrast(0.99) brightness(1.01);
+  }
+  75%, 80% {
+    transform: translateY(1px) skewX(-0.2deg) scale(0.999);
+    filter: blur(0.4px) contrast(1.02) brightness(0.99);
+  }
+}
+
+.animate-mirage-periodic {
+  animation: mirage-wave 10s ease-in-out infinite;
+}
+
+.hover\:animate-mirage-hover:hover {
+  animation: mirage-wave 2.2s ease-in-out infinite !important;
+}
+
+/* Staggered offsets for cards */
+.mirage-delay-1 {
+  animation-delay: 1.2s;
+}
+.mirage-delay-2 {
+  animation-delay: 3.4s;
+}
+.mirage-delay-3 {
+  animation-delay: 5.6s;
+}
+.mirage-delay-4 {
+  animation-delay: 2.1s;
+}
+.mirage-delay-5 {
+  animation-delay: 4.8s;
+}
+.mirage-delay-6 {
+  animation-delay: 0.5s;
+}
+
 
 
