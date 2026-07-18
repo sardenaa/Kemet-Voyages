@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Star, ShieldAlert, CheckCircle, Clock, MapPin, Sparkles, Filter, ChevronRight, X, User, Mail, Calendar, HelpCircle, MessageSquare, Send, ThumbsUp, PenTool } from 'lucide-react';
 import { Excursion, Booking } from '../types';
+import { useLanguage } from './LanguageContext';
 import ReviewSystem from './ReviewSystem';
 import PromotionalBanner from './PromotionalBanner';
 
@@ -129,6 +130,129 @@ export const EXCURSIONS_DATA: Excursion[] = [
   }
 ];
 
+export const EXCURSIONS_DATA_DE: Excursion[] = [
+  {
+    id: 'diving-1',
+    title: "Ras Mohammed Königliches Korallentauchen",
+    tagline: "Erforschen Sie die versunkenen Statuen des Meeresgottes Nun",
+    category: 'diving',
+    duration: "Ganztägig (8 Stunden)",
+    price: 120,
+    rating: 4.9,
+    location: "Rotes Meer, Ägypten (Ras-Mohammed-Nationalpark)",
+    image: "/src/assets/images/egypt_sea_diving_1784070366165.jpg",
+    description: "Tauchen Sie ein in das tief türkisfarbene Reich von Nun, dem Urgewässer der ägyptischen Mythologie. Dieser von Fachleuten geführte Tauchausflug führt Sie an vertikalen Korallenwänden, Hammerhai-Schutzgebieten und einem atemberaubenden, im Meeresboden ruhenden Feld aus handgemeißelten pharaonischen Steinmonumenten vorbei.",
+    inclusions: [
+      "Hochwertige Tauchausrüstung (Flaschen, Neoprenanzüge, Atemregler)",
+      "Zwei tiefe Tauchgänge mit zertifizierten ägyptischen Ägyptologen-Tauchern",
+      "Traditionelles Mittagessen auf einer Yacht, zubereitet von Beduinen",
+      "Hoteltransfer ab Hurghada oder Sharm El Sheikh"
+    ],
+    highlights: [
+      "Schwimmen Sie mit riesigen Napoleon-Fischen & Meeresschildkröten",
+      "Enthüllen Sie das Unterwasser-Heiligtum von Anubis & Ramses",
+      "Professionelles Unterwasservideo- und Fotopaket inklusive"
+    ],
+    ancientLore: "Antike Priester des Roten Meeres schrieben über 'Nun' – die Quelle allen Lebens. Sie glaubten, dass untergetauchte Steinstatuen die Geister des Ozeans besänftigten und so eine sichere Passage für die Handelskarawanen von Königin Hatschepsut in das mythische Land Punt garantierten."
+  },
+  {
+    id: 'safari-1',
+    title: "Sets Goldene Deshret-Safari",
+    tagline: "Rasen Sie mit Quad-Bikes und reiten Sie Kamele über rote Dünen",
+    category: 'safari',
+    duration: "Halbtägig (6 Stunden)",
+    price: 75,
+    rating: 4.8,
+    location: "Sinai-Wüste, Ägypten (Hurghada-Umgebung)",
+    image: "/src/assets/images/egypt_desert_safari_1784070379685.jpg",
+    description: "Rasen Sie mit leistungsstarken Quad-Bikes über sanfte Sandwellen, bevor Sie in das majestätische Tempo einer traditionellen Kamelkarawane wechseln. Schließen Sie Ihre Reise in einer abgeschiedenen, von Fackeln erleuchteten Beduinen-Oase ab, wo Sie Hibiskustee, Lagerfeuergeschichten und faszinierende Himmelsbeobachtungen durch Hochleistungsteleskope im Reich von Nut genießen.",
+    inclusions: [
+      "Premium-Quad (ATV) und vollständige Sicherheitsausrüstung",
+      "Traditioneller 30-minütiger Kamelritt bei Sonnenaufgang oder Sonnenuntergang",
+      "Festmahl im Beduinen-Camp mit Fladenbrot-Backkurs",
+      "Teleskop-Sternebeobachtung und Vortrag über Himmelsausrichtung durch Ägyptologen"
+    ],
+    highlights: [
+      "Beherrschen Sie hohe Sanddünen mit 50 km/h auf dem Quad",
+      "Hören Sie Beduinen-Rababa-Melodien am offenen Akazienfeuer",
+      "Verfolgen Sie die Konstellation Sah (Orion) unter Anleitung unserer Sternenbeobachter"
+    ],
+    ancientLore: "Die rote Wüste wurde von den Pharaonen 'Deshret' genannt und von Set, dem Gott der Stürme, beherrscht. Antike Bergleute durchquerten diese Dünen unter dem Schutz der königlichen Bogenschützen, um Kupfer und Türkis im Sinai zu gewinnen. Sie markierten wichtige Felsen mit Kartuschen, um ihre sichere Rückkehr zu gewährleisten."
+  },
+  {
+    id: 'history-1',
+    title: "Pharaonische Pilgerreise nach Waset (Luxor)",
+    tagline: "Öffnen Sie die Gräber im Tal der Könige & Karnak",
+    category: 'history',
+    duration: "Ganztägig (14 Stunden)",
+    price: 180,
+    rating: 4.95,
+    location: "Luxor (Antikes Waset), Ägypten",
+    image: "/src/assets/images/egypt_luxor_temple_1784070393047.jpg",
+    description: "Durchqueren Sie die Sinai-Berge zum fruchtbaren Nil-Tal. Kommen Sie an im antiken Waset (Luxor), der Hauptstadt des Neuen Reiches. Schlendern Sie durch die riesigen Säulenhallen von Karnak, steigen Sie hinab in die bemalten königlichen Gewölbe des Tals der Könige und staunen Sie vor den kolossalen Memnonkolossen.",
+    inclusions: [
+      "Privater Transport in einer Luxus-Kutsche (Mercedes Minibus) von der Küste",
+      "VIP-Eintrittskarten für 3 Königsgräber im Tal der Könige",
+      "Geführte Besichtigung der Tempel von Karnak und Hatschepsut",
+      "Traditionelles ägyptisches Mittagessen auf einer privaten Nil-Insel"
+    ],
+    highlights: [
+      "Berühren Sie die Hieroglyphen der riesigen Hypostylhalle in Karnak",
+      "Steigen Sie in die Grabkammer von Tutanchamun hinab",
+      "Malerische Bootsfahrt mit einer Feluke auf dem lebensspendenden Nil bei Sonnenuntergang"
+    ],
+    ancientLore: "Vom Ostufer zum Westufer von Luxor überzusetzen bedeutet, den Schleier zwischen den Lebenden und den Toten zu durchschreiten. Die Pharaonen meißelten ihre Gräber tief in die Felsspalten der Berge, passend zum Untergang von Ra, um die Auferstehung in den ewigen Gefilden von Aaru zu sichern."
+  },
+  {
+    id: 'boat-1',
+    title: "Sobeks Königliche Königin-Nefertari-Kreuzfahrt",
+    tagline: "Segeln Sie an der Giftun-Insel vorbei auf unserer edlen Yacht",
+    category: 'boat',
+    duration: "Ganztägig (7 Stunden)",
+    price: 95,
+    rating: 4.85,
+    location: "Hurghada, Rotes Meer, Ägypten",
+    image: "/src/assets/images/egypt_boat_trip_1784071711626.jpg",
+    description: "Segeln Sie in absolutem Luxus auf dem schimmernden türkisfarbenen Reich von Sobek. Entspannen Sie sich auf den zweistöckigen Sonnendecks unserer königlichen Holzyacht, während wir in Richtung Giftun-Insel fahren. Schlemmen Sie bei einem frischen Meeresfrüchte-Bankett, das von Ihren privaten Bordköchen zubereitet wird, schwimmen Sie in unberührten Lagunen und schnorcheln Sie an bunten Riffen.",
+    inclusions: [
+      "Hochwertige Schnorchelausrüstung und Sicherheitswesten",
+      "Gourmet-Meeresfrüchte und traditionelles Mezze-Buffet, an Bord zubereitet",
+      "Unbegrenzt frische Säfte, ägyptischer Kaffee und Beduinen-Minztee",
+      "VIP-Transfer im klimatisierten Van hin und zurück"
+    ],
+    highlights: [
+      "Schnorcheln Sie in den glasklaren Lagunen der Giftun Orange Bay",
+      "Sonnensegeln auf bequemen, goldenen Leder-Liegen",
+      "Sichten Sie verspielte Delfine, die vor dem Schiffsbug tanzen"
+    ],
+    ancientLore: "Der Nil und die Meere wurden von Sobek, dem Schutzpatron des Wassers und der Fruchtbarkeit, bewacht. Antike ägyptische Könige ließen mit Blattgold verzierte Zedernholz-Lustboote zu Wasser, um die Wassergeister zu ehren. Sie glaubten, eine fröhliche Seereise sichere eine gute Ernte und die Gunst von Osiris."
+  },
+  {
+    id: 'speedboat-1',
+    title: "Horus' Falkenauge-Schnellbootfahrt",
+    tagline: "Erleben Sie Adrenalin bei hohen Geschwindigkeiten zu geheimen Inseln",
+    category: 'speedboat',
+    duration: "Halbtägig (4 Stunden)",
+    price: 150,
+    rating: 4.9,
+    location: "El Gouna & Rotes Meer Inseln, Ägypten",
+    image: "/src/assets/images/egypt_speedboat_1784071721552.jpg",
+    description: "Fliegen Sie über die Wellen des Roten Meeres wie der Himmelsfalke Horus. Mit diesem erstklassigen Schnellboot-Ausflug umgehen Sie die langsamen Yachten und tauchen direkt an den abgelegensten, unberührtesten Riffen des Roten Meeres auf. Gestalten Sie Ihre eigene Route, halten Sie an unbewohnten Sandbänken und erleben Sie den Rausch des schnellen Transports.",
+    inclusions: [
+      "Privates Luxus-Schnellboot mit professionellem Kapitän",
+      "Premium-Schnorchelausrüstung und Unterwasser-Actionkameras",
+      "Feine Erfrischungen und eisgekühlter Bio-Hibiskus-Elixiertrank",
+      "VIP-Abholung vom Hotel mit einer privaten modernen Limousine"
+    ],
+    highlights: [
+      "Fliegen Sie mit aufregender Geschwindigkeit über das türkisfarbene Wasser",
+      "Private Zwischenstopps an einsamen Sandbänken zum ungestörten Schwimmen",
+      "Erkunden Sie versteckte Korallengärten, die der breiten Öffentlichkeit unbekannt sind"
+    ],
+    ancientLore: "Horus, der falkenköpfige Herr der Lüfte, was berühmt für seine Schnelligkeit und seinen scharfen Blick. Pharaonische Späher benutzten wendige Schilfboote, um die Küsten mit falkenartiger Geschwindigkeit zu patrouillieren und den königlichen Tempeln Signale mittels reflektierten Lichts zu senden."
+  }
+];
+
 const INITIAL_INLINE_REVIEWS = [
   {
     id: 'rev-1',
@@ -183,6 +307,7 @@ interface CatalogProps {
 }
 
 export default function ExcursionCatalog({ onAddBooking, excursions }: CatalogProps) {
+  const { t, language } = useLanguage();
   const [filter, setFilter] = useState<'all' | 'diving' | 'safari' | 'history' | 'boat' | 'speedboat'>('all');
   const [selectedExcursion, setSelectedExcursion] = useState<Excursion | null>(null);
   const [isBookingOpen, setIsBookingOpen] = useState<boolean>(false);
@@ -435,7 +560,29 @@ export default function ExcursionCatalog({ onAddBooking, excursions }: CatalogPr
     }, 2500);
   };
 
-  const activeCatalog = excursions && excursions.length > 0 ? excursions : EXCURSIONS_DATA;
+  const activeCatalog = React.useMemo(() => {
+    const rawCatalog = excursions && excursions.length > 0 ? excursions : EXCURSIONS_DATA;
+    if (language !== 'de') {
+      return rawCatalog;
+    }
+    return rawCatalog.map(ex => {
+      const deEx = EXCURSIONS_DATA_DE.find(item => item.id === ex.id);
+      if (deEx) {
+        return {
+          ...ex,
+          title: deEx.title,
+          tagline: deEx.tagline,
+          duration: deEx.duration,
+          location: deEx.location,
+          description: deEx.description,
+          inclusions: deEx.inclusions,
+          highlights: deEx.highlights,
+          ancientLore: deEx.ancientLore
+        };
+      }
+      return ex;
+    });
+  }, [excursions, language]);
 
   const filteredExcursions = activeCatalog.filter(
     ex => filter === 'all' || ex.category === filter
@@ -502,12 +649,12 @@ Please seal my booking with the High Priest approval!`;
       
       {/* Title */}
       <div className="text-center">
-        <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">Royal Offerings</span>
+        <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">{t('cat_subtitle', 'Sacred Offerings')}</span>
         <h2 className="font-serif text-3xl md:text-4xl font-extrabold text-[#e6c280] uppercase mt-1">
-          Divine Red Sea Expeditions
+          {t('cat_title', 'Available Expeditions')}
         </h2>
         <p className="text-stone-400 text-sm max-w-xl mx-auto mt-2">
-          Hand-curated, highly immersive voyages matching the golden standards of the Ancient Egyptian pharaohs.
+          {t('cat_desc', 'Enlist in our premium curated experiences along the Nile, desert dunes, and aquatic depths.')}
         </p>
       </div>
 
@@ -517,12 +664,12 @@ Please seal my booking with the High Priest approval!`;
       {/* Filter Tabs */}
       <div className="flex flex-wrap gap-2 justify-center">
         {[
-          { key: 'all', label: 'All Expeditions' },
-          { key: 'diving', label: '𓆛 Coral Diving' },
-          { key: 'safari', label: '𓅓 Desert Safari' },
-          { key: 'history', label: '𓉐 Luxor History' },
-          { key: 'boat', label: '𓊟 Boat Trips' },
-          { key: 'speedboat', label: '𓊡 Speedboats' }
+          { key: 'all', label: t('cat_all', '𓆃 All Expeditions') },
+          { key: 'diving', label: t('cat_diving', '𓆛 Coral Diving') },
+          { key: 'safari', label: t('cat_safari', '𓅓 Desert Safari') },
+          { key: 'history', label: t('cat_history', '𓉐 Luxor History') },
+          { key: 'boat', label: t('cat_boat', '𓊟 Boat Trips') },
+          { key: 'speedboat', label: t('cat_speedboat', '𓊡 Speedboats') }
         ].map((tab) => (
           <button
             key={tab.key}
@@ -644,12 +791,12 @@ Please seal my booking with the High Priest approval!`;
                 
                 {/* Category Tag */}
                 <span className="absolute top-4 left-4 bg-[#140f0a]/80 backdrop-blur-md text-[#d4af37] border border-[#d4af37]/40 rounded-full px-3 py-1 text-[10px] font-mono uppercase tracking-widest">
-                  {ex.category === 'diving' ? '𓆛 Diving' : ex.category === 'safari' ? '𓅓 Safari' : ex.category === 'history' ? '𓉐 History' : ex.category === 'boat' ? '𓊟 Boat Trip' : '𓊡 Speedboat'}
+                  {ex.category === 'diving' ? (language === 'de' ? '𓆛 Tauchen' : '𓆛 Diving') : ex.category === 'safari' ? (language === 'de' ? '𓅓 Safari' : '𓅓 Safari') : ex.category === 'history' ? (language === 'de' ? '𓉐 Geschichte' : '𓉐 History') : ex.category === 'boat' ? (language === 'de' ? '𓊟 Bootsfahrt' : '𓊟 Boat Trip') : (language === 'de' ? '𓊡 Schnellboot' : '𓊡 Speedboat')}
                 </span>
 
                 {/* Price Tag */}
                 <div className="absolute bottom-4 right-4 bg-[#d4af37] text-[#140f0a] font-mono font-bold px-3 py-1 rounded-lg text-sm shadow-md">
-                  ${ex.price} <span className="text-xs font-normal">/ noble</span>
+                  ${ex.price} <span className="text-xs font-normal">{language === 'de' ? '/ Person' : '/ noble'}</span>
                 </div>
               </div>
 
@@ -663,7 +810,7 @@ Please seal my booking with the High Priest approval!`;
                     {/* Interactive Golden Star Rating Widget */}
                     <div 
                       className="flex items-center gap-1.5 cursor-pointer group/rating relative"
-                      title="Inscribe thy feedback (Click to Rate)"
+                      title={language === 'de' ? 'Feedback eintragen (Klicken zum Bewerten)' : 'Inscribe thy feedback (Click to Rate)'}
                       onClick={(e) => {
                         e.stopPropagation();
                         setRatingExcursion(ex);
@@ -692,7 +839,7 @@ Please seal my booking with the High Priest approval!`;
                       
                       {/* Floating tooltip invitation */}
                       <span className="pointer-events-none opacity-0 group-hover/rating:opacity-100 transition-opacity duration-300 text-[9px] font-mono text-[#140f0a] uppercase tracking-widest absolute -top-8 right-0 bg-gradient-to-r from-[#d4af37] to-[#f3e5c8] px-2 py-0.5 rounded shadow-lg whitespace-nowrap z-20 border border-[#d4af37]/30">
-                        ✍ Rate Journey
+                        {language === 'de' ? '✍ Bewerten' : '✍ Rate Journey'}
                       </span>
                     </div>
                   </div>
@@ -712,7 +859,7 @@ Please seal my booking with the High Priest approval!`;
                 <div className="bg-[#241a10] border border-[#d4af37]/15 rounded-xl p-3.5 text-[11px] text-[#e6c280]/80 italic relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-8 h-8 bg-[#d4af37]/5 rounded-bl-2xl"></div>
                   <strong className="font-serif text-[#d4af37] not-italic block mb-0.5 uppercase tracking-widest text-[10px]">
-                    𓋹 Pharaonic Lore:
+                    {language === 'de' ? '𓋹 Pharaonische Sage:' : '𓋹 Pharaonic Lore:'}
                   </strong>
                   "{ex.ancientLore.slice(0, 115)}..."
                 </div>
@@ -727,7 +874,7 @@ Please seal my booking with the High Priest approval!`;
                       }}
                       className="flex-1 bg-[#221c14] hover:bg-[#32281d] border border-[#d4af37]/30 text-[#e6c280] font-mono text-[11px] uppercase tracking-widest py-2.5 rounded-xl transition-all cursor-pointer text-center"
                     >
-                      View Details
+                      {language === 'de' ? 'Details ansehen' : 'View Details'}
                     </button>
                     <button
                       onClick={() => {
@@ -736,7 +883,7 @@ Please seal my booking with the High Priest approval!`;
                       }}
                       className="flex-1 bg-gradient-to-r from-[#d4af37] to-[#b08e23] hover:from-[#e5c250] hover:to-[#c5a02e] text-[#140f0a] font-serif font-bold text-xs uppercase tracking-wide py-2.5 rounded-xl transition-all hover:scale-[1.02] shadow-md shadow-[#d4af37]/10 cursor-pointer"
                     >
-                      Book Expedition
+                      {language === 'de' ? 'Expedition buchen' : 'Book Expedition'}
                     </button>
                   </div>
                   <button
@@ -747,7 +894,7 @@ Please seal my booking with the High Priest approval!`;
                     }}
                     className="w-full bg-[#140f0a] hover:bg-emerald-950/15 border border-emerald-500/30 hover:border-emerald-400 text-emerald-400 hover:text-emerald-300 text-[10px] font-mono uppercase tracking-widest py-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5"
                   >
-                    <span className="text-emerald-400 text-xs">𓍢</span> Inquire on WhatsApp (+201202181834)
+                    <span className="text-emerald-400 text-xs">𓍢</span> {language === 'de' ? 'Auf WhatsApp anfragen' : 'Inquire on WhatsApp'} (+201202181834)
                   </button>
                 </div>
 
@@ -760,11 +907,11 @@ Please seal my booking with the High Priest approval!`;
                     <MessageSquare className="w-3.5 h-3.5 text-[#d4af37]" />
                     <span>
                       {expandedReviewsId === ex.id 
-                        ? 'Hide Reviews' 
-                        : `Read & Write Reviews (${reviews.filter((r: any) => r.excursionId === ex.id).length})`}
+                        ? (language === 'de' ? 'Bewertungen ausblenden' : 'Hide Reviews') 
+                        : `${language === 'de' ? 'Bewertungen lesen & schreiben' : 'Read & Write Reviews'} (${reviews.filter((r: any) => r.excursionId === ex.id).length})`}
                     </span>
                   </button>
-
+ 
                   <AnimatePresence>
                     {expandedReviewsId === ex.id && (
                       <motion.div
@@ -777,7 +924,7 @@ Please seal my booking with the High Priest approval!`;
                         <div className="space-y-2.5 max-h-[180px] overflow-y-auto pr-1">
                           {reviews.filter((r: any) => r.excursionId === ex.id).length === 0 ? (
                             <p className="text-[10px] italic text-stone-500 text-center py-2">
-                              No travelers have inscribed testimony yet. Be the first!
+                              {language === 'de' ? 'Noch keine Erfahrungsberichte eingetragen. Seien Sie der Erste!' : 'No travelers have inscribed testimony yet. Be the first!'}
                             </p>
                           ) : (
                             reviews.filter((r: any) => r.excursionId === ex.id).map((r: any) => (
@@ -800,28 +947,28 @@ Please seal my booking with the High Priest approval!`;
                             ))
                           )}
                         </div>
-
+ 
                         {/* Inline Review Form */}
                         <div className="border-t border-[#d4af37]/15 pt-3 space-y-3 bg-[#110c08]/50 p-3 rounded-xl border border-stone-850">
                           {inlineSuccessId === ex.id ? (
                             <div className="text-center py-4 space-y-1.5">
                               <CheckCircle className="w-6 h-6 text-emerald-400 mx-auto animate-bounce" />
                               <p className="text-xs font-serif font-semibold text-emerald-400 uppercase tracking-wider">
-                                Testimony Inscribed!
+                                {language === 'de' ? 'Erfahrungsbericht eingetragen!' : 'Testimony Inscribed!'}
                               </p>
                               <p className="text-[9px] font-mono text-stone-400">
-                                Thy review has been saved in the ledger.
+                                {language === 'de' ? 'Ihre Bewertung wurde im Hauptbuch gespeichert.' : 'Thy review has been saved in the ledger.'}
                               </p>
                             </div>
                           ) : (
                             <form onSubmit={(e) => handleInlineFeedbackSubmit(e, ex.id)} className="space-y-2.5">
                               <h4 className="text-[10px] font-mono uppercase tracking-widest text-[#e6c280] flex items-center gap-1.5 font-bold">
-                                <PenTool className="w-3 h-3 text-[#d4af37]" /> Write Review
+                                <PenTool className="w-3 h-3 text-[#d4af37]" /> {language === 'de' ? 'Bewertung schreiben' : 'Write Review'}
                               </h4>
-
+ 
                               {/* Star Picker */}
                               <div className="flex items-center justify-between bg-stone-950/40 p-1.5 rounded-lg border border-stone-850">
-                                <span className="text-[9px] font-mono text-stone-400 uppercase">Rating</span>
+                                <span className="text-[9px] font-mono text-stone-400 uppercase">{language === 'de' ? 'Bewertung' : 'Rating'}</span>
                                 <div className="flex gap-1">
                                   {[1, 2, 3, 4, 5].map((num) => (
                                     <button
@@ -843,17 +990,17 @@ Please seal my booking with the High Priest approval!`;
                                   ))}
                                 </div>
                               </div>
-
+ 
                               <div className="grid grid-cols-2 gap-2">
                                 <input
                                   type="text"
                                   required
-                                  placeholder="Thy Name"
+                                  placeholder={language === 'de' ? 'Ihr Name' : 'Thy Name'}
                                   value={inlineAuthor}
                                   onChange={(e) => setInlineAuthor(e.target.value)}
                                   className="w-full bg-stone-950/40 border border-[#d4af37]/20 rounded-lg p-2 text-stone-200 text-[10px] focus:outline-none focus:border-[#d4af37] transition-colors"
                                 />
-
+ 
                                 <select
                                   value={inlineAvatar}
                                   onChange={(e) => setInlineAvatar(e.target.value)}
@@ -868,21 +1015,21 @@ Please seal my booking with the High Priest approval!`;
                                   <option value="𓋹 Anubis">𓋹 Anubis</option>
                                 </select>
                               </div>
-
+ 
                               <textarea
                                 required
                                 rows={2}
-                                placeholder="Share details of your excursion..."
+                                placeholder={language === 'de' ? 'Teilen Sie Details zu Ihrem Ausflug...' : 'Share details of your excursion...'}
                                 value={inlineComment}
                                 onChange={(e) => setInlineComment(e.target.value)}
                                 className="w-full bg-stone-950/40 border border-[#d4af37]/20 rounded-lg p-2 text-stone-200 text-[10px] focus:outline-none focus:border-[#d4af37] transition-colors leading-relaxed"
                               />
-
+ 
                               <button
                                 type="submit"
                                 className="w-full bg-gradient-to-r from-[#d4af37]/15 to-[#b08e23]/15 hover:from-[#d4af37]/30 hover:to-[#b08e23]/30 border border-[#d4af37]/35 text-[#e6c280] rounded-lg py-1.5 text-[9px] font-mono uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-1 font-bold"
                               >
-                                <Send className="w-3 h-3 text-[#d4af37]" /> Submit Review
+                                <Send className="w-3 h-3 text-[#d4af37]" /> {language === 'de' ? 'Bewertung abschicken' : 'Submit Review'}
                               </button>
                             </form>
                           )}
@@ -984,7 +1131,7 @@ Please seal my booking with the High Priest approval!`;
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-stone-800">
                     <div className="space-y-2.5">
                       <h4 className="font-serif text-xs font-bold text-[#d4af37] uppercase tracking-wider flex items-center gap-1.5">
-                        <Sparkles className="w-4 h-4 text-[#d4af37]" /> Highlights of the Day
+                        <Sparkles className="w-4 h-4 text-[#d4af37]" /> {language === 'de' ? 'Highlights des Tages' : 'Highlights of the Day'}
                       </h4>
                       <ul className="space-y-1.5 text-stone-300 text-xs list-disc list-inside">
                         {selectedExcursion.highlights.map((item, i) => (
@@ -995,7 +1142,7 @@ Please seal my booking with the High Priest approval!`;
 
                     <div className="space-y-2.5">
                       <h4 className="font-serif text-xs font-bold text-[#d4af37] uppercase tracking-wider flex items-center gap-1.5">
-                        <CheckCircle className="w-4 h-4 text-emerald-500" /> Royal Inclusions
+                        <CheckCircle className="w-4 h-4 text-emerald-500" /> {language === 'de' ? 'Königliche Inklusivleistungen' : 'Royal Inclusions'}
                       </h4>
                       <ul className="space-y-1.5 text-stone-300 text-xs list-disc list-inside">
                         {selectedExcursion.inclusions.map((item, i) => (
@@ -1011,7 +1158,7 @@ Please seal my booking with the High Priest approval!`;
                       𓋹
                     </div>
                     <h4 className="font-serif text-[#d4af37] font-extrabold uppercase text-sm mb-1">
-                      Ancient Egyptian Mysteries
+                      {language === 'de' ? 'Geheimnisse des alten Ägyptens' : 'Ancient Egyptian Mysteries'}
                     </h4>
                     <p className="text-stone-300 text-xs leading-relaxed italic">
                       {selectedExcursion.ancientLore}
@@ -1022,10 +1169,10 @@ Please seal my booking with the High Priest approval!`;
                   <div className="space-y-4 pt-4 border-t border-stone-800">
                     <h4 className="font-serif text-[#e6c280] font-bold uppercase text-sm flex items-center gap-2">
                       <Star className="w-4 h-4 text-[#d4af37] fill-current" />
-                      Explorer Witness Testimonies
+                      {language === 'de' ? 'Erfahrungsberichte von Entdeckern' : 'Explorer Witness Testimonies'}
                     </h4>
                     <p className="text-stone-400 text-xs leading-relaxed">
-                      Read what preceding noble travelers have inscribed about this specific caravan passage, or leave your own seal of approval below.
+                      {language === 'de' ? 'Lesen Sie, was andere edle Reisende über diese spezielle Karawanenpassage geschrieben haben, oder hinterlassen Sie unten Ihr eigenes Siegel der Anerkennung.' : 'Read what preceding noble travelers have inscribed about this specific caravan passage, or leave your own seal of approval below.'}
                     </p>
                     <ReviewSystem excursionId={selectedExcursion.id} />
                   </div>
@@ -1033,9 +1180,9 @@ Please seal my booking with the High Priest approval!`;
                   {/* Pricing and Action */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-stone-800">
                     <div>
-                      <span className="text-stone-500 text-xs uppercase tracking-widest block font-mono">Total Rate</span>
+                      <span className="text-stone-500 text-xs uppercase tracking-widest block font-mono">{language === 'de' ? 'Gesamtpreis' : 'Total Rate'}</span>
                       <strong className="text-3xl font-mono text-[#d4af37]">${selectedExcursion.price}</strong>
-                      <span className="text-stone-400 text-xs font-normal"> / person</span>
+                      <span className="text-stone-400 text-xs font-normal"> {language === 'de' ? ' / Person' : ' / person'}</span>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto">
                       <button
@@ -1046,13 +1193,13 @@ Please seal my booking with the High Priest approval!`;
                         }}
                         className="bg-emerald-950/25 hover:bg-emerald-900/35 border border-emerald-500/40 hover:border-emerald-400 text-emerald-400 hover:text-emerald-300 font-mono text-xs uppercase tracking-widest py-3 px-5 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                       >
-                        <span className="text-emerald-400 text-xs">𓍢</span> Inquire on WhatsApp
+                        <span className="text-emerald-400 text-xs">𓍢</span> {language === 'de' ? 'Auf WhatsApp anfragen' : 'Inquire on WhatsApp'}
                       </button>
                       <button
                         onClick={() => setIsBookingOpen(true)}
                         className="bg-gradient-to-r from-[#d4af37] to-[#b08e23] hover:from-[#e5c250] hover:to-[#c5a02e] text-[#140f0a] font-serif font-black text-sm uppercase tracking-widest px-8 py-3.5 rounded-xl shadow-lg shadow-[#d4af37]/20 cursor-pointer text-center"
                       >
-                        Book Expedition Now
+                        {language === 'de' ? 'Expedition jetzt buchen' : 'Book Expedition Now'}
                       </button>
                     </div>
                   </div>
@@ -1061,12 +1208,12 @@ Please seal my booking with the High Priest approval!`;
                 // BOOKING FORM CONTENT
                 <div className="space-y-6">
                   <div className="text-center">
-                    <span className="text-xs font-mono text-[#d4af37] uppercase tracking-widest block">Expedition Booking Ledger</span>
+                    <span className="text-xs font-mono text-[#d4af37] uppercase tracking-widest block">{language === 'de' ? 'Expeditionen-Buchungsbuch' : 'Expedition Booking Ledger'}</span>
                     <h3 className="font-serif text-2xl font-black text-[#e6c280] uppercase tracking-wider mt-1">
-                      Request Royal Passage
+                      {language === 'de' ? 'Königliche Passage anfordern' : 'Request Royal Passage'}
                     </h3>
                     <p className="text-stone-400 text-xs">
-                      Enlist in the expedition: {selectedExcursion.title} (${selectedExcursion.price} per person)
+                      {language === 'de' ? 'In die Expedition eintragen' : 'Enlist in the expedition'}: {selectedExcursion.title} (${selectedExcursion.price} {language === 'de' ? 'pro Person' : 'per person'})
                     </p>
                   </div>
 
@@ -1075,14 +1222,14 @@ Please seal my booking with the High Priest approval!`;
                       {/* Name */}
                       <div className="space-y-1">
                         <label className="text-stone-300 text-xs font-mono uppercase tracking-widest flex items-center gap-1.5">
-                          <User className="w-3.5 h-3.5 text-[#d4af37]" /> Traveler Name
+                          <User className="w-3.5 h-3.5 text-[#d4af37]" /> {language === 'de' ? 'Name des Reisenden' : 'Traveler Name'}
                         </label>
                         <input
                           type="text"
                           required
                           value={travelerName}
                           onChange={(e) => setTravelerName(e.target.value)}
-                          placeholder="Your Name (e.g. Ramses Smith)"
+                          placeholder={language === 'de' ? "Ihr Name (z.B. Ramses Schmidt)" : "Your Name (e.g. Ramses Smith)"}
                           className="w-full bg-[#1c1611] border border-[#d4af37]/40 rounded-lg p-2.5 text-stone-200 text-xs focus:outline-none focus:ring-1 focus:ring-[#d4af37]"
                           id="booking-name"
                         />
@@ -1091,14 +1238,14 @@ Please seal my booking with the High Priest approval!`;
                       {/* Email */}
                       <div className="space-y-1">
                         <label className="text-stone-300 text-xs font-mono uppercase tracking-widest flex items-center gap-1.5">
-                          <Mail className="w-3.5 h-3.5 text-[#d4af37]" /> Messenger Email
+                          <Mail className="w-3.5 h-3.5 text-[#d4af37]" /> {language === 'de' ? 'Messenger-E-Mail' : 'Messenger Email'}
                         </label>
                         <input
                           type="email"
                           required
                           value={travelerEmail}
                           onChange={(e) => setTravelerEmail(e.target.value)}
-                          placeholder="your.messenger@domain.com"
+                          placeholder={language === 'de' ? "ihre.email@domain.de" : "your.messenger@domain.com"}
                           className="w-full bg-[#1c1611] border border-[#d4af37]/40 rounded-lg p-2.5 text-stone-200 text-xs focus:outline-none focus:ring-1 focus:ring-[#d4af37]"
                           id="booking-email"
                         />
@@ -1107,7 +1254,7 @@ Please seal my booking with the High Priest approval!`;
                       {/* Date */}
                       <div className="space-y-1">
                         <label className="text-stone-300 text-xs font-mono uppercase tracking-widest flex items-center gap-1.5">
-                          <Calendar className="w-3.5 h-3.5 text-[#d4af37]" /> Departure Date
+                          <Calendar className="w-3.5 h-3.5 text-[#d4af37]" /> {language === 'de' ? 'Abreisedatum' : 'Departure Date'}
                         </label>
                         <input
                           type="date"
@@ -1122,7 +1269,7 @@ Please seal my booking with the High Priest approval!`;
                       {/* Guests */}
                       <div className="space-y-1">
                         <label className="text-stone-300 text-xs font-mono uppercase tracking-widest flex items-center gap-1.5">
-                          <User className="w-3.5 h-3.5 text-[#d4af37]" /> Size of Caravan (Guests)
+                          <User className="w-3.5 h-3.5 text-[#d4af37]" /> {language === 'de' ? 'Größe der Karawane (Gäste)' : 'Size of Caravan (Guests)'}
                         </label>
                         <input
                           type="number"
@@ -1140,12 +1287,12 @@ Please seal my booking with the High Priest approval!`;
                     {/* Special Requests */}
                     <div className="space-y-1">
                       <label className="text-stone-300 text-xs font-mono uppercase tracking-widest flex items-center gap-1.5">
-                        <HelpCircle className="w-3.5 h-3.5 text-[#d4af37]" /> Inscribe Special Requests
+                        <HelpCircle className="w-3.5 h-3.5 text-[#d4af37]" /> {language === 'de' ? 'Besondere Wünsche eintragen' : 'Inscribe Special Requests'}
                       </label>
                       <textarea
                         value={requests}
                         onChange={(e) => setRequests(e.target.value)}
-                        placeholder="Dietary requests, pick-up room numbers, physical constraints..."
+                        placeholder={language === 'de' ? "Diätwünsche, Zimmernummern für die Abholung, körperliche Einschränkungen..." : "Dietary requests, pick-up room numbers, physical constraints..."}
                         rows={3}
                         className="w-full bg-[#1c1611] border border-[#d4af37]/30 rounded-lg p-3 text-stone-200 text-xs focus:outline-none focus:ring-1 focus:ring-[#d4af37]"
                         id="booking-requests"
@@ -1154,7 +1301,7 @@ Please seal my booking with the High Priest approval!`;
 
                     {/* Price calculation summary */}
                     <div className="bg-[#241a12] border border-[#d4af37]/20 rounded-xl p-4 flex justify-between items-center text-xs">
-                      <span className="text-stone-400 font-mono uppercase">Caravan Passage Cost:</span>
+                      <span className="text-stone-400 font-mono uppercase">{language === 'de' ? 'Karawanenpassage-Kosten:' : 'Caravan Passage Cost:'}</span>
                       <strong className="text-xl font-mono text-[#d4af37]">${selectedExcursion.price} × {guests} = ${selectedExcursion.price * guests}</strong>
                     </div>
 
@@ -1165,14 +1312,14 @@ Please seal my booking with the High Priest approval!`;
                         onClick={() => setIsBookingOpen(false)}
                         className="bg-stone-900 hover:bg-stone-800 border border-stone-800 text-stone-300 px-6 py-2.5 rounded-lg text-xs font-mono uppercase tracking-wider cursor-pointer"
                       >
-                        Back
+                        {language === 'de' ? 'Zurück' : 'Back'}
                       </button>
                       <button
                         type="submit"
                         className="bg-[#d4af37] text-[#140f0a] font-serif font-black text-xs uppercase tracking-widest px-8 py-2.5 rounded-lg shadow-md shadow-[#d4af37]/15 cursor-pointer hover:bg-amber-300"
                         id="submit-passage-btn"
                       >
-                        Submit Passage Inscription
+                        {language === 'de' ? 'Passage-Anfrage abschicken' : 'Submit Passage Inscription'}
                       </button>
                     </div>
                   </form>
@@ -1217,24 +1364,24 @@ Please seal my booking with the High Priest approval!`;
                     <Sparkles className="w-8 h-8 text-[#140f0a]" />
                   </div>
                   <h4 className="font-serif text-2xl font-black text-[#e6c280] uppercase tracking-wider">
-                    Feedback Inscribed!
+                    {language === 'de' ? 'Feedback eingetragen!' : 'Feedback Inscribed!'}
                   </h4>
                   <p className="text-stone-300 text-xs max-w-sm mx-auto leading-relaxed">
-                    By the eternal wisdom of Thoth, your sacred review has been etched onto the permanent tablets of Kemet. May the gods bless your travels!
+                    {language === 'de' ? 'Durch die ewige Weisheit von Thoth wurde Ihre heilige Bewertung auf die dauerhaften Tafeln von Kemet eingraviert. Mögen die Götter Ihre Reisen segnen!' : 'By the eternal wisdom of Thoth, your sacred review has been etched onto the permanent tablets of Kemet. May the gods bless your travels!'}
                   </p>
                   <p className="text-[10px] font-mono text-emerald-400 animate-pulse uppercase tracking-widest pt-2">
-                    𓋹 Aligning Celestial Averages...
+                    {language === 'de' ? '𓋹 Himmlische Mittelwerte abgleichen...' : '𓋹 Aligning Celestial Averages...'}
                   </p>
                 </motion.div>
               ) : (
                 <div className="space-y-5">
                   <div className="text-center space-y-1">
-                    <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.2em] block">Inscribe Feedback Tablet</span>
+                    <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.2em] block">{language === 'de' ? 'Feedback-Tafel beschriften' : 'Inscribe Feedback Tablet'}</span>
                     <h3 className="font-serif text-xl font-bold text-[#e6c280] uppercase tracking-wide">
                       {ratingExcursion.title}
                     </h3>
                     <p className="text-stone-400 text-xs">
-                      Share your genuine traveler testimony & rate this voyage
+                      {language === 'de' ? 'Teilen Sie Ihren echten Reisebericht und bewerten Sie diese Reise' : 'Share your genuine traveler testimony & rate this voyage'}
                     </p>
                   </div>
 
@@ -1242,7 +1389,7 @@ Please seal my booking with the High Priest approval!`;
                     {/* Interactive Star Picker */}
                     <div className="bg-[#1b1511] border border-[#d4af37]/20 rounded-2xl p-4 text-center space-y-2">
                       <label className="text-stone-400 text-[10px] font-mono uppercase tracking-widest block">
-                        Select Sacred Rating
+                        {language === 'de' ? 'Wählen Sie die heilige Bewertung' : 'Select Sacred Rating'}
                       </label>
                       <div className="flex justify-center gap-3 py-1">
                         {[1, 2, 3, 4, 5].map((num) => (
@@ -1266,11 +1413,19 @@ Please seal my booking with the High Priest approval!`;
                         ))}
                       </div>
                       <span className="text-stone-500 text-[11px] font-mono uppercase tracking-widest block h-4">
-                        {feedbackRating === 5 ? "👑 Worthy of the Gods!" :
-                         feedbackRating === 4 ? "✨ Splendid Caravan Journey!" :
-                         feedbackRating === 3 ? "👍 Satisfactory Alignment" :
-                         feedbackRating === 2 ? "⚠️ Deshret Dust Storms" :
-                         "❌ Lost in the Duat!"} ({feedbackRating} / 5 Stars)
+                        {language === 'de' ? (
+                          feedbackRating === 5 ? "👑 Würdig der Götter!" :
+                          feedbackRating === 4 ? "✨ Herrliche Karawanenreise!" :
+                          feedbackRating === 3 ? "👍 Zufriedenstellende Ausrichtung" :
+                          feedbackRating === 2 ? "⚠️ Deshret Sandstürme" :
+                          "❌ Verloren im Duat!"
+                        ) : (
+                          feedbackRating === 5 ? "👑 Worthy of the Gods!" :
+                          feedbackRating === 4 ? "✨ Splendid Caravan Journey!" :
+                          feedbackRating === 3 ? "👍 Satisfactory Alignment" :
+                          feedbackRating === 2 ? "⚠️ Deshret Dust Storms" :
+                          "❌ Lost in the Duat!"
+                        )} ({feedbackRating} {language === 'de' ? '/ 5 Sterne' : '/ 5 Stars'})
                       </span>
                     </div>
 
@@ -1278,12 +1433,12 @@ Please seal my booking with the High Priest approval!`;
                       {/* Name */}
                       <div className="space-y-1">
                         <label className="text-stone-400 text-[10px] font-mono uppercase tracking-widest block">
-                          Your Noble Name
+                          {language === 'de' ? 'Ihr edler Name' : 'Your Noble Name'}
                         </label>
                         <input
                           type="text"
                           required
-                          placeholder="e.g. Cleopatra Johnson"
+                          placeholder={language === 'de' ? "z.B. Cleopatra Schmidt" : "e.g. Cleopatra Johnson"}
                           value={feedbackAuthor}
                           onChange={(e) => setFeedbackAuthor(e.target.value)}
                           className="w-full bg-[#1c1611] border border-[#d4af37]/35 rounded-xl p-2.5 text-stone-200 text-xs focus:outline-none focus:border-[#d4af37] transition-colors"
@@ -1293,20 +1448,20 @@ Please seal my booking with the High Priest approval!`;
                       {/* Avatar */}
                       <div className="space-y-1">
                         <label className="text-stone-400 text-[10px] font-mono uppercase tracking-widest block">
-                          Pharaonic Persona
+                          {language === 'de' ? 'Pharaonische Persona' : language === 'pl' ? 'Faraońska persona' : 'Pharaonic Persona'}
                         </label>
                         <select
                           value={feedbackAvatar}
                           onChange={(e) => setFeedbackAvatar(e.target.value)}
                           className="w-full bg-[#1c1611] border border-[#d4af37]/35 rounded-xl p-2.5 text-stone-200 text-xs focus:outline-none focus:border-[#d4af37] transition-colors"
                         >
-                          <option value="𓁠 Cleopatra">𓁠 Cleopatra the Diver</option>
-                          <option value="𓀚 Ramses">𓀚 Ramses the Nomad</option>
-                          <option value="𓁥 Hatshepsut">𓁥 Hatshepsut the Scribe</option>
-                          <option value="𓃠 Bastet">𓃠 Bastet the Explorer</option>
-                          <option value="𓆛 Sobek">𓆛 Sobek the Mariner</option>
-                          <option value="𓅃 Horus">𓅃 Horus the Speedster</option>
-                          <option value="𓋹 Anubis">𓋹 Anubis the Guardian</option>
+                          <option value="𓁠 Cleopatra">{language === 'de' ? '𓁠 Cleopatra die Taucherin' : language === 'pl' ? '𓁠 Kleopatra Nurkini' : '𓁠 Cleopatra the Diver'}</option>
+                          <option value="𓀚 Ramses">{language === 'de' ? '𓀚 Ramses der Nomade' : language === 'pl' ? '𓀚 Ramzes Nomada' : '𓀚 Ramses the Nomad'}</option>
+                          <option value="𓁥 Hatshepsut">{language === 'de' ? '𓁥 Hatschepsut die Schreiberin' : language === 'pl' ? '𓁥 Hatszepsut Pisarka' : '𓁥 Hatshepsut the Scribe'}</option>
+                          <option value="𓃠 Bastet">{language === 'de' ? '𓃠 Bastet die Entdeckerin' : language === 'pl' ? '𓃠 Bastet Odkrywczyni' : '𓃠 Bastet the Explorer'}</option>
+                          <option value="𓆛 Sobek">{language === 'de' ? '𓆛 Sobek der Seefahrer' : language === 'pl' ? '𓆛 Sobek Żeglarz' : '𓆛 Sobek the Mariner'}</option>
+                          <option value="𓅃 Horus">{language === 'de' ? '𓅃 Horus der Flieger' : language === 'pl' ? '𓅃 Horus Szybki' : '𓅃 Horus the Speedster'}</option>
+                          <option value="𓋹 Anubis">{language === 'de' ? '𓋹 Anubis der Wächter' : language === 'pl' ? '𓋹 Anubis Strażnik' : '𓋹 Anubis the Guardian'}</option>
                         </select>
                       </div>
                     </div>
@@ -1314,12 +1469,12 @@ Please seal my booking with the High Priest approval!`;
                     {/* Comment */}
                     <div className="space-y-1">
                       <label className="text-stone-400 text-[10px] font-mono uppercase tracking-widest block">
-                        Witness Testimony
+                        {language === 'de' ? 'Zeugenbericht' : language === 'pl' ? 'Zeznanie świadka' : 'Witness Testimony'}
                       </label>
                       <textarea
                         required
                         rows={3}
-                        placeholder="Write thy feedback... (e.g., The coral reef was mindblowing, the guide was very informative!)"
+                        placeholder={language === 'de' ? "Schreiben Sie Ihre Bewertung... (z. B. Das Korallenriff war fantastisch!)" : language === 'pl' ? "Napisz swoją opinię... (np. Rafa koralowa była niesamowita, a przewodnik bardzo pomocny!)" : "Write thy feedback... (e.g., The coral reef was mindblowing, the guide was very informative!)"}
                         value={feedbackComment}
                         onChange={(e) => setFeedbackComment(e.target.value)}
                         className="w-full bg-[#1c1611] border border-[#d4af37]/35 rounded-xl p-3 text-stone-200 text-xs focus:outline-none focus:border-[#d4af37] transition-colors leading-relaxed"
@@ -1333,14 +1488,14 @@ Please seal my booking with the High Priest approval!`;
                         onClick={() => setRatingExcursion(null)}
                         className="flex-1 bg-stone-900 hover:bg-stone-800 border border-stone-800 text-stone-400 py-2.5 rounded-xl text-[10px] font-mono uppercase tracking-widest transition-colors cursor-pointer"
                       >
-                        Banish Tablet
+                        {language === 'de' ? 'Tafel verwerfen' : language === 'pl' ? 'Odrzuć tabliczkę' : 'Banish Tablet'}
                       </button>
                       <button
                         type="submit"
                         className="flex-1 bg-gradient-to-r from-[#d4af37] to-[#b08e23] hover:from-[#e5c250] hover:to-[#c5a02e] text-[#140f0a] font-bold py-2.5 rounded-xl text-[10px] font-mono uppercase tracking-widest transition-all shadow-md cursor-pointer flex items-center justify-center gap-1.5"
                       >
                         <Sparkles className="w-3.5 h-3.5" />
-                        Inscribe Testimony
+                        {language === 'de' ? 'Erfahrungsbericht eintragen' : language === 'pl' ? 'Zapisz świadectwo' : 'Inscribe Testimony'}
                       </button>
                     </div>
                   </form>

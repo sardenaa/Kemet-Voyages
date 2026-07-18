@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { FileText, Clock, MessageSquare, CheckCircle, Sparkles, Printer, QrCode, Ticket, Camera } from 'lucide-react';
 import { Booking, Excursion } from '../types';
+import { useLanguage } from './LanguageContext';
 import ReviewSystem from './ReviewSystem';
 import ScrollItineraryModal from './ScrollItineraryModal';
 import BookingQRCode from './BookingQRCode';
@@ -42,6 +43,7 @@ interface BookingManagerProps {
 }
 
 export default function BookingManager({ bookings, excursions, onCancelBooking, onVerifyCheckIn }: BookingManagerProps) {
+  const { t, language } = useLanguage();
   const [selectedScrollBooking, setSelectedScrollBooking] = useState<Booking | null>(null);
   const [expandedQrId, setExpandedQrId] = useState<string | null>(null);
   const [expandedTicketId, setExpandedTicketId] = useState<string | null>(null);
@@ -70,7 +72,7 @@ export default function BookingManager({ bookings, excursions, onCancelBooking, 
           <div className="flex items-center gap-2">
             <FileText className="text-[#d4af37] w-5 h-5" />
             <h3 className="font-serif text-xl font-bold text-[#e6c280] uppercase tracking-wider">
-              Your Booked Expeditions
+              {t('book_heading', 'Your Booked Expeditions')}
             </h3>
           </div>
           <button
@@ -80,10 +82,10 @@ export default function BookingManager({ bookings, excursions, onCancelBooking, 
                 ? 'bg-red-500/10 border-red-500/40 text-red-400'
                 : 'bg-[#d4af37]/10 hover:bg-[#d4af37]/25 border-[#d4af37]/40 text-[#fbf5e6]'
             }`}
-            title="Open camera to scan ticket QR code"
+            title={language === 'de' ? 'Kamera öffnen, um Ticket-QR-Code zu scannen' : 'Open camera to scan ticket QR code'}
           >
             <Camera className="w-3.5 h-3.5" />
-            <span>{isScannerOpen ? 'Close Scanner' : 'Scan Ticket QR'}</span>
+            <span>{isScannerOpen ? (language === 'de' ? 'Scanner Schließen' : 'Close Scanner') : (language === 'de' ? 'Ticket QR scannen' : 'Scan Ticket QR')}</span>
           </button>
         </div>
 
@@ -161,7 +163,7 @@ export default function BookingManager({ bookings, excursions, onCancelBooking, 
             </div>
           ) : bookings.length === 0 ? (
             <div className="text-center py-12 bg-[#1a1410] border border-[#d4af37]/15 rounded-2xl text-stone-500 italic text-sm">
-              𓀞 You haven't booked any trips yet. Browse our tours above to plan your adventure!
+              𓀞 {language === 'de' ? 'Sie haben noch keine Reisen gebucht. Stöbern Sie oben in unseren Touren, um Ihr Abenteuer zu planen!' : "You haven't booked any trips yet. Browse our tours above to plan your adventure!"}
             </div>
           ) : (
              <AnimatePresence mode="popLayout">
@@ -206,17 +208,17 @@ export default function BookingManager({ bookings, excursions, onCancelBooking, 
                       <div className="flex flex-col items-end gap-1.5">
                         <div className={`flex items-center gap-1.5 border rounded-full px-2.5 py-0.5 text-[9px] font-mono uppercase tracking-widest ${config.colorClass}`}>
                           <StatusIcon className="w-3 h-3" />
-                          {config.labelText}
+                          {language === 'de' ? (booking.status === 'Completed' ? '𓁠 Abgeschlossen' : booking.status === 'Confirmed by High Priest' ? '𓋹 Bestätigt' : '𓀚 In Prüfung') : config.labelText}
                         </div>
                         {booking.status === 'Confirmed by High Priest' && (
                           <div className="flex items-center gap-1 bg-[#d4af37]/15 border border-[#d4af37]/35 text-[#d4af37] rounded-full px-2 py-0.5 text-[8px] font-mono uppercase tracking-wider font-bold shadow-[0_0_8px_rgba(212,175,55,0.15)]">
                             <QrCode className="w-2.5 h-2.5 animate-pulse" />
-                            <span>Mobile QR Ready</span>
+                            <span>{language === 'de' ? 'Mobiles QR bereit' : 'Mobile QR Ready'}</span>
                           </div>
                         )}
                         {booking.checkedIn && (
                           <div className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-full px-2 py-0.5 text-[8px] font-mono uppercase tracking-wider font-bold">
-                            <span className="text-[10px]">𓋹</span> Verified Check-In
+                            <span className="text-[10px]">𓋹</span> {language === 'de' ? 'Verifizierter Check-in' : 'Verified Check-In'}
                           </div>
                         )}
                       </div>
@@ -224,19 +226,19 @@ export default function BookingManager({ bookings, excursions, onCancelBooking, 
 
                     <div className="grid grid-cols-2 gap-2 text-xs text-stone-400 pt-2 border-t border-stone-800/60 font-sans">
                       <div>
-                        <span className="text-stone-500 block text-[10px] uppercase font-mono tracking-wider">Traveler Name:</span>
+                        <span className="text-stone-500 block text-[10px] uppercase font-mono tracking-wider">{language === 'de' ? 'Name des Reisenden:' : 'Traveler Name:'}</span>
                         <span className="text-stone-200">{booking.travelerName}</span>
                       </div>
                       <div>
-                        <span className="text-stone-500 block text-[10px] uppercase font-mono tracking-wider">Travel Date:</span>
+                        <span className="text-stone-500 block text-[10px] uppercase font-mono tracking-wider">{language === 'de' ? 'Reisedatum:' : 'Travel Date:'}</span>
                         <span className="text-stone-200">{booking.date}</span>
                       </div>
                       <div>
-                        <span className="text-stone-500 block text-[10px] uppercase font-mono tracking-wider">Group Size:</span>
-                        <span className="text-stone-200">{booking.numberOfGuests} {booking.numberOfGuests === 1 ? 'Person' : 'People'}</span>
+                        <span className="text-stone-500 block text-[10px] uppercase font-mono tracking-wider">{language === 'de' ? 'Gruppengröße:' : 'Group Size:'}</span>
+                        <span className="text-stone-200">{booking.numberOfGuests} {booking.numberOfGuests === 1 ? (language === 'de' ? 'Person' : 'Person') : (language === 'de' ? 'Personen' : 'People')}</span>
                       </div>
                       <div>
-                        <span className="text-stone-500 block text-[10px] uppercase font-mono tracking-wider">Total Price:</span>
+                        <span className="text-stone-500 block text-[10px] uppercase font-mono tracking-wider">{language === 'de' ? 'Gesamtpreis:' : 'Total Price:'}</span>
                         <span className="text-[#d4af37] font-mono font-semibold">${booking.totalCost}</span>
                       </div>
                     </div>
@@ -244,7 +246,7 @@ export default function BookingManager({ bookings, excursions, onCancelBooking, 
                     {booking.specialRequests && (
                       <div className="bg-[#191410] rounded-lg p-2.5 text-[11px] text-stone-400 italic">
                         <strong className="text-stone-500 not-italic uppercase font-mono block text-[9px] tracking-wider mb-0.5">
-                          Special Requests:
+                          {language === 'de' ? 'Sonderwünsche:' : 'Special Requests:'}
                         </strong>
                         "{booking.specialRequests}"
                       </div>
@@ -252,17 +254,17 @@ export default function BookingManager({ bookings, excursions, onCancelBooking, 
 
                     <div className="flex justify-end gap-2 pt-1 text-[11px] font-mono flex-wrap">
                       <span className="text-stone-500 italic text-left flex-1 self-center min-w-[120px]">
-                        {config.descText}
+                        {language === 'de' ? (booking.status === 'Completed' ? 'Wir hoffen, Sie hatten ein tolles Abenteuer!' : booking.status === 'Confirmed by High Priest' ? 'Ihre Buchung ist offiziell bestätigt!' : 'Unser Team prüft Ihre Buchung und gibt sie bald frei.') : config.descText}
                       </span>
 
                       {/* Expand to Ticket Toggle Button */}
                       <button
                         onClick={() => setExpandedTicketId(booking.id)}
                         className="text-[#d4af37] hover:text-[#fbf5e6] px-3 py-1 bg-[#d4af37]/10 hover:bg-[#d4af37]/25 border border-[#d4af37]/35 rounded-md transition-all cursor-pointer flex items-center gap-1.5 font-bold text-[10px] uppercase tracking-wider"
-                        title="Expand to a detailed ticket card with QR code"
+                        title={language === 'de' ? 'Zu einer detaillierten Ticketkarte ausklappen' : 'Expand to a detailed ticket card with QR code'}
                       >
                         <Ticket className="w-3 h-3" />
-                        <span>🎟️ Expand to Ticket</span>
+                        <span>{language === 'de' ? '🎟️ Ticket anzeigen' : '🎟️ Expand to Ticket'}</span>
                       </button>
 
                       {/* Ticket QR Toggle Button - Only for Confirmed Bookings */}
@@ -277,7 +279,7 @@ export default function BookingManager({ bookings, excursions, onCancelBooking, 
                           title="Display unique check-in ticket QR"
                         >
                           <QrCode className="w-3 h-3" />
-                          <span>{expandedQrId === booking.id ? 'Hide QR Code' : 'Mobile QR'}</span>
+                          <span>{expandedQrId === booking.id ? (language === 'de' ? 'QR-Code ausblenden' : 'Hide QR Code') : (language === 'de' ? 'Mobiles QR' : 'Mobile QR')}</span>
                         </button>
                       )}
 
@@ -293,7 +295,7 @@ export default function BookingManager({ bookings, excursions, onCancelBooking, 
                           title="Inscribe a testimony or rating for this completed excursion"
                         >
                           <MessageSquare className="w-3 h-3" />
-                          <span>{expandedFeedbackId === booking.id ? 'Hide Feedback Form' : '𓏞 Leave Review'}</span>
+                          <span>{expandedFeedbackId === booking.id ? (language === 'de' ? 'Formular ausblenden' : 'Hide Feedback Form') : (language === 'de' ? '𓏞 Bewertung schreiben' : '𓏞 Leave Review')}</span>
                         </button>
                       )}
                       
@@ -304,7 +306,7 @@ export default function BookingManager({ bookings, excursions, onCancelBooking, 
                           className="text-[#d4af37] hover:text-[#fbf5e6] px-3 py-1 bg-[#d4af37]/10 hover:bg-[#d4af37]/25 border border-[#d4af37]/35 rounded-md transition-all cursor-pointer flex items-center gap-1.5 font-bold text-[10px] uppercase tracking-wider"
                         >
                           <Printer className="w-3 h-3" />
-                          <span>𓏞 View Itinerary</span>
+                          <span>{language === 'de' ? '𓏞 Reiseplan ansehen' : '𓏞 View Itinerary'}</span>
                         </button>
                       )}
 
@@ -313,7 +315,7 @@ export default function BookingManager({ bookings, excursions, onCancelBooking, 
                           onClick={() => onCancelBooking(booking.id)}
                           className="text-red-400 hover:text-red-300 px-3 py-1 bg-red-500/10 hover:bg-red-500/20 rounded-md transition-all cursor-pointer text-[10px] uppercase font-bold font-mono tracking-wider"
                         >
-                          Cancel Booking
+                          {language === 'de' ? 'Buchung stornieren' : 'Cancel Booking'}
                         </button>
                       )}
                     </div>
@@ -371,7 +373,7 @@ export default function BookingManager({ bookings, excursions, onCancelBooking, 
         <div className="flex items-center gap-2 border-b border-[#d4af37]/20 pb-3">
           <MessageSquare className="text-[#d4af37] w-5 h-5" />
           <h3 className="font-serif text-xl font-bold text-[#e6c280] uppercase tracking-wider">
-            Traveler Reviews & Testimonials
+            {language === 'de' ? 'Bewertungen & Reiseberichte' : 'Traveler Reviews & Testimonials'}
           </h3>
         </div>
 

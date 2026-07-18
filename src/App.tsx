@@ -14,8 +14,10 @@ import MobileBottomNav from './components/MobileBottomNav';
 import ScarabCelebration from './components/ScarabCelebration';
 import PapyrusScrollCelebration from './components/PapyrusScrollCelebration';
 import AncientSitesMap from './components/AncientSitesMap';
+import { useLanguage } from './components/LanguageContext';
 
 export default function App() {
+  const { language, setLanguage, t } = useLanguage();
   const [theme, setTheme] = useState<'desert' | 'nile'>(() => {
     return (localStorage.getItem('kemet_theme') as 'desert' | 'nile') || 'desert';
   });
@@ -447,7 +449,7 @@ export default function App() {
             >
               <Sparkles className="text-[#d4af37] w-4 h-4 animate-pulse" />
               <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#e6c280]">
-                Experience Ancient Egypt
+                {t('hero_sub', 'Experience Ancient Egypt')}
               </span>
               <Sparkles className="text-[#d4af37] w-4 h-4 animate-pulse" />
             </motion.div>
@@ -459,7 +461,7 @@ export default function App() {
                 transition={{ duration: 1.2, delay: 0.2 }}
                 className="font-serif text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-[#fbf5e6] via-[#d4af37] to-[#8e6b12] uppercase tracking-wider drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] leading-none"
               >
-                Kemet Tours
+                {t('hero_title', 'Kemet Tours')}
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0 }}
@@ -467,7 +469,7 @@ export default function App() {
                 transition={{ duration: 1.2, delay: 0.4 }}
                 className="font-serif text-base md:text-xl text-[#e6c280]/80 tracking-widest uppercase drop-shadow-md"
               >
-                Powered by Mas international Agency
+                {t('hero_powered', 'Powered by Mas international Agency')}
               </motion.p>
             </div>
 
@@ -477,7 +479,7 @@ export default function App() {
               transition={{ duration: 1.2, delay: 0.6 }}
               className="text-stone-300 text-sm md:text-base max-w-xl mx-auto leading-relaxed font-sans drop-shadow"
             >
-              Explore world-class Red Sea coral reefs, experience desert quad and camel safaris, and discover the historic temples and tombs of Luxor with our personalized travel planner.
+              {t('hero_desc', 'Explore world-class Red Sea coral reefs, experience desert quad and camel safaris, and discover the historic temples and tombs of Luxor with our personalized travel planner.')}
             </motion.p>
 
             {/* Quick action buttons */}
@@ -491,13 +493,13 @@ export default function App() {
                 onClick={() => scrollToSection('excursions-section')}
                 className="bg-gradient-to-r from-[#d4af37] to-[#b08e23] hover:from-[#f3e5c8] hover:to-[#d4af37] text-[#140f0a] font-serif font-black text-sm uppercase tracking-widest px-8 py-3.5 rounded-xl shadow-lg shadow-[#d4af37]/25 hover:scale-105 transition-all duration-300 cursor-pointer"
               >
-                Explore Tours
+                {t('hero_explore', 'Explore Tours')}
               </button>
               <button
                 onClick={() => scrollToSection('scribe-section')}
                 className="bg-[#140f0a]/90 hover:bg-[#201710] border border-[#d4af37]/50 text-[#e6c280] font-serif font-bold text-sm uppercase tracking-widest px-8 py-3.5 rounded-xl backdrop-blur-sm transition-all duration-300 cursor-pointer hover:border-amber-300"
               >
-                Chat with AI Assistant
+                {t('hero_chat_ai', 'Chat with AI Assistant')}
               </button>
             </motion.div>
           </div>
@@ -524,13 +526,13 @@ export default function App() {
               {/* Anchors & Toggle */}
               <div className="flex flex-wrap items-center justify-center gap-4 md:gap-5 text-xs font-mono uppercase tracking-widest">
                 {!isAdminMode && [
-                  { label: '𓆛 Tours & Excursions', target: 'excursions-section' },
-                  { label: '𓉶 Ancient Map', target: 'map-section' },
-                  { label: '𓋹 AI Travel Planner', target: 'scribe-section' },
-                  { label: '𓅓 Photo Gallery', target: 'gallery-section' },
-                  { label: '𓉐 Name Translator', target: 'cartouche-section' },
-                  { label: '𓇚 Questions & Answers', target: 'faq-section' },
-                  { label: '𓎬 My Bookings', target: 'ledger-section' }
+                  { label: t('nav_tours', '𓆛 Tours & Excursions'), target: 'excursions-section' },
+                  { label: t('nav_map', '𓉶 Ancient Map'), target: 'map-section' },
+                  { label: t('nav_ai_planner', '𓋹 AI Travel Planner'), target: 'scribe-section' },
+                  { label: t('nav_gallery', '𓅓 Photo Gallery'), target: 'gallery-section' },
+                  { label: t('nav_cartouche', '𓉐 Name Translator'), target: 'cartouche-section' },
+                  { label: t('nav_faq', '𓇚 Questions & Answers'), target: 'faq-section' },
+                  { label: t('nav_bookings', '𓎬 My Bookings'), target: 'ledger-section' }
                 ].map((item) => {
                   const isFaqActive = item.target === 'faq-section' && activePage === 'faq';
                   return (
@@ -544,21 +546,58 @@ export default function App() {
                   );
                 })}
 
+                {/* Language Toggle Button */}
+                <div className="flex bg-[#241a10]/60 border border-[#d4af37]/40 rounded-lg p-0.5" id="language-toggle">
+                  <button
+                    onClick={() => setLanguage('en')}
+                    className={`px-2 py-1 rounded text-[9px] font-mono font-bold transition-all cursor-pointer ${
+                      language === 'en'
+                        ? 'bg-[#d4af37] text-stone-950 shadow-sm font-extrabold'
+                        : 'text-stone-400 hover:text-stone-200'
+                    }`}
+                    title="English"
+                  >
+                    EN
+                  </button>
+                  <button
+                    onClick={() => setLanguage('de')}
+                    className={`px-2 py-1 rounded text-[9px] font-mono font-bold transition-all cursor-pointer ${
+                      language === 'de'
+                        ? 'bg-[#d4af37] text-stone-950 shadow-sm font-extrabold'
+                        : 'text-stone-400 hover:text-stone-200'
+                    }`}
+                    title="Deutsch"
+                  >
+                    DE
+                  </button>
+                  <button
+                    onClick={() => setLanguage('pl')}
+                    className={`px-2 py-1 rounded text-[9px] font-mono font-bold transition-all cursor-pointer ${
+                      language === 'pl'
+                        ? 'bg-[#d4af37] text-stone-950 shadow-sm font-extrabold'
+                        : 'text-stone-400 hover:text-stone-200'
+                    }`}
+                    title="Polski"
+                  >
+                    PL
+                  </button>
+                </div>
+
                 {/* Theme Toggle Button */}
                 <button
                   onClick={() => setTheme(theme === 'desert' ? 'nile' : 'desert')}
                   className="px-3 py-1.5 rounded-lg border font-mono font-bold transition-all duration-300 cursor-pointer uppercase flex items-center gap-1.5 bg-[#241a10]/60 text-[#e6c280] border-[#d4af37]/40 hover:border-[#d4af37]"
-                  title={theme === 'desert' ? "Switch to Nile Midnight" : "Switch to Desert Sun"}
+                  title={language === 'de' ? (theme === 'desert' ? "Zu Nil-Mitternacht wechseln" : "Zu Wüstensonne wechseln") : language === 'pl' ? (theme === 'desert' ? "Przełącz na Nil Północny" : "Przełącz na Słońce Pustyni") : (theme === 'desert' ? "Switch to Nile Midnight" : "Switch to Desert Sun")}
                 >
                   {theme === 'desert' ? (
                     <>
                       <Sun className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Desert Sun</span>
+                      <span>{language === 'de' ? 'Wüstensonne' : language === 'pl' ? 'Słońce Pustyni' : 'Desert Sun'}</span>
                     </>
                   ) : (
                     <>
                       <Moon className="w-3.5 h-3.5 text-sky-400" />
-                      <span>Nile Midnight</span>
+                      <span>{language === 'de' ? 'Nil-Mitternacht' : language === 'pl' ? 'Nil Północny' : 'Nile Midnight'}</span>
                     </>
                   )}
                 </button>
@@ -571,7 +610,7 @@ export default function App() {
                       : 'bg-[#241a10]/60 text-[#e6c280] border-[#d4af37]/40 hover:border-[#d4af37]'
                   }`}
                 >
-                  {isAdminMode ? '𓀚 Traveler View' : '𓋹 Admin Dashboard'}
+                  {isAdminMode ? t('nav_traveler', '𓀚 Traveler View') : t('nav_admin', '𓋹 Admin Dashboard')}
                 </button>
               </div>
             </div>
@@ -581,7 +620,7 @@ export default function App() {
               <div className="flex items-center gap-2 mb-3 mt-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span className="text-[9px] font-mono text-[#d4af37] uppercase tracking-[0.25em]">
-                  𓂀 Real-Time Active Traveler Stage Monitor 𓋹
+                  𓂀 {language === 'de' ? 'Echtzeit-Phasenmonitor für aktive Reisende' : language === 'pl' ? 'Monitor fazy aktywnych podróżnych w czasie rzeczywistym' : 'Real-Time Active Traveler Stage Monitor'} 𓋹
                 </span>
               </div>
               
@@ -598,9 +637,9 @@ export default function App() {
 
                 {/* Steps */}
                 {[
-                  { id: 'browsing', label: 'Browsing Tours', glyph: '𓆛', target: 'excursions-section', baseUsers: 4 },
-                  { id: 'itinerary', label: 'Building Itinerary', glyph: '𓋹', target: 'scribe-section', baseUsers: 2 },
-                  { id: 'finalizing', label: 'Finalizing Bookings', glyph: '𓎬', target: 'ledger-section', baseUsers: 1 }
+                  { id: 'browsing', label: language === 'de' ? 'Touren durchstöbern' : language === 'pl' ? 'Przeglądanie wycieczek' : 'Browsing Tours', glyph: '𓆛', target: 'excursions-section', baseUsers: 4 },
+                  { id: 'itinerary', label: language === 'de' ? 'Reiseplan erstellen' : language === 'pl' ? 'Tworzenie planu podróży' : 'Building Itinerary', glyph: '𓋹', target: 'scribe-section', baseUsers: 2 },
+                  { id: 'finalizing', label: language === 'de' ? 'Buchungen abschließen' : language === 'pl' ? 'Finalizowanie rezerwacji' : 'Finalizing Bookings', glyph: '𓎬', target: 'ledger-section', baseUsers: 1 }
                 ].map((step, idx) => {
                   const isCompleted = 
                     (activeStage === 'itinerary' && idx === 0) ||
@@ -615,7 +654,7 @@ export default function App() {
                       key={step.id}
                       onClick={() => scrollToSection(step.target)}
                       className="relative z-10 flex flex-col items-center group focus:outline-none cursor-pointer"
-                      title={`Go to ${step.label}`}
+                      title={language === 'de' ? `Gehe zu ${step.label}` : language === 'pl' ? `Idź do ${step.label}` : `Go to ${step.label}`}
                     >
                       {/* Step Bubble */}
                       <div 
@@ -649,7 +688,7 @@ export default function App() {
                           ? 'bg-emerald-950/80 text-emerald-400 border-emerald-500/20 shadow-[0_0_8px_rgba(16,185,129,0.1)]'
                           : 'bg-stone-900/40 text-stone-500 border-stone-800/60'
                       }`}>
-                        {currentCount} Active {isActive && '• Current'}
+                        {currentCount} {language === 'de' ? 'Aktiv' : language === 'pl' ? 'Aktywny(ch)' : 'Active'} {isActive && (language === 'de' ? '• Aktuell' : language === 'pl' ? '• Bieżący' : '• Current')}
                       </span>
                     </button>
                   );
@@ -681,16 +720,16 @@ export default function App() {
                 </div>
 
                 <div className="space-y-2">
-                  <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.25em] block">Restricted Area</span>
+                  <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.25em] block">{language === 'de' ? 'Sperrbereich' : language === 'pl' ? 'Obszar Zastrzeżony' : 'Restricted Area'}</span>
                   <h3 className="font-serif text-2xl font-black text-[#e6c280] uppercase tracking-wide">
-                    Admin Dashboard Access
+                    {language === 'de' ? 'Admin-Dashboard-Zugriff' : language === 'pl' ? 'Dostęp do Panelu Administratora' : 'Admin Dashboard Access'}
                   </h3>
                   <p className="text-stone-400 text-xs leading-relaxed">
-                    Access is restricted to authorized travel administrators. Please enter the admin passcode to view the dashboard.
+                    {language === 'de' ? 'Der Zugriff ist autorisierten Reiseadministratoren vorbehalten. Bitte geben Sie den Admin-Passcode ein, um das Dashboard anzuzeigen.' : language === 'pl' ? 'Dostęp jest zastrzeżony dla upoważnionych administratorów podróży. Wprowadź hasło administratora, aby wyświetlić panel.' : 'Access is restricted to authorized travel administrators. Please enter the admin passcode to view the dashboard.'}
                   </p>
                 </div>
 
-                 <form
+                <form
                   onSubmit={async (e) => {
                     e.preventDefault();
                     try {
@@ -708,16 +747,16 @@ export default function App() {
                         setPasscodeInput('');
                         triggerCelebration(); // Celebrate!
                       } else {
-                        setPasscodeError(data.error || 'Incorrect passcode. Please try again.');
+                        setPasscodeError(data.error || (language === 'de' ? 'Ungültiger Passcode. Bitte versuchen Sie es erneut.' : language === 'pl' ? 'Nieprawidłowe hasło. Spróbuj ponownie.' : 'Incorrect passcode. Please try again.'));
                       }
                     } catch (err) {
-                      setPasscodeError('Divine verification server is offline. Please try again.');
+                      setPasscodeError(language === 'de' ? 'Der Server für die göttliche Verifizierung ist offline. Bitte versuchen Sie es erneut.' : language === 'pl' ? 'Serwer weryfikacji jest offline. Spróbuj ponownie.' : 'Divine verification server is offline. Please try again.');
                     }
                   }}
                   className="space-y-4 text-left"
                 >
                   <div>
-                    <label className="text-[9px] font-mono text-stone-500 uppercase tracking-widest block mb-1">Enter Admin Passcode</label>
+                    <label className="text-[9px] font-mono text-stone-500 uppercase tracking-widest block mb-1">{language === 'de' ? 'Admin-Passcode eingeben' : language === 'pl' ? 'Wprowadź hasło administratora' : 'Enter Admin Passcode'}</label>
                     <input
                       type="password"
                       placeholder="e.g. pharaoh"
@@ -736,19 +775,19 @@ export default function App() {
                       onClick={() => setIsAdminMode(false)}
                       className="flex-1 bg-[#1a1511] hover:bg-stone-900 border border-stone-800 text-stone-400 py-2.5 rounded-xl text-[10px] font-mono uppercase tracking-widest transition-colors cursor-pointer"
                     >
-                      Cancel
+                      {language === 'de' ? 'Abbrechen' : language === 'pl' ? 'Anuluj' : 'Cancel'}
                     </button>
                     <button
                       type="submit"
                       className="flex-1 bg-gradient-to-r from-[#d4af37] to-[#b59228] hover:from-[#e3be44] hover:to-[#cfa72d] text-[#140f0a] font-bold py-2.5 rounded-xl text-[10px] font-mono uppercase tracking-widest transition-colors shadow-md cursor-pointer"
                     >
-                      Verify Admin
+                      {language === 'de' ? 'Admin verifizieren' : language === 'pl' ? 'Zweryfikuj administratora' : 'Verify Admin'}
                     </button>
                   </div>
                 </form>
 
                 <p className="text-[9px] text-stone-600 font-mono italic">
-                  Hint: pharaoh
+                  {language === 'de' ? 'Hinweis: pharaoh' : language === 'pl' ? 'Wskazówka: pharaoh' : 'Hint: pharaoh'}
                 </p>
               </motion.div>
             ) : (
@@ -763,7 +802,7 @@ export default function App() {
                   <div className="flex items-center gap-2">
                     <span className="text-[#d4af37] text-lg">𓀚</span>
                     <span className="text-xs font-mono text-[#e6c280] uppercase tracking-wider">
-                      Administrative Clearance Level: High Priest Active
+                      {language === 'de' ? 'Administrative Freigabestufe: Hohepriester aktiv' : language === 'pl' ? 'Poziom uprawnień administracyjnych: Arcykapłan aktywny' : 'Administrative Clearance Level: High Priest Active'}
                     </span>
                   </div>
                   <div className="flex gap-2">
@@ -774,15 +813,15 @@ export default function App() {
                         triggerCelebration();
                       }}
                       className="bg-red-950/40 text-red-400 hover:bg-red-900/20 border border-red-500/20 px-3 py-1.5 rounded-xl text-[10px] font-mono uppercase tracking-wider cursor-pointer"
-                      title="Lock dashboard control credentials"
+                      title={language === 'de' ? 'Dashboard-Zugangsdaten sperren' : language === 'pl' ? 'Zablokuj panel administratora' : 'Lock dashboard control credentials'}
                     >
-                      Lock Sanctuary
+                      {language === 'de' ? 'Heiligtum sperren' : language === 'pl' ? 'Zablokuj Sanktuarium' : 'Lock Sanctuary'}
                     </button>
                     <button
                       onClick={() => setIsAdminMode(false)}
                       className="bg-[#2a2016] text-[#e6c280] hover:bg-[#3d2f21] border border-[#d4af37]/40 px-3 py-1.5 rounded-xl text-[10px] font-mono uppercase tracking-wider cursor-pointer"
                     >
-                      Return to Explorer Mode
+                      {language === 'de' ? 'Zurück zum Entdecker-Modus' : language === 'pl' ? 'Powrót do trybu odkrywcy' : 'Return to Explorer Mode'}
                     </button>
                   </div>
                 </div>
@@ -802,10 +841,10 @@ export default function App() {
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#140f0c]/60 border border-[#d4af37]/20 p-6 rounded-2xl relative overflow-hidden backdrop-blur-md">
                   <div className="space-y-1">
                     <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.3em] flex items-center gap-1.5">
-                      <span className="animate-pulse">𓇚</span> Egyptian Archives 𓇚
+                      <span className="animate-pulse">𓇚</span> {t('archive', 'Egyptian Archives 𓇚')}
                     </span>
-                    <h2 className="font-serif text-xl font-bold text-[#e6c280] uppercase">The Scribes' Sanctuary</h2>
-                    <p className="text-stone-400 text-xs">Access critical travel wisdom and sacred records here.</p>
+                    <h2 className="font-serif text-xl font-bold text-[#e6c280] uppercase">{t('sanctuary_title', "The Scribes' Sanctuary")}</h2>
+                    <p className="text-stone-400 text-xs">{t('sanctuary_desc', 'Access critical travel wisdom and sacred records here.')}</p>
                   </div>
                   <button
                     onClick={() => {
@@ -814,7 +853,7 @@ export default function App() {
                     }}
                     className="inline-flex items-center gap-2 px-4 py-2 border border-[#d4af37]/40 bg-[#1e1712] hover:bg-[#2e231b] text-[#e6c280] hover:text-white rounded-xl text-xs font-mono uppercase tracking-widest transition-all cursor-pointer"
                   >
-                    ← Back to Sanctuary
+                    {t('back_to_sanctuary', '← Back to Sanctuary')}
                   </button>
                 </div>
 
@@ -823,20 +862,20 @@ export default function App() {
                   <div className="bg-[#120e0a]/80 border border-[#d4af37]/15 rounded-2xl p-6 space-y-4">
                     <div className="flex items-center gap-3">
                       <span className="text-2xl text-[#d4af37]">𓋹</span>
-                      <h4 className="font-serif text-lg font-bold text-[#e6c280] uppercase">Sacred Nile & Desert Safety</h4>
+                      <h4 className="font-serif text-lg font-bold text-[#e6c280] uppercase">{t('safety_title', 'Sacred Nile & Desert Safety')}</h4>
                     </div>
                     <ul className="space-y-3.5 text-xs text-stone-400 leading-relaxed">
                       <li className="flex gap-2">
                         <span className="text-[#d4af37]">✦</span>
-                        <span><strong>Water Wisdom:</strong> Standard tap water is not fit for consumption. Please enjoy the abundant, complimentary ice-cold bottled mineral water provided across all tours and camps.</span>
+                        <span><strong>{t('safety_water', 'Water Wisdom')}:</strong> {t('safety_water_desc', 'Standard tap water is not fit for consumption. Please enjoy the abundant, complimentary ice-cold bottled mineral water provided across all tours and camps.')}</span>
                       </li>
                       <li className="flex gap-2">
                         <span className="text-[#d4af37]">✦</span>
-                        <span><strong>Desert Garb:</strong> When riding quad bikes or hiking sand dunes, wear secure closed-toe shoes and wraps. The sun evaporates heat instantly, but temperatures drop rapidly after twilight.</span>
+                        <span><strong>{t('safety_garb', 'Desert Garb')}:</strong> {t('safety_garb_desc', 'When riding quad bikes or hiking sand dunes, wear secure closed-toe shoes and wraps. The sun evaporates heat instantly, but temperatures drop rapidly after twilight.')}</span>
                       </li>
                       <li className="flex gap-2">
                         <span className="text-[#d4af37]">✦</span>
-                        <span><strong>Cultural Respect:</strong> Cover shoulders and knees when visiting ancient shrines, and always request permission before capturing memories of Bedouin hosts.</span>
+                        <span><strong>{t('safety_cultural', 'Cultural Respect')}:</strong> {t('safety_cultural_desc', 'Cover shoulders and knees when visiting ancient shrines, and always request permission before capturing memories of Bedouin hosts.')}</span>
                       </li>
                     </ul>
                   </div>
@@ -844,20 +883,20 @@ export default function App() {
                   <div className="bg-[#120e0a]/80 border border-[#d4af37]/15 rounded-2xl p-6 space-y-4">
                     <div className="flex items-center gap-3">
                       <span className="text-2xl text-[#d4af37]">𓅃</span>
-                      <h4 className="font-serif text-lg font-bold text-[#e6c280] uppercase">Diving & Historical Passes</h4>
+                      <h4 className="font-serif text-lg font-bold text-[#e6c280] uppercase">{t('diving_title', 'Diving & Historical Passes')}</h4>
                     </div>
                     <ul className="space-y-3.5 text-xs text-stone-400 leading-relaxed">
                       <li className="flex gap-2">
                         <span className="text-[#d4af37]">✦</span>
-                        <span><strong>Corals of Sobek:</strong> Use strictly reef-safe biodegradable sunscreen. Never stand on, touch, or handle corals as it damages sensitive living systems.</span>
+                        <span><strong>{t('diving_coral', 'Corals of Sobek')}:</strong> {t('diving_coral_desc', 'Use strictly reef-safe biodegradable sunscreen. Never stand on, touch, or handle corals as it damages sensitive living systems.')}</span>
                       </li>
                       <li className="flex gap-2">
                         <span className="text-[#d4af37]">✦</span>
-                        <span><strong>Valley Passes:</strong> Standard entry tickets are included and allow entry into 3 major tombs. Specialty tombs like Tutankhamun can be booked through your guide 48 hours in advance.</span>
+                        <span><strong>{t('diving_passes', 'Valley Passes')}:</strong> {t('diving_passes_desc', 'Standard entry tickets are included and allow entry into 3 major tombs. Specialty tombs like Tutankhamun can be booked through your guide 48 hours in advance.')}</span>
                       </li>
                       <li className="flex gap-2">
                         <span className="text-[#d4af37]">✦</span>
-                        <span><strong>Pharaonic Photography:</strong> Smartphone photos are free inside tombs, but professional DSLR cameras/tripods are strictly banned without commercial licenses.</span>
+                        <span><strong>{t('diving_photo', 'Pharaonic Photography')}:</strong> {t('diving_photo_desc', 'Smartphone photos are free inside tombs, but professional DSLR cameras/tripods are strictly banned without commercial licenses.')}</span>
                       </li>
                     </ul>
                   </div>
@@ -910,12 +949,12 @@ export default function App() {
                   transition={{ duration: 0.8, ease: "easeOut" }}
                 >
                   <div className="text-center">
-                    <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">Artificial Intelligence</span>
+                    <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">{language === 'de' ? 'Künstliche Intelligenz' : language === 'pl' ? 'Sztuczna inteligencja' : 'Artificial Intelligence'}</span>
                     <h2 className="font-serif text-3xl font-extrabold text-[#e6c280] uppercase mt-1">
-                      AI Travel Guide & Assistant
+                      {language === 'de' ? 'KI-Reiseführer & Assistent' : language === 'pl' ? 'Asystent i przewodnik AI' : 'AI Travel Guide & Assistant'}
                     </h2>
                     <p className="text-stone-400 text-sm max-w-xl mx-auto mt-2">
-                      Ask our AI helper any questions or generate a custom day-by-day travel plan.
+                      {language === 'de' ? 'Stellen Sie unserem KI-Helfer Fragen oder erstellen Sie einen individuellen Tages-Reiseplan.' : language === 'pl' ? 'Zadaj pytania naszemu asystentowi AI lub wygeneruj spersonalizowany plan podróży dzień po dniu.' : 'Ask our AI helper any questions or generate a custom day-by-day travel plan.'}
                     </p>
                   </div>
                   <ScribeOracle onScribeSuccess={triggerCelebration} onAddBooking={handleAddBooking} />
@@ -943,12 +982,12 @@ export default function App() {
                   transition={{ duration: 0.8, ease: "easeOut" }}
                 >
                   <div className="text-center">
-                    <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">Egyptian Cartouche</span>
+                    <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">{language === 'de' ? 'Ägyptische Kartusche' : language === 'pl' ? 'Egipska kartusza' : 'Egyptian Cartouche'}</span>
                     <h2 className="font-serif text-3xl font-extrabold text-[#e6c280] uppercase mt-1">
-                      Egyptian Name Translator
+                      {language === 'de' ? 'Ägyptischer Namensübersetzer' : language === 'pl' ? 'Tłumacz egipskich imion' : 'Egyptian Name Translator'}
                     </h2>
                     <p className="text-stone-400 text-sm max-w-xl mx-auto mt-2">
-                      Translate your name into ancient Egyptian hieroglyphic symbols inside a beautiful protective cartouche.
+                      {language === 'de' ? 'Übersetzen Sie Ihren Namen in altägyptische Hieroglyphensymbole in einer wunderschönen schützenden Kartusche.' : language === 'pl' ? 'Przetłumacz swoje imię na starożytne egipskie hieroglify wewnątrz pięknej, ochronnej kartuszy.' : 'Translate your name into ancient Egyptian hieroglyphic symbols inside a beautiful protective cartouche.'}
                     </p>
                   </div>
                   <CartoucheGenerator />
@@ -964,12 +1003,12 @@ export default function App() {
                   transition={{ duration: 0.8, ease: "easeOut" }}
                 >
                   <div className="text-center">
-                    <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">My Bookings</span>
+                    <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">{language === 'de' ? 'Meine Buchungen' : language === 'pl' ? 'Moje rezerwacje' : 'My Bookings'}</span>
                     <h2 className="font-serif text-3xl font-extrabold text-[#e6c280] uppercase mt-1">
-                      Your Bookings & Reviews
+                      {language === 'de' ? 'Ihre Buchungen & Bewertungen' : language === 'pl' ? 'Twoje rezerwacje i opinie' : 'Your Bookings & Reviews'}
                     </h2>
                     <p className="text-stone-400 text-sm max-w-xl mx-auto mt-2">
-                      View your pending or confirmed bookings, and read reviews from other travelers.
+                      {language === 'de' ? 'Sehen Sie sich Ihre ausstehenden oder bestätigten Buchungen an und lesen Sie Bewertungen von anderen Reisenden.' : language === 'pl' ? 'Przeglądaj swoje oczekujące i potwierdzone rezerwacje oraz czytaj opinie innych podróżnych.' : 'View your pending or confirmed bookings, and read reviews from other travelers.'}
                     </p>
                   </div>
                   <BookingManager bookings={bookings} excursions={excursions} onCancelBooking={handleCancelBooking} onVerifyCheckIn={handleVerifyCheckIn} />
@@ -998,7 +1037,7 @@ export default function App() {
           </div>
 
           <p className="text-stone-500 text-xs max-w-md mx-auto leading-relaxed">
-            Powered by Mas international Agency. Designed for desert explorers, deep-sea divers, and lovers of history. Safe travels and have an amazing trip!
+            {language === 'de' ? 'Unterstützt von Mas international Agency. Entwickelt für Wüstenentdecker, Tiefseetaucher und Geschichtsliebhaber. Gute Reise und einen fantastischen Urlaub!' : language === 'pl' ? 'Wspierane przez Mas international Agency. Zaprojektowane dla odkrywców pustyni, nurków głębinowych i miłośników historii. Bezpiecznej podróży i niesamowitych wakacji!' : 'Powered by Mas international Agency. Designed for desert explorers, deep-sea divers, and lovers of history. Safe travels and have an amazing trip!'}
           </p>
 
           {/* Ancient seals icons */}
@@ -1011,7 +1050,7 @@ export default function App() {
           </div>
 
           <div className="pt-4 border-t border-stone-900/60 text-stone-600 text-[10px] font-mono uppercase tracking-widest">
-            © 2026 Kemet Tours - Powered by Mas international Agency • All Rights Reserved.
+            © 2026 Kemet Tours - Powered by Mas international Agency • {language === 'de' ? 'Alle Rechte vorbehalten.' : language === 'pl' ? 'Wszelkie prawa zastrzeżone.' : 'All Rights Reserved.'}
           </div>
         </footer>
 
@@ -1031,12 +1070,16 @@ export default function App() {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => {
-              const msg = "𓂀 Kemet Tours - Powered by Mas international Agency 𓂀\n\nGreetings Scribe! I am visiting your temple dashboard and would like to inquire about customized itineraries, booking availability, or special Pharaonic excursions!";
+              const msg = language === 'de'
+                ? "𓂀 Kemet Tours - Unterstützt von Mas international Agency 𓂀\n\nSeid gegrüßt, Schreiber! Ich besuche Ihr Tempel-Dashboard und möchte mich über maßgeschneiderte Reiserouten, Buchungsverfügbarkeit oder spezielle pharaonische Ausflüge erkundigen!"
+                : language === 'pl'
+                ? "𓂀 Kemet Tours - Wspierane przez Mas international Agency 𓂀\n\nWitaj Pisarzu! Odwiedzam Twój panel świątynny i chciałbym zapytać o spersonalizowane plany podróży, dostępność rezerwacji lub specjalne wycieczki faraońskie!"
+                : "𓂀 Kemet Tours - Powered by Mas international Agency 𓂀\n\nGreetings Scribe! I am visiting your temple dashboard and would like to inquire about customized itineraries, booking availability, or special Pharaonic excursions!";
               const url = `https://wa.me/201202181834?text=${encodeURIComponent(msg)}`;
               window.open(url, '_blank') || (window.location.href = url);
             }}
             className="bg-gradient-to-tr from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white p-3.5 rounded-full shadow-[0_4px_20px_rgba(16,185,129,0.4)] border-2 border-[#d4af37] relative group cursor-pointer"
-            title="Instant WhatsApp Consultation"
+            title={language === 'de' ? "Sofortige WhatsApp-Beratung" : language === 'pl' ? "Natychmiastowa konsultacja WhatsApp" : "Instant WhatsApp Consultation"}
           >
             {/* Pulsing indicator */}
             <span className="absolute -top-1 -right-1 flex h-3 w-3">
@@ -1051,7 +1094,7 @@ export default function App() {
 
             {/* Tooltip */}
             <span className="absolute bottom-full right-0 mb-3 scale-0 transition-all rounded bg-stone-900 border border-[#d4af37] px-3 py-1.5 text-[10px] font-mono text-[#e6c280] uppercase tracking-wider whitespace-nowrap group-hover:scale-100 z-50 shadow-2xl">
-              𓂀 Chat with High Priest (+201202181834)
+              {language === 'de' ? '𓂀 Chatte mit dem Hohenpriester (+201202181834)' : language === 'pl' ? '𓂀 Porozmawiaj z Arcykapłanem (+201202181834)' : '𓂀 Chat with High Priest (+201202181834)'}
             </span>
           </motion.button>
         </div>
@@ -1090,10 +1133,10 @@ export default function App() {
                 </div>
 
                 <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.25em] block mb-1">
-                  Sacred Departure Warning
+                  {language === 'de' ? 'Heilige Abreisewarnung' : language === 'pl' ? 'Święte ostrzeżenie przed wyjazdem' : 'Sacred Departure Warning'}
                 </span>
                 <h3 className="font-serif text-xl font-bold text-[#e6c280] uppercase tracking-wide">
-                  Expedition Departing Tomorrow
+                  {language === 'de' ? 'Expedition bricht morgen auf' : language === 'pl' ? 'Ekspedycja wyrusza jutro' : 'Expedition Departing Tomorrow'}
                 </h3>
 
                 <div className="my-5 border-y border-[#d4af37]/10 py-4 text-left space-y-3 max-h-[40vh] overflow-y-auto">
@@ -1109,19 +1152,29 @@ export default function App() {
                       </div>
                       
                       <p className="text-stone-300 text-[11px] leading-relaxed">
-                        Greetings, noble traveler <span className="text-[#e6c280] font-semibold">{booking.travelerName}</span>. Your caravan is scheduled to depart on <span className="text-[#d4af37] font-semibold font-mono">{booking.date}</span> (less than 24 hours from now).
+                        {language === 'de' ? (
+                          <>Seid gegrüßt, edler Reisender <span className="text-[#e6c280] font-semibold">{booking.travelerName}</span>. Ihre Karawane soll am <span className="text-[#d4af37] font-semibold font-mono">{booking.date}</span> aufbrechen (in weniger als 24 Stunden).</>
+                        ) : language === 'pl' ? (
+                          <>Witaj, szlachetny podróżniku <span className="text-[#e6c280] font-semibold">{booking.travelerName}</span>. Twoja karawana wyrusza w dniu <span className="text-[#d4af37] font-semibold font-mono">{booking.date}</span> (za mniej niż 24 godziny).</>
+                        ) : (
+                          <>Greetings, noble traveler <span className="text-[#e6c280] font-semibold">{booking.travelerName}</span>. Your caravan is scheduled to depart on <span className="text-[#d4af37] font-semibold font-mono">{booking.date}</span> (less than 24 hours from now).</>
+                        )}
                       </p>
 
                       <div className="flex items-center gap-2 text-[10px] text-stone-400 pt-1">
                         <span className="text-[#d4af37]">𓀚</span>
-                        <span>Guests: {booking.numberOfGuests} • Cost: ${booking.totalCost}</span>
+                        <span>{language === 'de' ? `Gäste: ${booking.numberOfGuests} • Kosten: $${booking.totalCost}` : language === 'pl' ? `Goście: ${booking.numberOfGuests} • Koszt: $${booking.totalCost}` : `Guests: ${booking.numberOfGuests} • Cost: $${booking.totalCost}`}</span>
                       </div>
                     </div>
                   ))}
                 </div>
 
                 <p className="text-stone-400 text-[11px] leading-relaxed mb-6 italic">
-                  "Ensure your water skins are full and your sun shields are ready, for Ra shines hot upon the valley."
+                  {language === 'de' 
+                    ? '"Stellt sicher, dass eure Schläuche voll und eure Sonnenschilde bereit sind, denn Ra scheint heiß auf das Tal."'
+                    : language === 'pl'
+                    ? '"Upewnij się, że Twoje bukłaki na wodę są pełne, a osłony przeciwsłoneczne gotowe, ponieważ Ra mocno świeci nad doliną."'
+                    : '"Ensure your water skins are full and your sun shields are ready, for Ra shines hot upon the valley."'}
                 </p>
 
                 <button
@@ -1131,7 +1184,7 @@ export default function App() {
                   }}
                   className="w-full bg-gradient-to-r from-[#d4af37] to-[#b08e23] hover:from-[#e6c280] hover:to-[#d4af37] text-[#140f0a] font-serif font-black text-xs uppercase tracking-widest py-3.5 rounded-xl shadow-md transition-all cursor-pointer active:scale-95"
                 >
-                  I am Prepared (Dismiss Alert)
+                  {language === 'de' ? 'Ich bin bereit (Warnung schließen)' : language === 'pl' ? 'Jestem gotów (Zamknij ostrzeżenie)' : 'I am Prepared (Dismiss Alert)'}
                 </button>
               </motion.div>
             </div>

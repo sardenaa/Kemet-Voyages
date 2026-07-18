@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, Calendar, Compass, User, Zap, Send, MessageCircle, HelpCircle, Loader2, BookOpen, Printer, X } from 'lucide-react';
 import { Booking, CustomItinerary, ScribeMessage } from '../types';
+import { useLanguage } from './LanguageContext';
 
 interface ScribeOracleProps {
   onScribeSuccess?: () => void;
@@ -9,6 +10,7 @@ interface ScribeOracleProps {
 }
 
 export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOracleProps) {
+  const { language } = useLanguage();
   // Tabs: 'planner' or 'chat'
   const [activeTab, setActiveTab] = useState<'planner' | 'chat'>('planner');
 
@@ -153,20 +155,48 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
   const [isChatLoading, setIsChatLoading] = useState<boolean>(false);
 
   // Excursion customizable options
-  const interests = [
+  const interests = language === 'de' ? [
+    "Ausgewogene Erkundung (Korallen, Wüste, Geschichte)",
+    "Tiefsee-Meeresleben & Tauchen",
+    "Adrenalin-Wüstensafaris & Kamelritte",
+    "Pharaonische Tempel & Ägyptologie (Luxor-Touren)"
+  ] : language === 'pl' ? [
+    "Zrównoważona eksploracja (rafy, pustynia, historia)",
+    "Głębinowe życie morskie i nurkowanie",
+    "Adrenalinowe pustynne safari i przejażdżki na wielbłądach",
+    "Faraońskie świątynie i starożytna egiptologia (wycieczki do Luksoru)"
+  ] : [
     "Balanced Exploration (Corals, Desert, History)",
     "Deep-Sea Marine Life & Diving",
     "Adrenaline Desert Safaris & Camel Treks",
     "Pharaonic Temples & Ancient Egyptology (Luxor Tours)"
   ];
 
-  const paces = [
+  const paces = language === 'de' ? [
+    "Gemütlich (Langsamer, Segeln im Sonnenuntergang & leichte Riffspaziergänge)",
+    "Ausgewogen (Aktive Erkundung + Tempel-Entspannung)",
+    "Intensiv (Quadfahren bei Sonnenaufgang, tiefe Scuba-Tauchergänge, ganztägige Denkmaltouren)"
+  ] : language === 'pl' ? [
+    "Rekreacyjne (wolniejsze tempo, rejsy o zachodzie słońca i lekkie spacery po rafie)",
+    "Zrównoważone (aktywna eksploracja + relaks w świątyniach)",
+    "Intensywne (jazda na quadach o wschodzie słońca, głębokie nurkowanie, całodniowe wędrówki po zabytkach)"
+  ] : [
     "Leisurely (Slower-paced, sunset sails & light reef walks)",
     "Balanced (Active exploration + temple relaxation)",
     "Intense (Sunrise dune biking, deep scuba dives, day-long monument treks)"
   ];
 
-  const companions = [
+  const companions = language === 'de' ? [
+    "Alleinreisende(r)",
+    "Paar / Partner",
+    "Königliche Familie (inkl. Kinder)",
+    "Gruppe von Entdeckern (Freunde/Gruppe)"
+  ] : language === 'pl' ? [
+    "Samotny podróżnik",
+    "Para / Partnerzy",
+    "Królewska rodzina (z dziećmi)",
+    "Grupa odkrywców (znajomi/grupa)"
+  ] : [
     "Solo Adventurer",
     "Couple / Partners",
     "Royal Family (Kids included)",
@@ -311,7 +341,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
             }`}
           >
             <Compass className="w-4 h-4" />
-            Itinerary Planner
+            {language === 'de' ? 'Reiseplaner' : language === 'pl' ? 'Planer podróży' : 'Itinerary Planner'}
           </button>
           <button
             onClick={() => setActiveTab('chat')}
@@ -322,7 +352,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
             }`}
           >
             <MessageCircle className="w-4 h-4" />
-            Chat with AI Assistant
+            {language === 'de' ? 'Mit KI-Assistent chatten' : language === 'pl' ? 'Czatuj z asystentem AI' : 'Chat with AI Assistant'}
           </button>
         </div>
       </div>
@@ -337,12 +367,18 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
             className="space-y-6"
           >
             <div className="text-center mb-6">
-              <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">Custom Travel Plan</span>
+              <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">
+                {language === 'de' ? 'Individueller Reiseplan' : language === 'pl' ? 'Spersonalizowany plan podróży' : 'Custom Travel Plan'}
+              </span>
               <h2 className="font-serif text-3xl font-extrabold text-[#e6c280] mt-1 uppercase">
-                Custom Travel Itinerary Planner
+                {language === 'de' ? 'Kreativer Reiseplaner' : language === 'pl' ? 'Kreator spersonalizowanego planu podróży' : 'Custom Travel Itinerary Planner'}
               </h2>
               <p className="text-stone-400 text-sm max-w-xl mx-auto mt-2">
-                Plan your perfect trip by entering your travel details below to receive a personalized day-by-day itinerary.
+                {language === 'de' 
+                  ? 'Planen Sie Ihre perfekte Reise, indem Sie Ihre Reisedaten unten eingeben, um einen maßgeschneiderten Tagesplan zu erhalten.'
+                  : language === 'pl'
+                  ? 'Zaplanuj swoją idealną podróż, wprowadzając szczegóły poniżej, aby otrzymać spersonalizowany plan dzień po dniu.'
+                  : 'Plan your perfect trip by entering your travel details below to receive a personalized day-by-day itinerary.'}
               </p>
             </div>
 
@@ -354,9 +390,11 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                 <div className="flex justify-between items-center">
                   <label className="text-stone-300 text-sm flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-[#d4af37]" />
-                    Trip Duration (Days)
+                    {language === 'de' ? 'Reisedauer (Tage)' : language === 'pl' ? 'Czas trwania podróży (dni)' : 'Trip Duration (Days)'}
                   </label>
-                  <span className="text-[#d4af37] font-mono font-bold text-lg">{duration} Days</span>
+                  <span className="text-[#d4af37] font-mono font-bold text-lg">
+                    {duration} {language === 'de' ? 'Tage' : language === 'pl' ? 'Dni' : 'Days'}
+                  </span>
                 </div>
                 <input
                   type="range"
@@ -367,8 +405,8 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                   className="w-full accent-[#d4af37] bg-stone-800 h-2 rounded-lg cursor-pointer"
                 />
                 <div className="flex justify-between text-[10px] text-stone-500 font-mono">
-                  <span>3 Days (Short Trip)</span>
-                  <span>7 Days (Full Experience)</span>
+                  <span>{language === 'de' ? '3 Tage (Kurztrip)' : language === 'pl' ? '3 dni (Krótki wyjazd)' : '3 Days (Short Trip)'}</span>
+                  <span>{language === 'de' ? '7 Tage (Volles Erlebnis)' : language === 'pl' ? '7 dni (Pełne doświadczenie)' : '7 Days (Full Experience)'}</span>
                 </div>
               </div>
 
@@ -376,7 +414,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
               <div className="space-y-1.5">
                 <label className="text-stone-300 text-sm flex items-center gap-2">
                   <Compass className="w-4 h-4 text-[#d4af37]" />
-                  Primary Focus
+                  {language === 'de' ? 'Hauptfokus' : language === 'pl' ? 'Główny cel' : 'Primary Focus'}
                 </label>
                 <select
                   value={interest}
@@ -393,7 +431,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
               <div className="space-y-1.5">
                 <label className="text-stone-300 text-sm flex items-center gap-2">
                   <Zap className="w-4 h-4 text-[#d4af37]" />
-                  Pacing
+                  {language === 'de' ? 'Tempo' : language === 'pl' ? 'Tempo' : 'Pacing'}
                 </label>
                 <select
                   value={intensity}
@@ -410,7 +448,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
               <div className="space-y-1.5">
                 <label className="text-stone-300 text-sm flex items-center gap-2">
                   <User className="w-4 h-4 text-[#d4af37]" />
-                  Travel Companions
+                  {language === 'de' ? 'Reisebegleitung' : language === 'pl' ? 'Towarzysze podróży' : 'Travel Companions'}
                 </label>
                 <select
                   value={companion}
@@ -427,12 +465,12 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
               <div className="md:col-span-2 space-y-1.5">
                 <label className="text-stone-300 text-sm flex items-center gap-2">
                   <BookOpen className="w-4 h-4 text-[#d4af37]" />
-                  Special Requests (Optional)
+                  {language === 'de' ? 'Besondere Wünsche (Optional)' : language === 'pl' ? 'Specjalne życzenia (Opcjonalnie)' : 'Special Requests (Optional)'}
                 </label>
                 <textarea
                   value={customReq}
                   onChange={(e) => setCustomReq(e.target.value)}
-                  placeholder="E.g., Vegetarian options, specific diving sites, anniversary requests..."
+                  placeholder={language === 'de' ? 'Z. B. vegetarische Optionen, bestimmte Tauchplätze, Jubiläumswünsche...' : language === 'pl' ? 'Np. opcje wegetariańskie, konkretne miejsca nurkowe, życzenia rocznicowe...' : 'E.g., Vegetarian options, specific diving sites, anniversary requests...'}
                   rows={2}
                   className="w-full bg-[#16120e] border border-[#d4af37]/30 rounded-lg p-3 text-[#f3e5c8] text-sm focus:outline-none focus:ring-1 focus:ring-[#d4af37] placeholder-stone-600"
                 />
@@ -450,12 +488,12 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                 {isGenerating ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin text-[#140f0a]" />
-                    Generating Travel Plan...
+                    {language === 'de' ? 'Reiseplan wird generiert...' : language === 'pl' ? 'Generowanie planu podróży...' : 'Generating Travel Plan...'}
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-5 h-5 text-[#140f0a] animate-pulse" />
-                    Generate My Travel Itinerary
+                    {language === 'de' ? 'Meinen Reiseplan generieren' : language === 'pl' ? 'Wygeneruj mój plan podróży' : 'Generate My Travel Itinerary'}
                   </>
                 )}
               </button>
@@ -480,10 +518,10 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
 
                   <div className="text-center border-b-2 border-[#8b6508]/20 pb-6 mb-6">
                     <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-[#8b6508] font-bold block animate-pulse">
-                      Analyzing Travel Options...
+                      {language === 'de' ? 'Reiseoptionen werden analysiert...' : language === 'pl' ? 'Analizowanie opcji podróży...' : 'Analyzing Travel Options...'}
                     </span>
                     <h3 className="font-serif text-2xl font-black text-[#5c4001] tracking-wide mt-2 uppercase">
-                      Creating Your Custom Itinerary
+                      {language === 'de' ? 'Ihr maßgeschneiderter Reiseplan wird erstellt' : language === 'pl' ? 'Tworzenie Twojego spersonalizowanego planu' : 'Creating Your Custom Itinerary'}
                     </h3>
                     
                     {/* Animated Golden Hieroglyphs pulsing in sequence */}
@@ -597,27 +635,27 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                       <button
                         onClick={() => setShowPrintModal(true)}
                         className="bg-[#8b6508] hover:bg-[#6e4e03] text-white px-4 py-2 rounded-xl text-xs font-serif font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer active:scale-95 group/btn border border-yellow-600/30"
-                        title="Export Itinerary (PDF)"
+                        title={language === 'de' ? 'Reiseplan exportieren (PDF)' : language === 'pl' ? 'Eksportuj plan podróży (PDF)' : 'Export Itinerary (PDF)'}
                       >
                         <Printer className="w-3.5 h-3.5 text-yellow-200 group-hover/btn:scale-110 transition-transform" />
-                        <span>Export Itinerary</span>
+                        <span>{language === 'de' ? 'Reiseplan exportieren' : language === 'pl' ? 'Eksportuj plan' : 'Export Itinerary'}</span>
                       </button>
 
                       {onAddBooking && (
                         <button
                           onClick={initExportBooking}
                           className="bg-gradient-to-r from-[#d4af37] to-[#b08e23] hover:from-[#e6c280] hover:to-[#d4af37] text-[#140f0a] px-4 py-2 rounded-xl text-xs font-serif font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer active:scale-95 group/btn border border-yellow-600/30"
-                          title="Submit booking request for this itinerary"
+                          title={language === 'de' ? 'Buchungsanfrage für diesen Reiseplan senden' : language === 'pl' ? 'Prześlij prośbę o rezerwację tego planu' : 'Submit booking request for this itinerary'}
                         >
                           <Calendar className="w-3.5 h-3.5 text-[#140f0a] group-hover/btn:scale-110 transition-transform" />
-                          <span>Book Itinerary</span>
+                          <span>{language === 'de' ? 'Reise buchen' : language === 'pl' ? 'Zarezerwuj plan' : 'Book Itinerary'}</span>
                         </button>
                       )}
                     </div>
 
                     <div className="text-center border-b-2 border-[#8b6508]/20 pb-6 mb-6 md:pr-48">
                       <span className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#8b6508] font-bold">
-                        Your Customized Travel Plan
+                        {language === 'de' ? 'Ihr individueller Reiseplan' : language === 'pl' ? 'Twój spersonalizowany plan podróży' : 'Your Customized Travel Plan'}
                       </span>
                       <h3 className="font-serif text-3xl font-black text-[#5c4001] tracking-wide mt-1 uppercase">
                         {itinerary.title}
@@ -631,26 +669,26 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                         <div>
                           <h4 className="font-serif text-sm font-bold text-[#5c4001] uppercase flex items-center gap-2">
                             <span className="text-[#8b6508] text-base">𓊟</span>
-                            Your Travel Manifest
+                            {language === 'de' ? 'Ihr Reisemanifest' : language === 'pl' ? 'Twój manifest podróży' : 'Your Travel Manifest'}
                           </h4>
                           <p className="text-[11px] text-stone-600 mt-0.5">
                             {progressPercent < 35 ? (
-                              <span>Add more excursions and activities to complete your itinerary.</span>
+                              <span>{language === 'de' ? 'Fügen Sie mehr Ausflüge hinzu, um Ihren Plan zu vervollständigen.' : language === 'pl' ? 'Dodaj więcej wycieczek i aktywności, aby uzupełnić swój plan.' : 'Add more excursions and activities to complete your itinerary.'}</span>
                             ) : progressPercent < 75 ? (
-                              <span>Your travel itinerary is shaping up nicely!</span>
+                              <span>{language === 'de' ? 'Ihr Reiseplan nimmt langsam Gestalt an!' : language === 'pl' ? 'Twój plan podróży nabiera świetnego kształtu!' : 'Your travel itinerary is shaping up nicely!'}</span>
                             ) : progressPercent < 100 ? (
-                              <span>Almost finished! Add a couple more activities to complete your plans.</span>
+                              <span>{language === 'de' ? 'Fast fertig! Fügen Sie noch ein paar Aktivitäten hinzu.' : language === 'pl' ? 'Prawie gotowe! Dodaj jeszcze kilka aktywności, aby zakończyć planowanie.' : 'Almost finished! Add a couple more activities to complete your plans.'}</span>
                             ) : (
-                              <span className="text-[#5c4001] font-semibold">Perfect! Your travel itinerary is complete and ready.</span>
+                              <span className="text-[#5c4001] font-semibold">{language === 'de' ? 'Perfekt! Ihr Reiseplan ist vollständig und bereit.' : language === 'pl' ? 'Doskonale! Twój plan podróży jest kompletny i gotowy.' : 'Perfect! Your travel itinerary is complete and ready.'}</span>
                             )}
                           </p>
                         </div>
                         <div className="text-right flex md:flex-col items-baseline md:items-end gap-1.5">
                           <span className="text-xs font-mono font-bold text-[#8b6508] bg-[#faf3e0] px-2 py-0.5 rounded border border-[#8b6508]/20 shadow-sm">
-                            {totalActivities} / {targetActivities} Activities
+                            {totalActivities} / {targetActivities} {language === 'de' ? 'Aktivitäten' : language === 'pl' ? 'Aktywności' : 'Activities'}
                           </span>
                           <span className="text-xs font-serif font-black text-[#5c4001]">
-                            {progressPercent}% Complete
+                            {progressPercent}% {language === 'de' ? 'Abgeschlossen' : language === 'pl' ? 'Ukończono' : 'Complete'}
                           </span>
                         </div>
                       </div>
@@ -683,9 +721,9 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
 
                       {/* Progress Marks */}
                       <div className="flex justify-between text-[9px] font-mono text-stone-500 mt-1.5 px-1">
-                        <span>Short Trip (0%)</span>
-                        <span className={`${progressPercent >= 50 ? 'text-[#8b6508] font-bold' : ''}`}>Balanced (50%)</span>
-                        <span className={`${progressPercent === 100 ? 'text-[#8b6508] font-bold' : ''}`}>Full Experience (100%)</span>
+                        <span>{language === 'de' ? 'Kurztrip' : language === 'pl' ? 'Krótki wyjazd' : 'Short Trip'} (0%)</span>
+                        <span className={`${progressPercent >= 50 ? 'text-[#8b6508] font-bold' : ''}`}>{language === 'de' ? 'Ausgewogen' : language === 'pl' ? 'Zrównoważony' : 'Balanced'} (50%)</span>
+                        <span className={`${progressPercent === 100 ? 'text-[#8b6508] font-bold' : ''}`}>{language === 'de' ? 'Volles Erlebnis' : language === 'pl' ? 'Pełne doświadczenie' : 'Full Experience'} (100%)</span>
                       </div>
                     </div>
 
@@ -705,7 +743,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
 
                           <div className="space-y-2">
                             <h4 className="font-serif text-lg font-bold text-[#5c4001] uppercase flex items-center gap-2">
-                              Day {day.dayNumber}: {day.theme}
+                              {language === 'de' ? 'Tag' : language === 'pl' ? 'Dzień' : 'Day'} {day.dayNumber}: {day.theme}
                             </h4>
                             
                             {/* Interactive Activities list */}
@@ -726,7 +764,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                                   <button
                                     onClick={() => removeActivity(day.dayNumber, i)}
                                     className="text-stone-400 hover:text-red-700 p-1 rounded-md hover:bg-red-50 transition-colors opacity-0 group-hover/item:opacity-100 focus:opacity-100 cursor-pointer"
-                                    title="Remove this activity"
+                                    title={language === 'de' ? 'Aktivität entfernen' : language === 'pl' ? 'Usuń tę aktywność' : 'Remove this activity'}
                                   >
                                     <span className="text-xs font-bold font-mono">✕</span>
                                   </button>
@@ -749,7 +787,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                               >
                                 <input
                                   type="text"
-                                  placeholder="Enter custom activity..."
+                                  placeholder={language === 'de' ? 'Eigene Aktivität eingeben...' : language === 'pl' ? 'Wpisz własną aktywność...' : 'Enter custom activity...'}
                                   value={newActivityInputs[day.dayNumber] || ""}
                                   onChange={(e) => setNewActivityInputs(prev => ({ ...prev, [day.dayNumber]: e.target.value }))}
                                   className="flex-1 bg-[#fcfaf4] border border-[#8b6508]/25 rounded-lg px-3 py-1.5 text-xs text-stone-800 focus:outline-none focus:ring-1 focus:ring-[#8b6508] placeholder-stone-400"
@@ -759,7 +797,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                                   className="bg-[#8b6508] hover:bg-[#6e4e03] text-white px-3 py-1.5 rounded-lg text-xs font-serif font-bold transition-all shadow-sm flex items-center gap-1 cursor-pointer active:scale-95"
                                 >
                                   <span>+</span>
-                                  <span>Add</span>
+                                  <span>{language === 'de' ? 'Hinzufügen' : language === 'pl' ? 'Dodaj' : 'Add'}</span>
                                 </button>
                               </form>
                             </div>
@@ -767,7 +805,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                             {/* Scribe Wisdom Box */}
                             <div className="mt-3 bg-[#f2e7c9] border border-[#8b6508]/15 rounded-lg p-3 text-xs text-stone-600 italic">
                               <span className="font-serif font-bold text-[#8b6508] block not-italic mb-1 uppercase tracking-wider">
-                                𓋹 Historical & Cultural Tip:
+                                {language === 'de' ? '𓋹 Historischer & kultureller Tipp:' : language === 'pl' ? '𓋹 Wskazówka historyczno-kulturowa:' : '𓋹 Historical & Cultural Tip:'}
                               </span>
                               {day.scribeWisdom}
                             </div>
@@ -799,9 +837,9 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
             className="flex flex-col h-[550px]"
           >
             <div className="text-center mb-4">
-              <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">AI Chat</span>
+              <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">{language === 'de' ? 'KI-Chat' : language === 'pl' ? 'Czat AI' : 'AI Chat'}</span>
               <h2 className="font-serif text-2xl font-bold text-[#e6c280] mt-1 uppercase">
-                Chat with AI Travel Guide
+                {language === 'de' ? 'Mit KI-Reiseführer chatten' : language === 'pl' ? 'Rozmawiaj z przewodnikiem AI' : 'Chat with AI Travel Guide'}
               </h2>
             </div>
 
@@ -821,7 +859,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                   >
                     {/* Timestamp */}
                     <div className={`text-[9px] font-mono mb-1 ${msg.role === 'user' ? 'text-[#140f0a]/60' : 'text-stone-500'}`}>
-                      {msg.role === 'user' ? 'Traveler' : 'Scribe Sennedjem'} • {msg.timestamp}
+                      {msg.role === 'user' ? (language === 'de' ? 'Reisender' : language === 'pl' ? 'Podróżnik' : 'Traveler') : (language === 'de' ? 'Schreiber Sennedjem' : language === 'pl' ? 'Pisarz Sennedjem' : 'Scribe Sennedjem')} • {msg.timestamp}
                     </div>
                     <p>{msg.text}</p>
                   </div>
@@ -838,7 +876,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                       >
                         𓋹
                       </motion.div>
-                      <span className="italic tracking-wide text-[#e6c280]/95">AI Travel Guide is writing...</span>
+                      <span className="italic tracking-wide text-[#e6c280]/95">{language === 'de' ? 'KI-Reiseführer schreibt...' : language === 'pl' ? 'Przewodnik AI pisze...' : 'AI Travel Guide is writing...'}</span>
                     </div>
                     {/* Floating gold hieroglyphs typing transition */}
                     <div className="flex items-center gap-3 bg-[#1c1611] px-4 py-2 rounded-xl border border-[#d4af37]/10 w-fit">
@@ -880,7 +918,11 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                 type="text"
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
-                placeholder="Ask about historical sites, diving spots, desert safaris, or translating a name..."
+                placeholder={language === 'de' 
+                  ? 'Fragen Sie nach historischen Stätten, Tauchplätzen, Wüstensafaris oder der Übersetzung eines Namens...'
+                  : language === 'pl'
+                  ? 'Zapytaj o miejsca historyczne, miejsca do nurkowania, safari pustynne lub przetłumaczenie imienia...'
+                  : 'Ask about historical sites, diving spots, desert safaris, or translating a name...'}
                 className="flex-1 bg-[#201a14] border border-[#d4af37]/45 rounded-xl py-3 px-4 text-[#f3e5c8] text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/50"
                 id="scribe-chat-input"
               />
@@ -890,7 +932,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                 id="scribe-chat-send-btn"
               >
                 <Send className="w-4 h-4 text-[#140f0a]" />
-                Send
+                {language === 'de' ? 'Senden' : language === 'pl' ? 'Wyślij' : 'Send'}
               </button>
             </form>
           </motion.div>
@@ -923,10 +965,14 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
               <div className="bg-[#f2e7c9] border-l-4 border-[#8b6508] p-4 rounded-r-lg mb-6 shadow-sm">
                 <h4 className="font-serif text-sm font-bold text-[#5c4001] uppercase flex items-center gap-1.5">
                   <Printer className="w-4 h-4 text-[#8b6508]" />
-                  Export & Print Itinerary
+                  {language === 'de' ? 'Reiseplan exportieren & drucken' : language === 'pl' ? 'Eksportuj i wydrukuj plan' : 'Export & Print Itinerary'}
                 </h4>
                 <p className="text-xs text-stone-700 mt-1 leading-relaxed">
-                  Your custom travel plan is ready! Click <span className="font-semibold text-[#8b6508]">Print Itinerary</span> to open your browser's print menu. You can choose <span className="font-semibold text-[#8b6508]">Save as PDF</span> to save a digital copy or print it directly.
+                  {language === 'de' 
+                    ? 'Ihr maßgeschneiderter Reiseplan ist fertig! Klicken Sie auf "Reiseplan drucken", um das Druckmenü Ihres Browsers zu öffnen. Sie können "Als PDF speichern" wählen, um eine digitale Kopie zu speichern, oder ihn direkt ausdrucken.'
+                    : language === 'pl'
+                    ? 'Twój spersonalizowany plan podróży jest gotowy! Kliknij „Wydrukuj plan podróży”, aby otworzyć menu drukowania przeglądarki. Możesz wybrać „Zapisz jako PDF”, aby zachować kopię cyfrową, lub wydrukować go bezpośrednio.'
+                    : 'Your custom travel plan is ready! Click Print Itinerary to open your browser\'s print menu. You can choose Save as PDF to save a digital copy or print it directly.'}
                 </p>
               </div>
 
@@ -934,7 +980,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
               <div className="border-4 border-double border-[#8b6508]/40 p-4 md:p-6 bg-[#fbf8ee]/70 rounded-xl space-y-6 max-h-[50vh] overflow-y-auto mb-6">
                 <div className="text-center border-b-2 border-[#8b6508]/20 pb-4 mb-4">
                   <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-[#8b6508] font-bold block mb-1">
-                    Your Customized Travel Plan
+                    {language === 'de' ? 'Ihr maßgeschneiderter Reiseplan' : language === 'pl' ? 'Twój spersonalizowany plan podróży' : 'Your Customized Travel Plan'}
                   </span>
                   <h3 className="font-serif text-2xl font-black text-[#5c4001] uppercase">
                     {itinerary.title}
@@ -949,7 +995,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                   {itinerary.days.map((day) => (
                     <div key={day.dayNumber} className="space-y-1.5">
                       <h4 className="font-serif text-sm font-bold text-[#5c4001] uppercase">
-                        Day {day.dayNumber}: {day.theme}
+                        {language === 'de' ? `Tag ${day.dayNumber}: ${day.theme}` : language === 'pl' ? `Dzień ${day.dayNumber}: ${day.theme}` : `Day ${day.dayNumber}: ${day.theme}`}
                       </h4>
                       <ul className="list-disc list-inside space-y-1 text-stone-700 text-xs pl-2">
                         {day.activities.map((act, i) => (
@@ -973,7 +1019,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                   onClick={() => setShowPrintModal(false)}
                   className="px-4 py-2 border border-[#8b6508]/30 rounded-xl text-xs font-semibold hover:bg-stone-200/50 transition-colors cursor-pointer"
                 >
-                  Cancel
+                  {language === 'de' ? 'Abbrechen' : language === 'pl' ? 'Anuluj' : 'Cancel'}
                 </button>
                 <button
                   onClick={() => {
@@ -982,7 +1028,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                   className="bg-[#8b6508] hover:bg-[#6e4e03] text-white px-5 py-2.5 rounded-xl text-xs font-serif font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95 border border-yellow-600/30"
                 >
                   <Printer className="w-4 h-4 text-yellow-200" />
-                  <span>Print Itinerary (or Save as PDF)</span>
+                  <span>{language === 'de' ? 'Reiseplan drucken (oder als PDF speichern)' : language === 'pl' ? 'Wydrukuj plan podróży (lub zapisz jako PDF)' : 'Print Itinerary (or Save as PDF)'}</span>
                 </button>
               </div>
             </motion.div>
@@ -1010,20 +1056,25 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                 type="button"
                 onClick={() => setShowExportBookingModal(false)}
                 className="absolute top-4 right-4 text-stone-400 hover:text-red-400 p-2 rounded-full transition-colors cursor-pointer z-20"
-                title="Cancel"
+                title={language === 'de' ? 'Abbrechen' : language === 'pl' ? 'Anuluj' : 'Cancel'}
               >
                 <X className="w-5 h-5" />
               </button>
 
               <div className="text-center border-b border-[#d4af37]/25 pb-4 mb-5">
                 <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.25em] block mb-1">
-                  𓋹 Sacred Ledger Inscription 𓋹
+                  {language === 'de' ? '𓋹 Heilige Registerinschrift 𓋹' : language === 'pl' ? '𓋹 Święty wpis do rejestru 𓋹' : '𓋹 Sacred Ledger Inscription 𓋹'}
                 </span>
                 <h3 className="font-serif text-xl font-bold text-[#e6c280] uppercase tracking-wide">
-                  Book Custom Itinerary
+                  {language === 'de' ? 'Maßgeschneiderte Reise buchen' : language === 'pl' ? 'Zarezerwuj spersonalizowaną podróż' : 'Book Custom Itinerary'}
                 </h3>
                 <p className="text-stone-400 text-xs mt-1">
-                  Submit a pending booking request for: <span className="text-amber-300 font-semibold">{itinerary.title}</span>
+                  {language === 'de' 
+                    ? 'Senden Sie eine ausstehende Buchungsanfrage für:' 
+                    : language === 'pl'
+                    ? 'Wyślij oczekujące zapytanie rezerwacyjne na:'
+                    : 'Submit a pending booking request for:'}{' '}
+                  <span className="text-amber-300 font-semibold">{itinerary.title}</span>
                 </p>
               </div>
 
@@ -1037,10 +1088,14 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                     𓋹
                   </motion.div>
                   <h4 className="font-serif text-lg font-bold text-emerald-400 uppercase tracking-wider">
-                    Inscribed Successfully!
+                    {language === 'de' ? 'Erfolgreich eingetragen!' : language === 'pl' ? 'Pomyślnie zapisano!' : 'Inscribed Successfully!'}
                   </h4>
                   <p className="text-stone-300 text-xs max-w-sm mx-auto leading-relaxed">
-                    Your custom voyage request is now sealed inside the sacred Booking Ledger. The high priests are reviewing your petition.
+                    {language === 'de' 
+                      ? 'Ihre maßgeschneiderte Reiseanfrage ist nun im heiligen Buchungsregister besiegelt. Die Hohenpriester prüfen Ihre Anfrage.'
+                      : language === 'pl'
+                      ? 'Twoje spersonalizowane zapytanie o podróż zostało zapieczętowane w świętej księdze rezerwacji. Arcykapłani sprawdzają Twoją prośbę.'
+                      : 'Your custom voyage request is now sealed inside the sacred Booking Ledger. The high priests are reviewing your petition.'}
                   </p>
                 </div>
               ) : (
@@ -1053,12 +1108,12 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
 
                   <div className="space-y-1">
                     <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-400">
-                      Explorer Name
+                      {language === 'de' ? 'Name des Entdeckers' : language === 'pl' ? 'Imię odkrywcy' : 'Explorer Name'}
                     </label>
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Noble Scribe Sophia"
+                      placeholder={language === 'de' ? 'z. B. Edler Schreiber Sophia' : language === 'pl' ? 'np. Szlachetny Pisarz Zofia' : 'e.g. Noble Scribe Sophia'}
                       value={bookingTravelerName}
                       onChange={(e) => setBookingTravelerName(e.target.value)}
                       className="w-full bg-[#110d0a] border border-[#d4af37]/25 rounded-xl p-3 text-stone-200 text-xs focus:outline-none focus:border-[#d4af37] transition-colors"
@@ -1067,7 +1122,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
 
                   <div className="space-y-1">
                     <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-400">
-                      Explorer Email
+                      {language === 'de' ? 'E-Mail des Entdeckers' : language === 'pl' ? 'E-mail odkrywcy' : 'Explorer Email'}
                     </label>
                     <input
                       type="email"
@@ -1082,7 +1137,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-400">
-                        Departure Date
+                        {language === 'de' ? 'Abreisedatum' : language === 'pl' ? 'Data wyjazdu' : 'Departure Date'}
                       </label>
                       <input
                         type="date"
@@ -1095,7 +1150,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
 
                     <div className="space-y-1">
                       <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-400">
-                        Number of Guests
+                        {language === 'de' ? 'Anzahl der Gäste' : language === 'pl' ? 'Liczba gości' : 'Number of Guests'}
                       </label>
                       <input
                         type="number"
@@ -1111,7 +1166,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
 
                   <div className="space-y-1">
                     <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-400">
-                      Special Requests & Custom Inscription
+                      {language === 'de' ? 'Besondere Wünsche & Eigene Inschrift' : language === 'pl' ? 'Specjalne życzenia i własny wpis' : 'Special Requests & Custom Inscription'}
                     </label>
                     <textarea
                       rows={3}
@@ -1125,10 +1180,10 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                   <div className="bg-[#241c14] border border-[#d4af37]/20 rounded-xl p-3.5 flex justify-between items-center">
                     <div>
                       <span className="text-[10px] font-mono text-stone-400 uppercase tracking-wider block">
-                        Estimated Offering Cost
+                        {language === 'de' ? 'Geschätzte Opfergabe' : language === 'pl' ? 'Szacowany koszt oferty' : 'Estimated Offering Cost'}
                       </span>
                       <span className="text-[11px] text-stone-500">
-                        ({duration} Days • {bookingGuestsCount} Guests)
+                        ({duration} {language === 'de' ? 'Tage' : language === 'pl' ? 'Dni' : 'Days'} • {bookingGuestsCount} {language === 'de' ? 'Gäste' : language === 'pl' ? 'Goście' : 'Guests'})
                       </span>
                     </div>
                     <span className="font-mono text-xl font-bold text-[#d4af37]">
@@ -1142,7 +1197,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                       onClick={() => setShowExportBookingModal(false)}
                       className="flex-1 border border-stone-800 hover:bg-stone-900 text-stone-400 py-3 rounded-xl text-xs font-mono uppercase tracking-widest transition-colors cursor-pointer"
                     >
-                      Cancel
+                      {language === 'de' ? 'Abbrechen' : language === 'pl' ? 'Anuluj' : 'Cancel'}
                     </button>
                     <button
                       type="submit"
@@ -1152,12 +1207,12 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                       {isExportingBooking ? (
                         <>
                           <Loader2 className="w-3.5 h-3.5 animate-spin text-[#140f0a]" />
-                          <span>Sealing...</span>
+                          <span>{language === 'de' ? 'Besiegeln...' : language === 'pl' ? 'Pieczętowanie...' : 'Sealing...'}</span>
                         </>
                       ) : (
                         <>
                           <Sparkles className="w-3.5 h-3.5 text-[#140f0a]" />
-                          <span>Confirm Request</span>
+                          <span>{language === 'de' ? 'Anfrage bestätigen' : language === 'pl' ? 'Potwierdź zapytanie' : 'Confirm Request'}</span>
                         </>
                       )}
                     </button>
@@ -1174,13 +1229,17 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
         <div id="papyrus-print-area" className="hidden">
           <div className="text-center border-b-4 border-double border-[#8b6508] pb-6 mb-8">
             <span className="text-xs font-mono uppercase tracking-[0.4em] text-[#8b6508] font-bold block mb-2">
-              𓋹 Sacred Travel Charter of Sennedjem, Royal Scribe 𓋹
+              {language === 'de' 
+                ? '𓋹 Heilige Reisedepesche von Sennedjem, königlicher Schreiber 𓋹' 
+                : language === 'pl'
+                ? '𓋹 Święta Karta Podróży Sennedjema, Królewskiego Pisarza 𓋹' 
+                : '𓋹 Sacred Travel Charter of Sennedjem, Royal Scribe 𓋹'}
             </span>
             <h1 className="font-serif text-4xl font-black text-[#5c4001] tracking-wide uppercase">
               {itinerary.title}
             </h1>
             <p className="text-xs text-stone-500 italic mt-2 font-serif">
-              Inscribed on the Nile Calendar, {new Date().toLocaleDateString(undefined, { dateStyle: 'full' })}
+              {language === 'de' ? 'Eingetragen im Nil-Kalender,' : language === 'pl' ? 'Zapisano w kalendarzu nilowym,' : 'Inscribed on the Nile Calendar,'} {new Date().toLocaleDateString(undefined, { dateStyle: 'full' })}
             </p>
           </div>
 
@@ -1192,7 +1251,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
             {itinerary.days.map((day) => (
               <div key={day.dayNumber} className="print-avoid-break border-b border-[#8b6508]/20 pb-6 last:border-0">
                 <h3 className="font-serif text-xl font-bold text-[#5c4001] uppercase flex items-center gap-2 mb-3">
-                  <span className="text-[#8b6508]">Day {day.dayNumber}:</span> {day.theme}
+                  <span className="text-[#8b6508]">{language === 'de' ? 'Tag' : language === 'pl' ? 'Dzień' : 'Day'} {day.dayNumber}:</span> {day.theme}
                 </h3>
                 
                 <ul className="space-y-2 text-stone-800 text-sm pl-4 list-disc mb-4">
@@ -1203,7 +1262,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
 
                 <div className="bg-[#f2e7c9] border border-[#8b6508]/20 rounded-lg p-4 text-xs text-stone-700 italic">
                   <span className="font-serif font-bold text-[#8b6508] block not-italic mb-1 uppercase tracking-wider">
-                    𓋹 Scribe's Ancient Wisdom:
+                    {language === 'de' ? '𓋹 Alte Weisheit des Schreibers:' : language === 'pl' ? '𓋹 Starożytna mądrość pisarza:' : '𓋹 Scribe\'s Ancient Wisdom:'}
                   </span>
                   {day.scribeWisdom}
                 </div>

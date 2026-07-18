@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { HelpCircle, ChevronDown, Compass, Shield, Anchor, Calendar, Waves, Search, Sparkles, BookOpen, CheckSquare, Square, RotateCcw, Luggage, Shirt, Info, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { useLanguage } from './LanguageContext';
 
 interface FAQItem {
   id: string;
@@ -78,6 +79,72 @@ const FAQ_DATA: FAQItem[] = [
   }
 ];
 
+const FAQ_DATA_DE: FAQItem[] = [
+  {
+    id: 'faq-1',
+    category: 'equipment',
+    question: 'Welche Tauchausrüstung wird zur Verfügung gestellt und was muss ich mitbringen?',
+    glyph: '𓆛',
+    answer: 'Wir stellen Ihre gesamte Tauchausrüstung zur Verfügung, einschließlich 12L-Flaschen, hochwertigen Atemreglern, Tarierwesten (BCD) und Neoprenanzügen (3mm oder 5mm Dicke). Sie müssen lediglich Ihren Badeanzug/Badehose und Ihre physische oder digitale Tauchzertifizierungskarte mitbringen. Wenn Sie eine optische Tauchmaske verwenden, empfehlen wir dringend, Ihre eigene mitzubringen, um die Riffe in vollen Zügen genießen zu können!',
+    loreQuote: 'Das Rote Meer ist atemberaubend klar, aber die richtige Ausrüstung sorgt für einen sicheren und komfortablen Tauchgang.',
+    highlights: ['Kernausrüstung inbegriffen', '3mm & 5mm Neoprenanzüge verfügbar', 'Nur Badebekleidung & Zertifikat mitbringen']
+  },
+  {
+    id: 'faq-2',
+    category: 'equipment',
+    question: 'Was sollte ich für Wüstensafaris und Sternenbeobachtung anziehen?',
+    glyph: '𓅓',
+    answer: 'Die Wüste ist tagsüber sehr sonnig und warm, wird aber überraschend kalt, sobald die Sonne untergeht! Wir empfehlen, lockere, helle, langärmlige Kleidung zu tragen, um sich vor Sonnenbrand zu schützen. Achten Sie darauf, bequeme, geschlossene Schuhe wie Turnschuhe oder Wanderschuhe zu tragen (Sandalen sind aus Sicherheitsgründen nicht erlaubt). Wir schenken Ihnen ein kostenloses Baumwoll-Kopftuch und eine Sicherheitsbrille, damit Ihnen bei der Quad-Fahrt kein Staub ins Gesicht fliegt.',
+    loreQuote: 'Ziehen Sie sich für die Wüste in Schichten an. Sonnenschutz am Tag, kuschelige Kleidung bei Nacht.',
+    highlights: ['Geschlossene Schuhe oder Stiefel erforderlich', 'Leichte langärmlige Kleidung tragen', 'Kostenloses Kopftuch & Schutzbrille']
+  },
+  {
+    id: 'faq-3',
+    category: 'seasons',
+    question: 'Wann ist die beste Jahreszeit zum Tauchen im Roten Meer?',
+    glyph: '𓊟',
+    answer: 'Tauchen ist hier das ganze Jahr über fantastisch! Wenn Sie jedoch die absolut beste Sicht (oft über 30 Meter) und angenehm warme Wassertemperaturen (zwischen 26°C und 29°C) wünschen, empfehlen wir einen Besuch von Ende September bis November oder im Frühling von April bis Juni. Wenn Sie gezielt Hammerhai-Schulen sehen möchten, sind die heißen Sommermonate Juli und August die absolut besten Zeiten.',
+    loreQuote: 'Frühling und Herbst bieten das klarste Wasser und das angenehmste Wetter.',
+    highlights: ['September–November: Beste Sicht', 'Juli–August: Hammerhai-Saison', 'Wassertemp: 21°C (Winter) bis 29°C (Sommer)']
+  },
+  {
+    id: 'faq-4',
+    category: 'seasons',
+    question: 'Ist die Nilkreuzfahrt in den heißen Sommermonaten komfortabel?',
+    glyph: '𓊡',
+    answer: 'Ja! Unsere Kreuzfahrtschiffe verfügen über eine hervorragende, moderne Klimaanlage im gesamten Schiff sowie über schöne schattige Außendecks und Swimmingpools zur Abkühlung. Während es in Luxor mittags über 40°C heiß werden kann, planen wir alle Tempelbesichtigungen für den frühen Morgen (gegen 5:30 Uhr) oder den späten Nachmittag. Auf diese Weise vermeiden Sie die Mittagshitze und sehen die Monumente in wunderschönem, goldenem Licht.',
+    loreQuote: 'Mit einer intelligenten Zeitplanung umgehen wir die Mittagshitze, sodass Sie Ihre Nachmittage entspannt am Pool verbringen können.',
+    highlights: ['Vollständige Klimaanlage an Bord', 'Kühle Tempeltouren am frühen Morgen', 'Entspannen am Pool während der Mittagshitze']
+  },
+  {
+    id: 'faq-5',
+    category: 'history',
+    question: 'Benötige ich Tickets oder Genehmigungen, um in den Gräbern zu fotografieren?',
+    glyph: '𓉐',
+    answer: 'Ja, wir kümmern uns um die Vorabbuchung Ihrer Standard-Eintrittskarten, die den Zugang zu drei großen Gräbern an Orten wie dem Tal der Könige abdecken. Einige berühmte Gräber wie das von König Tutanchamun oder Seti I. erfordern zusätzliche Einzeltickets – geben Sie uns einfach 48 Stunden vor Ihrer Tour Bescheid und wir werden diese für Sie organisieren. Sie können in fast allen Gräbern kostenlos mit Ihrem Smartphone fotografieren, aber professionelle Kameras und Stative sind ohne eine teure kommerzielle Genehmigung nicht gestattet.',
+    loreQuote: 'Smartphones eignen sich hervorragend, um Erinnerungen kostenlos festzuhalten, aber bitte schalten Sie den Blitz aus, um die antiken Malereien zu schützen.',
+    highlights: ['Standardpässe für Sie gebucht', 'Tutanchamun erfordert Extraticket', 'Kostenlose Smartphone-Fotos (kein Blitz)']
+  },
+  {
+    id: 'faq-6',
+    category: 'history',
+    question: 'Gibt es eine Kleiderordnung für den Besuch von Tempeln und antiken Stätten?',
+    glyph: '𓋹',
+    answer: 'Ja. Obwohl es sich um historische Stätten im Freien handelt, sind sie dennoch hoch angesehene kulturelle Wahrzeichen. Wir bitten sowohl Männer als auch Frauen höflich, respektvolle Kleidung zu tragen, die Schultern und Knie bedeckt. Ein leichtes Tuch ist sehr praktisch als Sonnenschutz, und bequeme Wanderschuhe sind für unebene Steinpfade absolut unerlässlich.',
+    loreQuote: 'Kleiden Sie sich respektvoll, um die lokale Kultur zu ehren, und schützen Sie sich vor der heißen Sonne.',
+    highlights: ['Schultern und Knie bedecken', 'Robuste Wanderschuhe sind ein Muss', 'Leichtes Tuch als Sonnenschutz mitbringen']
+  },
+  {
+    id: 'faq-7',
+    category: 'general',
+    question: 'Ist das Leitungswasser trinkbar und wie sorge ich für ausreichende Flüssigkeitszufuhr?',
+    glyph: '𓎬',
+    answer: 'Bitte trinken Sie kein Leitungswasser oder Flusswasser aus dem Nil. Wir stellen in allen unseren Tourbussen, Transferfahrzeugen, Booten und Wüstencamps unbegrenzt eiskaltes Mineralwasser in Flaschen völlig kostenlos zur Verfügung. Wir empfehlen, täglich 3 bis 4 Liter Wasser zu trinken, um in der Wüste gesund zu bleiben. Unsere Reiseleiter führen auch Erste-Hilfe-Kits und Rehydrationssalze mit sich, falls Sie sich dehydriert fühlen.',
+    loreQuote: 'Trinken Sie viel Mineralwasser in Flaschen, um unter der ägyptischen Sonne voller Energie zu bleiben.',
+    highlights: ['Kein Leitungs- oder Flusswasser trinken', 'Unbegrenzt kostenloses Mineralwasser', 'Rehydrations-Kits auf allen Touren']
+  }
+];
+
 type EnvironmentType = 'diving' | 'desert' | 'temples';
 type SeasonType = 'spring_autumn' | 'summer' | 'winter';
 
@@ -108,6 +175,33 @@ const BASE_PACKING_DATA: Record<EnvironmentType, string[]> = {
   ]
 };
 
+const BASE_PACKING_DATA_DE: Record<EnvironmentType, string[]> = {
+  diving: [
+    'Badebekleidung & Badehosen (bringen Sie 2 Sets mit)',
+    'Riffsichere, biologisch abbaubare Sonnencreme (LSF 50+)',
+    'Wasserdichte Trockentasche für Bootsdecks',
+    'Eigene Tauchmaske (ggf. mit Sehstärke)',
+    'Physische oder digitale Tauchzertifizierungskarte & Logbuch',
+    'Leichte Sandalen oder Zehentrenner'
+  ],
+  desert: [
+    'Robuste, geschlossene Turnschuhe oder Wanderschuhe (Sandalen nicht erlaubt)',
+    'Leichte, atmungsaktive langärmlige Hemden (Schutz vor Sonne & Staub)',
+    'Polarisierte Sonnenbrille mit hohem UV-Schutz',
+    'Waschbares Baumwollkopftuch / Bandana (als Windschutz)',
+    'Feuchtigkeitsableitende Sportsocken',
+    'Lippenbalsam mit hohem UV-Schutz & intensive Feuchtigkeitscreme'
+  ],
+  temples: [
+    'Bescheidene Kleidung (Schultern und Knie bedeckt für antike Ruinen)',
+    'Breitkrempiger Sonnenhut oder Leinenkappe',
+    'Besonders bequeme, unterstützende Wanderschuhe',
+    'Desinfektionsmittel & feuchte Taschentücher',
+    'Kleingeld in Landeswährung (EGP-Münzen für Tempelanlagen)',
+    'Kompakter Taschenschirm als persönlicher Schattenspender'
+  ]
+};
+
 const SEASONAL_PACKING_DATA: Record<SeasonType, string[]> = {
   spring_autumn: [
     'Light jacket or wrap for cool evening breezes',
@@ -123,6 +217,24 @@ const SEASONAL_PACKING_DATA: Record<SeasonType, string[]> = {
     'Cozy fleece jacket or packable down coat for chilly desert nights',
     'Warm pashmina scarf or travel shawl',
     'Thermal base layer if participating in overnight stargazing camping'
+  ]
+};
+
+const SEASONAL_PACKING_DATA_DE: Record<SeasonType, string[]> = {
+  spring_autumn: [
+    'Leichte Jacke oder ein Tuch für kühle Abendbrisen',
+    'Vielseitige Optionen für Zwiebellook bei hohen Temperaturschwankungen zwischen Tag und Nacht'
+  ],
+  summer: [
+    'Tragbarer persönlicher Sprühventilator',
+    'Elektrolyt-Rehydrationspulver',
+    'UV-schützendes Kühltuch',
+    'Hochwertiger Sonnenschutz (alle 2 Stunden neu auftragen)'
+  ],
+  winter: [
+    'Kuschelige Vliesjacke oder packbare Daunenjacke für kühle Wüstennächte',
+    'Warmer Pashmina-Schal oder Reiseshawl',
+    'Thermische Basisschicht für die Teilnahme an Camping zur Sternenbeobachtung'
   ]
 };
 
@@ -165,7 +277,197 @@ const ETIQUETTE_DATA: Record<EnvironmentType, { dos: string[]; donts: string[] }
   }
 };
 
+const ETIQUETTE_DATA_DE: Record<EnvironmentType, { dos: string[]; donts: string[] }> = {
+  diving: {
+    dos: [
+      'Üben Sie neutrale Tarierung, um einen sicheren Abstand zu den empfindlichen Korallenriffen zu halten.',
+      'Tragen Sie riffsichere, biologisch abbaubare Sonnencreme mindestens 30 Minuten vor dem Betreten des Wassers auf.',
+      'Zeigen Sie Ihre Anerkennung, indem Sie der Bootsbesatzung Trinkgeld geben (Bakschisch ist üblich und sehr geschätzt).'
+    ],
+    donts: [
+      'Niemals lebende Korallen berühren, betreten oder treten. Eine einzige Berührung kann Jahrzehnte des Wachstums zerstören.',
+      'Sammeln Sie keine Muscheln, fossilen Korallenstücke oder Artefakte aus Meeresnationalparks.',
+      'Füttern oder jagen Sie niemals wilde Meereslebewesen; lassen Sie sie frei schwimmen.'
+    ]
+  },
+  desert: {
+    dos: [
+      'Tragen Sie immer robuste, geschlossene Schuhe zum Schutz vor heißem Sand, Dornen oder kleinen Wüstentieren.',
+      'Bitten Sie immer um Erlaubnis, bevor Sie Fotos von Beduinen-Gastgebern, Kamelführern oder Kamelen machen.',
+      'Trinken Sie ständig Wasser, auch wenn Sie keinen Durst verspüren; Wüstenluft verdunstet Schweiß sofort.'
+    ],
+    donts: [
+      'Keinen Müll hinterlassen. Halten Sie die unberührten Wüstendünen vollkommen sauber.',
+      'Wandern Sie niemals alleine über die markierten Grenzen des Camps hinaus, insbesondere nach Sonnenuntergang.',
+      'Vermeiden Sie riskante Quad-Fahrten, die unnötige Staubwolken in der Nähe von Kamelrouten aufwirbeln.'
+    ]
+  },
+  temples: {
+    dos: [
+      'Kleiden Sie sich bescheiden, indem Sie beim Betreten historischer Tempel und Gräber sowohl Schultern als auch Knie bedeckt halten.',
+      'Halten Sie einen Vorrat an kleinen ägyptischen Pfund-Banknoten (EGP) für Trinkgelder bereit.',
+      'Nehmen Sie Ihren Müll mit, bis Sie einen Abfalleimer finden.'
+    ],
+    donts: [
+      'Berühren, lehnen oder kratzen Sie niemals an antiken Reliefs, gemalten Wandbildern oder hieroglyphischen Säulen.',
+      'Absolut KEINE Blitzlichtfotografie in den Gräbern. Helles Blitzlicht schädigt die historischen organischen Pigmente.',
+      'Klettern oder sitzen Sie nicht auf antiken Steinaltären, Mauern, Ruinen oder Statuen.'
+    ]
+  }
+};
+
+const FAQ_DATA_PL: FAQItem[] = [
+  {
+    id: 'faq-1',
+    category: 'equipment',
+    question: 'Jaki sprzęt do nurkowania jest zapewniany i co muszę ze sobą zabrać?',
+    glyph: '𓆛',
+    answer: 'Zapewniamy cały podstawowy sprzęt do nurkowania, w tym butle 12L, wysokiej jakości automaty oddechowe, kamizelki BCD oraz pianki (o grubości 3 mm lub 5 mm). Jedyne, co musisz zabrać, to strój kąpielowy oraz fizyczną lub cyfrową licencję nurkową. Jeśli używasz maski korekcyjnej, gorąco zalecamy zabranie własnej, aby w pełni podziwiać rafę koralową!',
+    loreQuote: 'Morze Czerwone jest niezwykle przejrzyste, ale odpowiedni sprzęt zapewnia bezpieczne i komfortowe nurkowanie.',
+    highlights: ['Podstawowy sprzęt w cenie', 'Dostępne pianki 3mm i 5mm', 'Zabierz tylko strój i licencję']
+  },
+  {
+    id: 'faq-2',
+    category: 'equipment',
+    question: 'W co powinienem się ubrać na pustynne safari i oglądanie gwiazd?',
+    glyph: '𓅓',
+    answer: 'Pustynia jest bardzo słoneczna i ciepła w ciągu dnia, ale po zachodzie słońca robi się zaskakująco zimno! Zalecamy noszenie luźnej, lekkiej odzieży z długim rękawem, aby ochronić się przed słońcem. Upewnij się, że masz na sobie wygodne buty z zakrytymi palcami, takie jak adidasy lub buty trekkingowe (sandały są zabronione ze względów bezpieczeństwa). Otrzymasz od nas bezpłatną bawełnianą chustę na głowę i gogle ochronne, aby chronić twarz przed pyłem podczas jazdy na quadach.',
+    loreQuote: 'Ubieraj się warstwowo na pustyni. Ochrona przed słońcem w dzień, ciepłe warstwy w nocy.',
+    highlights: ['Wymagane zakryte buty', 'Lekka odzież z długim rękawem', 'Darmowa chusta i gogle']
+  },
+  {
+    id: 'faq-3',
+    category: 'seasons',
+    question: 'Kiedy jest najlepsza pora roku na nurkowanie w Morzu Czerwonym?',
+    glyph: '𓊟',
+    answer: 'Nurkowanie tutaj jest świetne przez cały rok! Jeśli jednak zależy Ci na absolutnie najlepszej widoczności (często przekraczającej 30 metrów) i przyjemnie ciepłej wodzie (od 26°C do 29°C), zalecamy wizytę od końca września do listopada lub wiosną od kwietnia do czerwca. Jeśli chcesz zobaczyć ławice rekinów młotów, gorące letnie miesiące (lipiec i siepień) są na to najlepszym czasem.',
+    loreQuote: 'Wiosna i jesień oferują najczystszą wodę i najbardziej komfortową pogodę.',
+    highlights: ['Wrzesień–Listopad: najlepsza widoczność', 'Lipiec–Sierpień: sezon na rekiny młoty', 'Temperatura wody: od 21°C (zima) do 29°C (lato)']
+  },
+  {
+    id: 'faq-4',
+    category: 'seasons',
+    question: 'Czy rejs po Nilu jest komfortowy podczas gorących letnich miesięcy?',
+    glyph: '𓊡',
+    answer: 'Tak! Nasze statki wycieczkowe mają doskonałą, nowoczesną klimatyzację w całym obiekcie, a także ładne, zacienione pokłady zewnętrzne i baseny, które pomogą Ci się ochłodzić. Choć w południe w Luksorze temperatura może przekraczać 40°C, wszystkie wycieczki do świątyń planujemy na wczesny poranek (około 5:30) lub późne popołudnie. Dzięki temu unikasz południowego upału i podziwiasz zabytki w pięknym złotym świetle.',
+    loreQuote: 'Unikamy południowego upału dzięki mądremu planowaniu, pozostawiając popołudnia na relaks przy basenie.',
+    highlights: ['Pełna klimatyzacja na pokładzie', 'Chłodne poranne zwiedzanie', 'Relaks przy basenie w południe']
+  },
+  {
+    id: 'faq-5',
+    category: 'history',
+    question: 'Czy potrzebuję biletów lub pozwoleń na robienie zdjęć w grobowcach?',
+    glyph: '𓉐',
+    answer: 'Tak, zajmujemy się rezerwacją standardowych biletów wstępu, które obejmują wejście do trzech głównych grobowców, np. w Dolinie Królów. Niektóre słynne grobowce, jak Tutanchamona czy Setiego I, wymagają dodatkowych, indywidualnych biletów – po prostu daj nam znać 48 godzin wcześniej, a my je dla Ciebie zorganizujemy. W większości grobowców można robić zdjęcia smartfonem bezpłatnie, ale profesjonalne aparaty i statywy są zabronione bez drogiego komercyjnego pozwolenia.',
+    loreQuote: 'Smartfony świetnie nadają się do bezpłatnego uwieczniania wspomnień, ale wyłącz flesz, aby chronić starożytne malowidła.',
+    highlights: ['Zarezerwujemy standardowe bilety', 'Tutanchamon wymaga dodatkowego bilet', 'Darmowe zdjęcia smartfonem (bez flesza)']
+  },
+  {
+    id: 'faq-6',
+    category: 'history',
+    question: 'Czy przy zwiedzaniu świątyń i starożytnych miejsc obowiązują zasady dotyczące ubioru?',
+    glyph: '𓋹',
+    answer: 'Tak. Mimo że są to historyczne miejsca na świeżym powietrzu, wciąż pozostają one bardzo szanowanymi zabytkami kulturowymi. Prosimy zarówno mężczyzn, jak i kobiety o noszenie skromnego ubioru zakrywającego ramiona i kolana. Lekka chusta jest bardzo przydatna do ochrony przed słońcem, a wygodne buty do chodzenia są absolutnie niezbędne na nierównych kamiennych ścieżkach.',
+    loreQuote: 'Ubieraj się z szacunkiem dla lokalnej kultury i chroń się przed gorącym słońcem.',
+    highlights: ['Zakryj ramiona i kolana', 'Solidne buty to podstawa', 'Zabierz lekką chustę do ochrony przed słońcem']
+  },
+  {
+    id: 'faq-7',
+    category: 'general',
+    question: 'Czy woda z kranu jest bezpieczna do picia i jak dbać o nawodnienie?',
+    glyph: '𓎬',
+    answer: 'Prosimy nie pić wody z kranu ani wody z Nilu. Zapewniamy nieograniczoną, lodowatą, butelkowaną wodę mineralną we wszystkich naszych busach turystycznych, samochodach transferowych, łodziach i obozach pustynnych całkowicie bezpłatnie. Zalecamy picie od 3 do 4 litrów wody dziennie, aby zachować zdrowie na pustyni. Nasi przewodnicy mają ze sobą apteczki i sole nawadniające na wypadek odwodnienia.',
+    loreQuote: 'Pij dużo butelkowanej wody mineralnej, aby zachować energię pod egipskim słońcem.',
+    highlights: ['Nie pij wody z kranu ani z Nilu', 'Nielimitowana darmowa woda butelkowana', 'Zestawy nawadniające na każdej wycieczce']
+  }
+];
+
+const BASE_PACKING_DATA_PL: Record<EnvironmentType, string[]> = {
+  diving: [
+    'Strój kąpielowy / kąpielówki / bikini (zabierz 2 komplety)',
+    'Biodegradowalny krem z filtrem przyjazny dla rafy (SPF 50+)',
+    'Wodoodporna sucha torba na pokład łodzi',
+    'Własna maska do nurkowania (korekcyjna, jeśli potrzebna)',
+    'Fizyczna lub cyfrowa licencja nurkowa oraz logbook',
+    'Lekkie sandały lub japonki'
+  ],
+  desert: [
+    'Solidne, zakryte buty sportowe lub trekkingowe (sandały są niedozwolone)',
+    'Lekkie, przewiewne koszule z długim rękawem (ochrona przed słońcem i pyłem)',
+    'Okulary przeciwsłoneczne z polaryzacją i wysokim filtrem UV',
+    'Bawełniana chusta / bandana (ochrona przed wiatrem i piaskiem)',
+    'Odprowadzające wilgoć skarpety sportowe',
+    'Balsam do ust z filtrem UV i intensywny krem nawilżający'
+  ],
+  temples: [
+    'Skromny ubiór (ramiona i kolana zakryte przy zwiedzaniu świątyń i grobowców)',
+    'Kapelusz z szerokim rondem lub lniana czapka',
+    'Niezwykle wygodne buty z dobrym wsparciem stopy',
+    'Środek do dezynfekcji rąk i kieszonkowe chusteczki nawilżane',
+    'Drobna gotówka (monety i małe banknoty EGP na toalety itp.)',
+    'Kompaktowy parasol podróżny jako osobisty cień'
+  ]
+};
+
+const SEASONAL_PACKING_DATA_PL: Record<SeasonType, string[]> = {
+  spring_autumn: [
+    'Lekka kurtka lub narzutka na chłodne wieczorne wiatry',
+    'Uniwersalne warstwy odzieży ze względu na duże wahania temperatur między dniem a nocą (ubiór na cebulkę)'
+  ],
+  summer: [
+    'Przenośny wiatraczek z mgiełką wodną',
+    'Saszetki z elektrolitami do rozpuszczania w wodzie',
+    'Ręcznik chłodzący z ochroną UV',
+    'Wysokiej jakości krem z filtrem (nakładać ponownie co 2 godziny)'
+  ],
+  winter: [
+    'Ciepła bluza polarowa lub lekka kurtka puchowa na chłodne pustynne noce',
+    'Ciepły szal pashmina lub chusta podróżna',
+    'Bielizna termoaktywna, jeśli planujesz nocne biwakowanie pod gwiazdami'
+  ]
+};
+
+const ETIQUETTE_DATA_PL: Record<EnvironmentType, { dos: string[]; donts: string[] }> = {
+  diving: {
+    dos: [
+      'Ćwicz neutralną pływalność, aby zachować bezpieczną odległość od delikatnych raf koralowych.',
+      'Nałóż biodegradowalny krem z filtrem co najmniej 30 minut przed wejściem do wody.',
+      'Okaż wdzięczność, dając napiwek załodze łodzi (Bakszysz jest zwyczajowy i bardzo ceniony).'
+    ],
+    donts: [
+      'Nigdy nie dotykaj, nie stawaj ani nie kop żywych koralowców. Jedno dotknięcie może zniszczyć dekady wzrostu.',
+      'Nie zbieraj muszli, skamieniałych kawałków koralowców ani artefaktów z morskich parków narodowych.',
+      'Nigdy nie karm ani nie próbuj gonić dzikich stworzeń morskich; pozwól im pływać swobodnie.'
+    ]
+  },
+  desert: {
+    dos: [
+      'Zawsze noś solidne buty z zakrytymi palcami, aby chronić się przed gorącym piaskiem, kolcami czy fauną pustynną.',
+      'Zawsze pytaj o zgodę przed zrobieniem zdjęcia beduińskim gospodarzom, opiekunom zwierząt czy wielbłądom.',
+      'Pij wodę regularnie, nawet jeśli nie czujesz pragnienia; suche pustynne powietrze natychmiast odparowuje pot.'
+    ],
+    donts: [
+      'Nie śmieć. Pozostaw nieskazitelne pustynne wydmy całkowicie nietknięte.',
+      'Nigdy nie oddalaj się samotnie poza oznaczony teren obozu, szczególnie po zachodzie słońca.',
+      'Unikaj szybkiej jazdy na quadach, która wzbija niepotrzebne chmury kurzu w pobliżu tras wielbłądów.'
+    ]
+  },
+  temples: {
+    dos: [
+      'Ubieraj się skromnie, zakrywając ramiona i kolana podczas wchodzenia do zabytkowych świątyń i grobowców.',
+      'Miej przy sobie drobne banknoty funta egipskiego (EGP) na napiwki i drobne opłaty.',
+      'Noś swoje śmieci ze sobą, dopóki nie znajdziesz odpowiedniego kosza.'
+    ],
+    donts: [
+      'Nigdy nie dotykaj, nie opieraj się ani nie drap starożytnych rzeźb, malowideł ściennych ani hieroglificznych filarów.',
+      'Absolutny ZAKAZ używania lamp błyskowych w grobowcach. Silne światło błyskowe niszczy zabytkowe pigmenty organiczne.',
+      'Nie wspinaj się ani nie siadaj na starożytnych kamiennych ołtarzach, murach, ruinach czy posągach.'
+    ]
+  }
+};
+
 export default function OraclesWisdomFAQ() {
+  const { t, language } = useLanguage();
   const [viewMode, setViewMode] = useState<'faq' | 'advice'>('faq');
   const [selectedEnv, setSelectedEnv] = useState<EnvironmentType>('diving');
   const [selectedSeason, setSelectedSeason] = useState<SeasonType>('spring_autumn');
@@ -173,6 +475,11 @@ export default function OraclesWisdomFAQ() {
   const [activeCategory, setActiveCategory] = useState<'all' | 'equipment' | 'seasons' | 'history' | 'general'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>('faq-1');
+
+  const currentFAQData = language === 'de' ? FAQ_DATA_DE : language === 'pl' ? FAQ_DATA_PL : FAQ_DATA;
+  const currentBasePackingData = language === 'de' ? BASE_PACKING_DATA_DE : language === 'pl' ? BASE_PACKING_DATA_PL : BASE_PACKING_DATA;
+  const currentSeasonalPackingData = language === 'de' ? SEASONAL_PACKING_DATA_DE : language === 'pl' ? SEASONAL_PACKING_DATA_PL : SEASONAL_PACKING_DATA;
+  const currentEtiquetteData = language === 'de' ? ETIQUETTE_DATA_DE : language === 'pl' ? ETIQUETTE_DATA_PL : ETIQUETTE_DATA;
 
   // Load / save checklist items state from localStorage
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>(() => {
@@ -190,10 +497,10 @@ export default function OraclesWisdomFAQ() {
 
   // Combine baseline and seasonal lists to produce dynamic, context-aware packing lists
   const packingList = useMemo(() => {
-    const base = BASE_PACKING_DATA[selectedEnv] || [];
-    const seasonal = SEASONAL_PACKING_DATA[selectedSeason] || [];
+    const base = currentBasePackingData[selectedEnv] || [];
+    const seasonal = currentSeasonalPackingData[selectedSeason] || [];
     return [...base, ...seasonal];
-  }, [selectedEnv, selectedSeason]);
+  }, [selectedEnv, selectedSeason, currentBasePackingData, currentSeasonalPackingData]);
 
   // Calculate stats for checked list
   const checkedItemsCount = useMemo(() => {
@@ -207,8 +514,8 @@ export default function OraclesWisdomFAQ() {
 
   // Retrieve context-aware etiquette rules
   const etiquetteRules = useMemo(() => {
-    return ETIQUETTE_DATA[selectedEnv] || { dos: [], donts: [] };
-  }, [selectedEnv]);
+    return currentEtiquetteData[selectedEnv] || { dos: [], donts: [] };
+  }, [selectedEnv, currentEtiquetteData]);
 
   const toggleCheckItem = (item: string) => {
     setCheckedItems(prev => ({
@@ -227,25 +534,25 @@ export default function OraclesWisdomFAQ() {
 
   // Filter items based on active category and search query
   const filteredFAQs = useMemo(() => {
-    return FAQ_DATA.filter(item => {
+    return currentFAQData.filter(item => {
       const matchesCategory = activeCategory === 'all' || item.category === activeCategory;
       const matchesSearch = item.question.toLowerCase().includes(searchQuery.toLowerCase()) || 
                             item.answer.toLowerCase().includes(searchQuery.toLowerCase()) ||
                             item.highlights.some(h => h.toLowerCase().includes(searchQuery.toLowerCase()));
       return matchesCategory && matchesSearch;
     });
-  }, [activeCategory, searchQuery]);
+  }, [activeCategory, searchQuery, currentFAQData]);
 
   const toggleExpand = (id: string) => {
     setExpandedId(prev => (prev === id ? null : id));
   };
 
   const categories = [
-    { value: 'all', label: '𓆃 All Help', count: FAQ_DATA.length },
-    { value: 'equipment', label: '𓅓 Clothing & Gear', count: FAQ_DATA.filter(f => f.category === 'equipment').length },
-    { value: 'seasons', label: '𓊟 Best Seasons', count: FAQ_DATA.filter(f => f.category === 'seasons').length },
-    { value: 'history', label: '𓉐 Temple Rules', count: FAQ_DATA.filter(f => f.category === 'history').length },
-    { value: 'general', label: '𓎬 Hydration & Health', count: FAQ_DATA.filter(f => f.category === 'general').length }
+    { value: 'all', label: language === 'de' ? '𓆃 Alle Hilfen' : language === 'pl' ? '𓆃 Wszystkie porady' : '𓆃 All Help', count: currentFAQData.length },
+    { value: 'equipment', label: language === 'de' ? '𓅓 Kleidung & Ausrüstung' : language === 'pl' ? '𓅓 Odzież i sprzęt' : '𓅓 Clothing & Gear', count: currentFAQData.filter(f => f.category === 'equipment').length },
+    { value: 'seasons', label: language === 'de' ? '𓊟 Beste Reisezeiten' : language === 'pl' ? '𓊟 Najlepsze sezony' : '𓊟 Best Seasons', count: currentFAQData.filter(f => f.category === 'seasons').length },
+    { value: 'history', label: language === 'de' ? '𓉐 Tempelregeln' : language === 'pl' ? '𓉐 Zasady świątynne' : '𓉐 Temple Rules', count: currentFAQData.filter(f => f.category === 'history').length },
+    { value: 'general', label: language === 'de' ? '𓎬 Hydratation & Gesundheit' : language === 'pl' ? '𓎬 Nawodnienie i zdrowie' : '𓎬 Hydration & Health', count: currentFAQData.filter(f => f.category === 'general').length }
   ];
 
   return (
@@ -265,13 +572,13 @@ export default function OraclesWisdomFAQ() {
         <div className="text-center space-y-2">
           <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.3em] flex items-center justify-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-            Travel Help & Tips
+            {t('faq_sub', 'Travel Help & Tips')}
           </span>
           <h3 className="font-serif text-2xl md:text-3xl font-black text-[#e6c280] uppercase tracking-wide">
-            Frequently Asked Questions
+            {t('faq_title', 'Frequently Asked Questions')}
           </h3>
           <p className="text-stone-400 text-xs max-w-lg mx-auto leading-relaxed">
-            Got questions about diving gear, desert clothing, temple passes, or staying hydrated? We have got you covered with simple, practical answers.
+            {t('faq_desc', 'Got questions about diving gear, desert clothing, temple passes, or staying hydrated? We have got you covered with simple, practical answers.')}
           </p>
         </div>
 
@@ -287,7 +594,7 @@ export default function OraclesWisdomFAQ() {
               }`}
             >
               <HelpCircle className="w-3.5 h-3.5" />
-              𓋹 Oracle FAQs
+              {t('faq_tab_questions', '𓋹 Oracle FAQs')}
             </button>
             <button
               onClick={() => setViewMode('advice')}
@@ -298,7 +605,7 @@ export default function OraclesWisdomFAQ() {
               }`}
             >
               <Compass className="w-3.5 h-3.5" />
-              𓊡 Traveler's Advice
+              {t('faq_tab_packing', '𓊟 Packing & Etiquette')}
             </button>
           </div>
         </div>
@@ -319,7 +626,7 @@ export default function OraclesWisdomFAQ() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search help topics..."
+                  placeholder={t('faq_search', 'Search wisdom archive...')}
                   className="w-full bg-[#1c1611] border border-[#d4af37]/35 rounded-xl py-2.5 pl-10 pr-4 text-stone-200 text-xs focus:outline-none focus:ring-1 focus:ring-[#d4af37] placeholder:text-stone-600 transition-all"
                 />
                 {searchQuery && (
@@ -327,7 +634,7 @@ export default function OraclesWisdomFAQ() {
                     onClick={() => setSearchQuery('')}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-stone-500 hover:text-stone-300"
                   >
-                    Clear
+                    {language === 'de' ? 'Löschen' : language === 'pl' ? 'Wyczyść' : 'Clear'}
                   </button>
                 )}
               </div>
@@ -367,7 +674,7 @@ export default function OraclesWisdomFAQ() {
             <div className="space-y-3 pt-2">
               {filteredFAQs.length === 0 ? (
                 <div className="text-center py-10 text-stone-500 italic text-xs border border-stone-800/80 rounded-xl bg-black/10">
-                  𓀞 We could not find any topics matching your search. Try searching for other keywords.
+                  {language === 'de' ? '𓀞 Wir konnten keine Themen finden, die Ihrer Suche entsprechen. Versuchen Sie es mit anderen Begriffen.' : language === 'pl' ? '𓀞 Nie znaleziono tematów pasujących do wyszukiwania. Spróbuj użyć innych słów kluczowych.' : '𓀞 We could not find any topics matching your search. Try searching for other keywords.'}
                 </div>
               ) : (
                 <div className="space-y-2.5">
@@ -424,7 +731,7 @@ export default function OraclesWisdomFAQ() {
                                   <div className="bg-[#2a1e14]/40 border border-[#d4af37]/15 rounded-xl p-3 text-[11px] text-[#e6c280]/90 italic relative overflow-hidden pl-8">
                                     <span className="absolute left-3 top-3.5 text-[#d4af37]/55 text-base select-none font-serif">𓂀</span>
                                     <strong className="not-italic block text-[9px] uppercase font-mono tracking-wider text-[#d4af37] mb-0.5">
-                                      Quick Travel Tip:
+                                      {language === 'de' ? 'Schneller Reisetipp:' : language === 'pl' ? 'Szybka porada:' : 'Quick Travel Tip:'}
                                     </strong>
                                     "{faq.loreQuote}"
                                   </div>
@@ -469,7 +776,11 @@ export default function OraclesWisdomFAQ() {
             {/* Introduction */}
             <div className="text-center bg-[#1c1611]/80 border border-[#d4af37]/15 rounded-xl p-4">
               <p className="text-xs text-stone-300 leading-relaxed max-w-2xl mx-auto">
-                𓋹 Prepare your mortal caravan with the right equipment and respect the sacred ways of Egypt. Select your intended environment and season to generate a customized packing list and cultural etiquette guide.
+                {language === 'de' 
+                  ? '𓋹 Bereiten Sie Ihre Karawane mit der richtigen Ausrüstung vor und respektieren Sie die heiligen Bräuche Ägyptens. Wählen Sie Ihre Aktivität und Jahreszeit, um eine maßgeschneiderte Packliste und einen kulturellen Knigge zu erstellen.'
+                  : language === 'pl'
+                  ? '𓋹 Przygotuj swoją karawanę, zabierając odpowiedni sprzęt, i szanuj święte zwyczaje Egiptu. Wybierz środowisko i porę roku, aby wygenerować spersonalizowaną listę rzeczy do spakowania i przewodnik po etykiecie kulturowej.'
+                  : '𓋹 Prepare your mortal caravan with the right equipment and respect the sacred ways of Egypt. Select your intended environment and season to generate a customized packing list and cultural etiquette guide.'}
               </p>
             </div>
 
@@ -482,17 +793,17 @@ export default function OraclesWisdomFAQ() {
                 <div className="bg-[#1a1410] border border-[#d4af37]/20 rounded-xl p-4 space-y-4">
                   <h4 className="font-serif text-xs font-bold text-[#e6c280] uppercase tracking-wider flex items-center gap-2">
                     <Compass className="w-4 h-4 text-[#d4af37]" />
-                    1. Voyage Parameters
+                    {language === 'de' ? '1. Reiseparameter' : language === 'pl' ? '1. Parametry podróży' : '1. Voyage Parameters'}
                   </h4>
 
                   {/* Environment select */}
                   <div className="space-y-2">
-                    <span className="text-[10px] font-mono text-stone-400 uppercase tracking-widest block">Environment / Activity</span>
+                    <span className="text-[10px] font-mono text-stone-400 uppercase tracking-widest block">{language === 'de' ? 'Umgebung / Aktivität' : language === 'pl' ? 'Środowisko / Aktywność' : 'Environment / Activity'}</span>
                     <div className="grid grid-cols-3 gap-2">
                       {[
-                        { value: 'diving', label: '𓆛 Diving', icon: Waves },
-                        { value: 'desert', label: '𓅓 Desert', icon: Compass },
-                        { value: 'temples', label: '𓉐 Temples', icon: BookOpen }
+                        { value: 'diving', label: language === 'de' ? '𓆛 Tauchen' : language === 'pl' ? '𓆛 Nurkowanie' : '𓆛 Diving', icon: Waves },
+                        { value: 'desert', label: language === 'de' ? '𓅓 Wüste' : language === 'pl' ? '𓅓 Pustynia' : '𓅓 Desert', icon: Compass },
+                        { value: 'temples', label: language === 'de' ? '𓉐 Tempel' : language === 'pl' ? '𓉐 Świątynie' : '𓉐 Temples', icon: BookOpen }
                       ].map((env) => {
                         const IconComp = env.icon;
                         const isSelected = selectedEnv === env.value;
@@ -516,12 +827,12 @@ export default function OraclesWisdomFAQ() {
 
                   {/* Season select */}
                   <div className="space-y-2">
-                    <span className="text-[10px] font-mono text-stone-400 uppercase tracking-widest block">Season</span>
+                    <span className="text-[10px] font-mono text-stone-400 uppercase tracking-widest block">{language === 'de' ? 'Saison / Jahreszeit' : language === 'pl' ? 'Pora roku' : 'Season'}</span>
                     <div className="grid grid-cols-3 gap-2">
                       {[
-                        { value: 'spring_autumn', label: '𓊟 Spring/Fall', icon: Calendar },
-                        { value: 'summer', label: '𓊡 Summer', icon: Sparkles },
-                        { value: 'winter', label: '𓎬 Winter', icon: Shield }
+                        { value: 'spring_autumn', label: language === 'de' ? '𓊟 Frühling/Herbst' : language === 'pl' ? '𓊟 Wiosna/Jesień' : '𓊟 Spring/Fall', icon: Calendar },
+                        { value: 'summer', label: language === 'de' ? '𓊡 Sommer' : language === 'pl' ? '𓊡 Lato' : '𓊡 Summer', icon: Sparkles },
+                        { value: 'winter', label: language === 'de' ? '𓎬 Winter' : language === 'pl' ? '𓎬 Zima' : '𓎬 Winter', icon: Shield }
                       ].map((seas) => {
                         const IconComp = seas.icon;
                         const isSelected = selectedSeason === seas.value;
@@ -549,14 +860,14 @@ export default function OraclesWisdomFAQ() {
                   <div className="flex items-center justify-between">
                     <h4 className="font-serif text-xs font-bold text-[#e6c280] uppercase tracking-wider flex items-center gap-2">
                       <Luggage className="w-4 h-4 text-[#d4af37]" />
-                      2. Sacred Packing List ({checkedItemsCount}/{packingList.length})
+                      {language === 'de' ? '2. Heilige Packliste' : language === 'pl' ? '2. Święta lista pakowania' : '2. Sacred Packing List'} ({checkedItemsCount}/{packingList.length})
                     </h4>
                     {checkedItemsCount > 0 && (
                       <button
                         onClick={resetChecklist}
                         className="text-[9px] font-mono uppercase text-stone-500 hover:text-[#d4af37] transition-colors flex items-center gap-1 cursor-pointer"
                       >
-                        <RotateCcw className="w-2.5 h-2.5" /> Reset
+                        <RotateCcw className="w-2.5 h-2.5" /> {language === 'de' ? 'Zurücksetzen' : language === 'pl' ? 'Resetuj' : 'Reset'}
                       </button>
                     )}
                   </div>
@@ -571,8 +882,8 @@ export default function OraclesWisdomFAQ() {
                       />
                     </div>
                     <div className="flex justify-between text-[8px] font-mono text-stone-500 uppercase tracking-widest">
-                      <span>Vessel Empty</span>
-                      <span>{Math.round(packingProgress)}% Prepared</span>
+                      <span>{language === 'de' ? 'Schiff Leer' : language === 'pl' ? 'Karawana pusta' : 'Vessel Empty'}</span>
+                      <span>{Math.round(packingProgress)}% {language === 'de' ? 'vorbereitet' : language === 'pl' ? 'przygotowano' : 'Prepared'}</span>
                     </div>
                   </div>
 
@@ -616,10 +927,10 @@ export default function OraclesWisdomFAQ() {
                 
                 <div className="bg-[#1a1410] border border-[#d4af37]/20 rounded-xl p-4 flex-grow space-y-4">
                   <div className="border-b border-[#d4af37]/15 pb-2.5">
-                    <span className="text-[9px] font-mono text-[#d4af37] uppercase tracking-[0.2em] block">Pharaonic Decorum</span>
+                    <span className="text-[9px] font-mono text-[#d4af37] uppercase tracking-[0.2em] block">{language === 'de' ? 'Pharaonischer Anstand' : language === 'pl' ? 'Faraońska etykieta' : 'Pharaonic Decorum'}</span>
                     <h4 className="font-serif text-sm font-bold text-[#e6c280] uppercase tracking-wide flex items-center gap-2">
                       <BookOpen className="w-4 h-4 text-[#d4af37]" />
-                      3. Cultural Etiquette & Customs
+                      {language === 'de' ? '3. Kulturelle Etikette & Bräuche' : language === 'pl' ? '3. Etykieta kulturowa i zwyczaje' : '3. Cultural Etiquette & Customs'}
                     </h4>
                   </div>
 
@@ -629,7 +940,7 @@ export default function OraclesWisdomFAQ() {
                     <div className="space-y-2.5">
                       <div className="flex items-center gap-1.5 text-emerald-400 font-mono text-[10px] font-bold uppercase tracking-wider">
                         <ThumbsUp className="w-3.5 h-3.5 text-emerald-500" />
-                        <span>The Path of Ma'at (Sacred Do's)</span>
+                        <span>{language === 'de' ? "Der Pfad der Ma'at (Gebote)" : language === 'pl' ? "Droga Ma'at (Święte nakazy)" : "The Path of Ma'at (Sacred Do's)"}</span>
                       </div>
                       <div className="space-y-2">
                         {etiquetteRules.dos.map((doTip, idx) => (
@@ -645,7 +956,7 @@ export default function OraclesWisdomFAQ() {
                     <div className="space-y-2.5">
                       <div className="flex items-center gap-1.5 text-red-400 font-mono text-[10px] font-bold uppercase tracking-wider">
                         <ThumbsDown className="w-3.5 h-3.5 text-red-500" />
-                        <span>The Path of Chaos (Sacred Don'ts)</span>
+                        <span>{language === 'de' ? "Der Pfad des Chaos (Verbote)" : language === 'pl' ? "Droga Chaosu (Święte zakazy)" : "The Path of Chaos (Sacred Don'ts)"}</span>
                       </div>
                       <div className="space-y-2">
                         {etiquetteRules.donts.map((dontTip, idx) => (
@@ -664,9 +975,13 @@ export default function OraclesWisdomFAQ() {
                 <div className="bg-[#1e1711] border border-dashed border-[#d4af37]/20 rounded-xl p-3.5 flex gap-3 items-start">
                   <Info className="w-4 h-4 text-[#d4af37] flex-shrink-0 mt-0.5" />
                   <div className="space-y-0.5">
-                    <span className="text-[9px] font-mono text-[#d4af37] uppercase tracking-wider block">Universal Advice</span>
+                    <span className="text-[9px] font-mono text-[#d4af37] uppercase tracking-wider block">{language === 'de' ? 'Allgemeiner Rat' : language === 'pl' ? 'Uniwersalna porada' : 'Universal Advice'}</span>
                     <p className="text-[10px] text-stone-400 leading-relaxed font-sans">
-                      In Egypt, hospitality is a cornerstone of daily life. Showing a friendly, patient attitude and expressing gratitude with a warm <span className="text-stone-200 font-serif italic">"Shukran"</span> (Thank you) will open many hearts and doors on your voyage.
+                      {language === 'de'
+                        ? <>In Ägypten ist Gastfreundschaft ein Eckpfeiler des täglichen Lebens. Eine freundliche, geduldige Haltung und ein herzliches <span className="text-stone-200 font-serif italic">"Shukran"</span> (Danke) öffnen Ihnen auf Ihrer Reise viele Herzen und Türen.</>
+                        : language === 'pl'
+                        ? <>W Egipcie gościnność jest fundamentem codziennego życia. Okazywanie życzliwości, cierpliwości i wyrażanie wdzięczności ciepłym słowem <span className="text-stone-200 font-serif italic">"Shukran"</span> (Dziękuję) otworzy przed Tobą wiele serc i drzwi podczas podróży.</>
+                        : <>In Egypt, hospitality is a cornerstone of daily life. Showing a friendly, patient attitude and expressing gratitude with a warm <span className="text-stone-200 font-serif italic">"Shukran"</span> (Thank you) will open many hearts and doors on your voyage.</>}
                     </p>
                   </div>
                 </div>
@@ -680,7 +995,11 @@ export default function OraclesWisdomFAQ() {
         {/* Footer help note */}
         <div className="bg-[#1a140f] border border-[#d4af37]/10 rounded-xl p-3 text-center">
           <p className="text-[10px] text-stone-500 font-mono">
-            𓋹 Need more help? Ask our friendly AI Travel Assistant in the chat above!
+            {language === 'de'
+              ? '𓋹 Benötigen Sie weitere Hilfe? Fragen Sie unseren freundlichen KI-Reiseassistenten im Chat oben!'
+              : language === 'pl'
+              ? '𓋹 Potrzebujesz więcej pomocy? Zapytaj naszego asystenta podróży AI na czacie powyżej!'
+              : '𓋹 Need more help? Ask our friendly AI Travel Assistant in the chat above!'}
           </p>
         </div>
 

@@ -33,6 +33,7 @@ import {
   UserPlus
 } from 'lucide-react';
 import { Booking, Excursion, Review, ScribeMessage } from '../types';
+import { useLanguage } from './LanguageContext';
 
 // Initial Excursions from Catalog for fallback
 const INITIAL_EXCURSIONS_DATA: Excursion[] = [
@@ -232,6 +233,7 @@ export default function AdminDashboard({
   onCancelBooking,
   onUpdateBookingsList
 }: AdminDashboardProps) {
+  const { language } = useLanguage();
   const [activeTab, setActiveTab] = useState<CRMTab>('dashboard');
 
   // Subscribers state
@@ -862,11 +864,11 @@ export default function AdminDashboard({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#d4af37] bg-[#d4af37]/10 px-2 py-0.5 rounded-full border border-[#d4af37]/25">
-                Staff Only • High Priest Clearance
+                {language === 'de' ? 'Nur Mitarbeiter • Freigabe für Hohepriester' : 'Staff Only • High Priest Clearance'}
               </span>
             </div>
             <h2 className="font-serif text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#faf5e6] via-[#d4af37] to-[#e6c280] uppercase tracking-wider mt-1">
-              Royal Scribe Admin Dashboard
+              {language === 'de' ? 'Königliches Scribe Admin-Dashboard' : 'Royal Scribe Admin Dashboard'}
             </h2>
           </div>
         </div>
@@ -894,13 +896,13 @@ export default function AdminDashboard({
       {/* CRM Navigation Tabs */}
       <div className="flex flex-wrap gap-2 border-b border-stone-800 pb-4">
         {[
-          { key: 'dashboard', label: '📊 Command Dashboard', desc: 'Financial & Lead funnels' },
-          { key: 'caravans', label: '𓎬 Caravan Ledger', desc: `${bookings.length} active bookings` },
-          { key: 'nobles', label: '𓀚 Traveler CRM', desc: `${crmProfiles.length} traveler cards` },
-          { key: 'offerings', label: '𓆛 Offerings Catalog', desc: `${excursions.length} active trips` },
-          { key: 'testimonies', label: '𓁠 Review Moderation', desc: 'Verify traveler testimonies' },
-          { key: 'oracle', label: '𓋹 Oracle Lead Logs', desc: 'Inspect recent chats' },
-          { key: 'subscribers', label: '𓇚 Imperial Scrolls', desc: `${subscribers.length} newsletter signups` }
+          { key: 'dashboard', label: language === 'de' ? '📊 Befehls-Dashboard' : '📊 Command Dashboard', desc: language === 'de' ? 'Finanz- & Leadtrichter' : 'Financial & Lead funnels' },
+          { key: 'caravans', label: language === 'de' ? '𓎬 Karawanenbuch' : '𓎬 Caravan Ledger', desc: language === 'de' ? `${bookings.length} aktive Buchungen` : `${bookings.length} active bookings` },
+          { key: 'nobles', label: language === 'de' ? '𓀚 Reisende-CRM' : '𓀚 Traveler CRM', desc: language === 'de' ? `${crmProfiles.length} Reisekarten` : `${crmProfiles.length} traveler cards` },
+          { key: 'offerings', label: language === 'de' ? '𓆛 Angebote-Katalog' : '𓆛 Offerings Catalog', desc: language === 'de' ? `${excursions.length} aktive Touren` : `${excursions.length} active trips` },
+          { key: 'testimonies', label: language === 'de' ? '𓁠 Bewertungsmoderation' : '𓁠 Review Moderation', desc: language === 'de' ? 'Reiseberichte überprüfen' : 'Verify traveler testimonies' },
+          { key: 'oracle', label: language === 'de' ? '𓋹 Orakel-Lead-Protokolle' : '𓋹 Oracle Lead Logs', desc: language === 'de' ? 'Letzte Chats einsehen' : 'Inspect recent chats' },
+          { key: 'subscribers', label: language === 'de' ? '𓇚 Kaiserliche Schriftrollen' : '𓇚 Imperial Scrolls', desc: language === 'de' ? `${subscribers.length} Newsletter-Anmeldungen` : `${subscribers.length} newsletter signups` }
         ].map((tab) => (
           <button
             key={tab.key}

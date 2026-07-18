@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, Info, Download, RefreshCw, Share2, Copy, Check, ExternalLink } from 'lucide-react';
+import { useLanguage } from './LanguageContext';
 
 interface HieroglyphData {
   symbolName: string;
@@ -364,6 +365,7 @@ interface SavedCartouche {
 }
 
 export default function CartoucheGenerator() {
+  const { t, language } = useLanguage();
   const [name, setName] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -620,12 +622,16 @@ export default function CartoucheGenerator() {
         <div className="flex items-center justify-center gap-2 mb-2">
           <Sparkles className="text-[#d4af37] w-5 h-5 animate-pulse" />
           <h3 className="font-serif text-2xl font-bold tracking-wider text-[#e6c280] uppercase">
-            Hieroglyphic Name Translator
+            {language === 'de' ? 'Hieroglyphen-Namensübersetzer' : language === 'pl' ? 'Tłumacz egipskich imion' : 'Hieroglyphic Name Translator'}
           </h3>
           <Sparkles className="text-[#d4af37] w-5 h-5 animate-pulse" />
         </div>
         <p className="text-stone-400 text-sm max-w-lg mx-auto">
-          Translate your name into ancient Egyptian hieroglyphs. In ancient Egypt, royal names were written inside an oval golden loop called a cartouche for protection. Enter your name below to see it:
+          {language === 'de'
+            ? 'Übersetzen Sie Ihren Namen in altägyptische Hieroglyphen. Im alten Ägypten wurden königliche Namen zum Schutz in einer ovalen goldenen Schleife – Kartusche genannt – geschrieben. Tragen Sie Ihren Namen ein:'
+            : language === 'pl'
+            ? 'Przetłumacz swoje imię na starożytne egipskie hieroglify. W starożytnym Egipcie imiona królewskie zapisywano wewnątrz owalnej złotej pętli zwanej kartuszem dla ochrony. Wpisz swoje imię poniżej:'
+            : 'Translate your name into ancient Egyptian hieroglyphs. In ancient Egypt, royal names were written inside an oval golden loop called a cartouche for protection. Enter your name below to see it:'}
         </p>
       </div>
 
@@ -634,14 +640,14 @@ export default function CartoucheGenerator() {
         <div className="lg:col-span-5 space-y-5">
           <div>
             <label className="block text-xs font-mono uppercase tracking-widest text-stone-500 mb-1.5">
-              Enter Name (Max 8 letters)
+              {language === 'de' ? 'Namen eingeben (Max. 8 Buchstaben)' : language === 'pl' ? 'Wpisz imię (Maks. 8 liter)' : 'Enter Name (Max 8 letters)'}
             </label>
             <div className="relative">
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="E.g., RAMSES"
+                placeholder={language === 'de' ? 'Z.B. RAMSES' : language === 'pl' ? 'Np. RAMZES' : 'E.g., RAMSES'}
                 maxLength={8}
                 className="w-full bg-[#201a14] border border-[#d4af37]/40 rounded-lg py-2.5 px-4 text-[#f3e5c8] font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-[#d4af37]/50 focus:border-[#d4af37]"
                 id="cartouche-name-input"
@@ -675,10 +681,10 @@ export default function CartoucheGenerator() {
                     </span>
                   </div>
                   <p className="text-stone-300 text-sm">
-                     <strong className="text-stone-500">Meaning:</strong> {activeSymbol.meaning}
+                     <strong className="text-stone-500">{language === 'de' ? 'Bedeutung:' : language === 'pl' ? 'Znaczenie:' : 'Meaning:'}</strong> {activeSymbol.meaning}
                   </p>
                   <p className="text-[#d4af37]/80 text-xs font-mono uppercase tracking-wider">
-                    Phonetic sound: "{activeSymbol.pronunciation}"
+                    {language === 'de' ? 'Phonetischer Laut:' : language === 'pl' ? 'Dźwięk fonetyczny:' : 'Phonetic sound:'} "{activeSymbol.pronunciation}"
                   </p>
                 </motion.div>
               ) : (
@@ -688,7 +694,11 @@ export default function CartoucheGenerator() {
                   animate={{ opacity: 1 }}
                   className="text-center text-stone-500 text-sm italic"
                 >
-                  Hover or tap on any hieroglyph inside your cartouche to learn its meaning and phonetic sound.
+                  {language === 'de'
+                    ? 'Fahren Sie mit der Maus über ein Hieroglyphenzeichen oder tippen Sie darauf, um dessen Bedeutung und Aussprache zu erfahren.'
+                    : language === 'pl'
+                    ? 'Najedź kursorem lub dotknij dowolnego hieroglifu wewnątrz kartusza, aby poznać jego znaczenie i dźwięk fonetyczny.'
+                    : 'Hover or tap on any hieroglyph inside your cartouche to learn its meaning and phonetic sound.'}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -707,7 +717,7 @@ export default function CartoucheGenerator() {
                 } border rounded-xl py-2.5 text-xs font-semibold transition-all shadow-md active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed`}
               >
                 <Download className="w-3.5 h-3.5 text-[#d4af37]" />
-                <span className="font-mono uppercase text-[10px] tracking-wider">Save PNG Image</span>
+                <span className="font-mono uppercase text-[10px] tracking-wider">{language === 'de' ? 'PNG Speichern' : language === 'pl' ? 'Zapisz PNG' : 'Save PNG Image'}</span>
               </button>
 
               <button
@@ -716,7 +726,7 @@ export default function CartoucheGenerator() {
                 className="flex items-center justify-center gap-1.5 bg-[#120e0a] hover:bg-[#1a1410] border border-[#d4af37]/35 text-stone-300 rounded-xl py-2.5 text-xs font-semibold transition-all shadow-md active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Download className="w-3.5 h-3.5 text-[#e6c280]/75" />
-                <span className="font-mono uppercase text-[10px] tracking-wider">Save SVG File</span>
+                <span className="font-mono uppercase text-[10px] tracking-wider">{language === 'de' ? 'SVG Speichern' : language === 'pl' ? 'Zapisz SVG' : 'Save SVG File'}</span>
               </button>
             </div>
 
@@ -726,7 +736,7 @@ export default function CartoucheGenerator() {
               className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#e6c280]/15 via-[#d4af37]/15 to-[#e6c280]/15 hover:from-[#e6c280]/30 hover:via-[#d4af37]/30 hover:to-[#e6c280]/30 border border-[#d4af37]/45 hover:border-[#d4af37] text-[#f3e5c8] rounded-xl py-2.5 text-xs font-semibold transition-all shadow-md active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Share2 className="w-3.5 h-3.5 text-[#d4af37]" />
-              <span className="font-mono uppercase text-[10px] tracking-wider">Share as Papyrus Scroll</span>
+              <span className="font-mono uppercase text-[10px] tracking-wider">{language === 'de' ? 'Als Papyrus teilen' : language === 'pl' ? 'Udostępnij jako papirus' : 'Share as Papyrus Scroll'}</span>
             </button>
 
             {isSaved && (
@@ -753,11 +763,6 @@ export default function CartoucheGenerator() {
             <span>𓂀</span>
             <span>𓆗</span>
           </div>
-          <div className="absolute top-4 right-4 text-stone-850/25 text-3xl select-none pointer-events-none font-serif flex flex-col gap-2">
-            <span>𓅃</span>
-            <span>𓆛</span>
-            <span>𓉐</span>
-          </div>
 
           {/* Gold-foil Pharaoh's Official Seal Badge next to cartouche container */}
           <motion.div 
@@ -768,12 +773,14 @@ export default function CartoucheGenerator() {
             title="Authentic Royal Seal of the Scribes"
           >
             <span className="text-sm">𓂀</span>
-            <span className="font-mono text-[8px] tracking-normal font-bold">Pharaoh's Seal</span>
+            <span className="font-mono text-[8px] tracking-normal font-bold">
+              {language === 'de' ? 'Siegel des Pharaos' : language === 'pl' ? 'Pieczęć Faraona' : "Pharaoh's Seal"}
+            </span>
           </motion.div>
-
+ 
           <div className="text-center mb-6 space-y-1 z-10 select-none">
             <span className="text-[9px] font-mono text-[#d4af37] uppercase tracking-[0.25em] block animate-pulse">
-              𓂀 Sacred Royal Seal 𓂀
+              {language === 'de' ? '𓂀 Heiliges Königssiegel 𓂀' : language === 'pl' ? '𓂀 Święta Pieczęć Królewska 𓂀' : '𓂀 Sacred Royal Seal 𓂀'}
             </span>
             <h4 className="font-serif text-lg font-black text-[#e6c280] tracking-widest uppercase">
               Kemet Tours
@@ -791,10 +798,7 @@ export default function CartoucheGenerator() {
                 : 'shadow-[0_0_40px_rgba(212,175,55,0.15)]'
             }`}>
               {/* Cartouche Horizontal Royal Base Bar */}
-              <div className="absolute bottom-0 h-4 w-4/5 bg-[#d4af37] border-t-2 border-b-2 border-amber-200 rounded-sm"></div>
-
-              {/* Loop Top Details */}
-              <div className="absolute top-2 w-4 h-1 bg-[#d4af37] opacity-60"></div>
+              <div className="absolute bottom-0 h-4 w-4/5 bg-gradient-to-r from-[#ffe89e] via-[#d4af37] to-[#8c6507] border-t-2 border-amber-200 rounded-full select-none pointer-events-none"></div>
 
               {/* Render Glyph list */}
               {cleanName.length > 0 ? (
@@ -802,7 +806,7 @@ export default function CartoucheGenerator() {
                   {cleanName.split('').map((char, index) => {
                     const data = HIEROGLYPHS_MAP[char];
                     if (!data) return null;
-
+ 
                     return (
                       <motion.div
                         key={index}
@@ -828,7 +832,7 @@ export default function CartoucheGenerator() {
                         
                         {/* Symbol Render */}
                         {data.renderSymbol("#d4af37")}
-
+ 
                         <span className="text-[10px] font-mono text-stone-500 tracking-wider group-hover:text-[#e6c280] transition-colors mt-0.5">
                           {char}
                         </span>
@@ -838,7 +842,7 @@ export default function CartoucheGenerator() {
                 </div>
               ) : (
                 <div className="py-20 text-center text-stone-600 font-mono text-xs uppercase tracking-widest">
-                  Enter a name
+                  {language === 'de' ? 'Namen eingeben' : language === 'pl' ? 'Wpisz imię' : 'Enter a name'}
                 </div>
               )}
             </div>
@@ -860,7 +864,7 @@ export default function CartoucheGenerator() {
           <div className="flex items-center gap-2 mb-3">
             <span className="text-sm text-[#d4af37]">𓍼</span>
             <h4 className="font-serif text-sm uppercase tracking-wider text-[#e6c280]">
-              Royal Archives of Inscribed Seals ({savedCartouches.length})
+              {language === 'de' ? 'Königliches Archiv eingetragener Siegel' : language === 'pl' ? 'Królewskie Archiwum Zapisanych Pieczęci' : 'Royal Archives of Inscribed Seals'} ({savedCartouches.length})
             </h4>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -880,7 +884,7 @@ export default function CartoucheGenerator() {
                   <button
                     onClick={(e) => deleteSavedCartouche(e, item.id)}
                     className="text-stone-600 hover:text-red-400 p-0.5 rounded cursor-pointer transition-colors"
-                    title="Dissolve seal"
+                    title={language === 'de' ? 'Siegel auflösen' : language === 'pl' ? 'Rozpuść pieczęć' : 'Dissolve seal'}
                   >
                     ×
                   </button>
@@ -910,36 +914,60 @@ export default function CartoucheGenerator() {
 
               {/* Egyptian Ornamentations */}
               <div className="text-xl text-[#b38b3f] font-serif select-none pointer-events-none tracking-widest mt-4 mb-2">
-                𓋹 𓂀 𓆗 SACRED ROYAL DECREE 𓆗 𓂀 𓋹
+                𓋹 𓂀 𓆗 {language === 'de' ? 'HEILIGES KÖNIGLICHES DEKRET' : language === 'pl' ? 'ŚWIĘTY DEKRET KRÓLEWSKI' : 'SACRED ROYAL DECREE'} 𓆗 𓂀 𓋹
               </div>
 
               <div className="border border-[#b38b3f]/35 p-4 rounded-xl bg-[#faf3e3]/75 space-y-4 my-4 shadow-inner relative">
                 {/* Vintage stamp */}
                 <div className="absolute -top-3 -right-3 w-10 h-10 rounded-full border-2 border-red-800/25 flex items-center justify-center text-red-800/35 font-serif text-[10px] uppercase font-black tracking-tighter rotate-12 select-none pointer-events-none">
-                  Scribe OK
+                  {language === 'de' ? 'Schreiber OK' : language === 'pl' ? 'Zatwierdzone przez Pisarza' : 'Scribe OK'}
                 </div>
 
                 <p className="font-serif text-[#5c3c21] leading-relaxed text-sm">
-                  Let it be known to all corners of the Kingdom that the traveler{' '}
-                  <strong className="text-[#8c6020] uppercase font-mono tracking-wider font-bold">
-                    {cleanName}
-                  </strong>{' '}
-                  has been inscribed upon the Eternal Cartouche of <strong>Kemet Tours</strong>.
+                  {language === 'de' ? (
+                    <>
+                      Es sei in allen Ecken des Königreichs kundgetan, dass der Reisende{' '}
+                      <strong className="text-[#8c6020] uppercase font-mono tracking-wider font-bold">
+                        {cleanName}
+                      </strong>{' '}
+                      in die Ewige Kartusche von <strong>Kemet Tours</strong> eingetragen wurde.
+                    </>
+                  ) : language === 'pl' ? (
+                    <>
+                      Niech będzie wiadome we wszystkich zakątkach Królestwa, że podróżnik{' '}
+                      <strong className="text-[#8c6020] uppercase font-mono tracking-wider font-bold">
+                        {cleanName}
+                      </strong>{' '}
+                      został wpisany do Wiecznej Kartuszy <strong>Kemet Tours</strong>.
+                    </>
+                  ) : (
+                    <>
+                      Let it be known to all corners of the Kingdom that the traveler{' '}
+                      <strong className="text-[#8c6020] uppercase font-mono tracking-wider font-bold">
+                        {cleanName}
+                      </strong>{' '}
+                      has been inscribed upon the Eternal Cartouche of <strong>Kemet Tours</strong>.
+                    </>
+                  )}
                 </p>
 
                 <p className="text-[11px] text-stone-600 font-mono italic">
-                  "Written under the celestial favor of Osiris, Ra, and Isis, matching the letters of the West with the hieroglyphs of the East."
+                  {language === 'de'
+                    ? '"Geschrieben unter der himmlischen Gunst von Osiris, Ra und Isis, wobei die Buchstaben des Westens mit den Hieroglyphen des Ostens übereinstimmen."'
+                    : language === 'pl'
+                    ? '"Napisane pod niebiańską przychylnością Ozyrysa, Re i Izydy, dopasowując litery Zachodu do hieroglifów Wschodu."'
+                    : '"Written under the celestial favor of Osiris, Ra, and Isis, matching the letters of the West with the hieroglyphs of the East."'}
                 </p>
 
                 <div className="flex items-center justify-center gap-1 text-[10px] text-[#b38b3f]/90 font-mono tracking-widest uppercase">
-                  <span>𓂀 Status: Eternal Seal Registered 𓂀</span>
+                  <span>{language === 'de' ? '𓂀 Status: Ewiges Siegel Registriert 𓂀' : language === 'pl' ? '𓂀 Status: Wieczna Pieczęć Zarejestrowana 𓂀' : '𓂀 Status: Eternal Seal Registered 𓂀'}</span>
                 </div>
               </div>
 
               {/* Sharing link input field */}
               <div className="space-y-2 text-left mb-6">
                 <label className="block text-[10px] font-mono uppercase tracking-wider text-[#634832] font-semibold">
-                  Sacred Direct Link to your Cartouche
+                  {language === 'de' ? 'Heiliger Direktlink zu Ihrer Kartusche' : language === 'pl' ? 'Święty bezpośredni link do Twojego kartusza' : 'Sacred Direct Link to your Cartouche'}
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -955,12 +983,12 @@ export default function CartoucheGenerator() {
                     {copiedLink ? (
                       <>
                         <Check className="w-3.5 h-3.5" />
-                        <span>Copied!</span>
+                        <span>{language === 'de' ? 'Kopiert!' : language === 'pl' ? 'Skopiowano!' : 'Copied!'}</span>
                       </>
                     ) : (
                       <>
                         <Copy className="w-3.5 h-3.5" />
-                        <span>Copy</span>
+                        <span>{language === 'de' ? 'Kopieren' : language === 'pl' ? 'Skopiuj' : 'Copy'}</span>
                       </>
                     )}
                   </button>
@@ -970,7 +998,7 @@ export default function CartoucheGenerator() {
               {/* Social Buttons Grid */}
               <div className="space-y-3 mb-6">
                 <span className="block text-[10px] font-mono uppercase tracking-widest text-[#634832] font-bold">
-                  Proclaim to the Modern Realm
+                  {language === 'de' ? 'Dem modernen Reich verkünden' : language === 'pl' ? 'Obwieść współczesnemu królestwu' : 'Proclaim to the Modern Realm'}
                 </span>
                 <div className="grid grid-cols-3 gap-2.5">
                   <button
@@ -999,7 +1027,7 @@ export default function CartoucheGenerator() {
                 onClick={() => setIsShareOpen(false)}
                 className="w-full bg-[#4a2e16] hover:bg-[#341f0e] text-[#faf3e3] font-serif font-bold text-xs uppercase tracking-widest py-3 rounded-xl shadow-md transition-all cursor-pointer"
               >
-                𓏛 Complete Rite of Passage 𓏛
+                {language === 'de' ? '𓏛 Ritus des Übergangs abschließen 𓏛' : language === 'pl' ? '𓏛 Ukończ rytuał przejścia 𓏛' : '𓏛 Complete Rite of Passage 𓏛'}
               </button>
 
               {/* Bottom Wooden Rod Roll Simulation */}

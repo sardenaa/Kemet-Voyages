@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Map, MapPin, Compass, BookOpen, Info, Sparkles, ExternalLink, Anchor, ChevronRight, Search, X } from 'lucide-react';
+import { useLanguage } from './LanguageContext';
 
 interface SiteData {
   id: string;
@@ -115,18 +116,126 @@ const ANCIENT_SITES: SiteData[] = [
 ];
 
 export default function AncientSitesMap() {
-  const [selectedSite, setSelectedSite] = useState<SiteData>(ANCIENT_SITES[1]); // Default to Luxor
+  const { language } = useLanguage();
+  const [selectedSiteId, setSelectedSiteId] = useState<string>('luxor-waset');
   const [searchQuery, setSearchQuery] = useState('');
   const [hoveredSite, setHoveredSite] = useState<string | null>(null);
 
+  // Translate sites dynamically
+  const localizedSites = useMemo(() => {
+    if (language !== 'de') return ANCIENT_SITES;
+    return [
+      {
+        id: 'giza-pyramids',
+        name: "Gizeh-Plateau",
+        ancientName: "Achet Chufu",
+        glyph: "𓉴",
+        coordinates: { x: 265, y: 140 },
+        region: "Unterägypten",
+        facts: [
+          "Heimat der Großen Pyramide von Gizeh, dem ältesten der sieben Weltwunder der Antike.",
+          "Bewacht von der kolossalen Großen Sphinx von Gizeh, die aus einem einzigen Kalksteinrücken gemeißelt wurde.",
+          "Die Pyramiden waren mit absoluter Präzision astronomisch auf den Oriongürtel ausgerichtet."
+        ],
+        lore: "Den Alten bekannt als 'Achet Chufu' (Der Horizont des Cheops), galt dieses Plateau als kosmische Startrampe. Es erlaubte der Seele des Pharaos, in die nördlichen zirkumpolaren Sterne aufzufahren und sich den unsterblichen Göttern im Jenseits anzuschließen.",
+        relatedExcursionId: undefined,
+        relatedExcursionName: "Individuelle Kairo-Erweiterung (Fragen Sie unseren KI-Assistenten!)"
+      },
+      {
+        id: 'luxor-waset',
+        name: "Luxor (Karnak & Tal der Könige)",
+        ancientName: "Waset",
+        glyph: "𓉐",
+        coordinates: { x: 308, y: 350 },
+        region: "Oberägypten",
+        facts: [
+          "Waset war das Machtzentrum des Neuen Reiches, gewidmet dem höchsten Sonnenschöpfer Amun-Ra.",
+          "Beherbergt Karnak, den größten jemals von Menschenhand errichteten Tempelkomplex.",
+          "Beherbergt das Tal der Könige, wo die Pharaonen in verzierten Felsengräbern versiegelt wurden."
+        ],
+        lore: "Die Überquerung vom Ostufer (Sonnenaufgang/Lebende) zum Westufer (Sonnenuntergang/Gräber) von Luxor bedeutet, den mystischen Schleier zu durchdringen. Die Königsgräber sind tief in die Kalksteinpyramide von Al-Qurn gemeißelt und ahmen Ras nächtliche Reise in die Unterwelt nach.",
+        relatedExcursionId: "history-1",
+        relatedExcursionName: "Pilgerfahrt des Pharaos nach Waset (Luxor)"
+      },
+      {
+        id: 'ras-mohammed',
+        name: "Ras-Mohammed-Naturschutzgebiet",
+        ancientName: "Nuns Tiefseebecken",
+        glyph: "𓆛",
+        coordinates: { x: 382, y: 205 },
+        region: "Rotes Meer & Sinai",
+        facts: [
+          "Ein geschützter Meeres-Nationalpark an der äußersten Spitze der Sinai-Halbinsel.",
+          "Bietet spektakuläre vertikale Korallenwände, die über 1.000 Meter tief in das Meer abfallen.",
+          "Heimat lebendiger Ökosysteme mit Riesen-Lippfischen, Meeresschildkröten und Hammerhaien."
+        ],
+        lore: "Antike Seefahrer und Priester von Hathor betrachteten die warmen Strömungen von Ras Mohammed als physische Manifestationen von Nun – dem Urabgrund, aus dem alles Leben hervorging. Unterwasser-Monumente wurden an den Küsten hinterlassen, um die Meeresgeister zu besänftigen.",
+        relatedExcursionId: "diving-1",
+        relatedExcursionName: "Königliches Korallentauchen in Ras Mohammed"
+      },
+      {
+        id: 'hurghada-coast',
+        name: "Hurghada-Dünen & Deshret",
+        ancientName: "Sets Deshret-Küste",
+        glyph: "𓅓",
+        coordinates: { x: 370, y: 238 },
+        region: "Rotes Meer & Östliche Wüste",
+        facts: [
+          "Eine majestätische Grenze, an der die goldenen Berge der Östlichen Wüste auf das Rote Meer treffen.",
+          "Berühmt für rollende Wüstendünen, Beduinen-Oasen und raue Gebirgspässe.",
+          "Idealer Ort für schnelle Quad-Expeditionen und langsame Kamelritte im Sonnenuntergang."
+        ],
+        lore: "Dieses rote Wüstenland wurde von den Pharaonen 'Deshret' (Das rote Land) genannt, gefürchtet und doch respektiert als das chaotische Reich von Set, dem Gott der Stürme. Antike Bergleute durchquerten diese rauen Länder, um Gold und Türkis für Tempelopfer zu sammeln.",
+        relatedExcursionId: "safari-1",
+        relatedExcursionName: "Sets Goldene Deshret-Safari"
+      },
+      {
+        id: 'giftun-island',
+        name: "Giftun-Insel (Orange Bay)",
+        ancientName: "Sobeks Türkisreich",
+        glyph: "𓍢",
+        coordinates: { x: 388, y: 242 },
+        region: "Rote-Meer-Inseln",
+        facts: [
+          "Ein geschütztes Naturschutzgebiet, berühmt für feine weiße Sandstrände und kristallklares Wasser.",
+          "Umgeben von flachen, kreisförmigen Lagunen voller farbenfroher Korallen.",
+          "Delfinschulen werden regelmäßig beim Spielen an den unberührten flachen Sandbänken gesichtet."
+        ],
+        lore: "In der Antike war das Segeln um die Inseln des Roten Meeres der Ehrung von Sobek, dem Krokodilgott der Wasserwege, gewidmet. Mit Blattgold verzierte Zedernholz-Lustschiffe ruderten durch diese türkisfarbenen Gewässer, um die Gunst der Götter zu erlangen.",
+        relatedExcursionId: "boat-1",
+        relatedExcursionName: "Sobeks Königliche Königin-Nefertari-Kreuzfahrt"
+      },
+      {
+        id: 'el-gouna',
+        name: "El Gouna & Nördliche Inseln",
+        ancientName: "Horus-Lagune",
+        glyph: "𓅃",
+        coordinates: { x: 362, y: 218 },
+        region: "Rote-Meer-Lagunen",
+        facts: [
+          "Ein atemberaubendes Netzwerk aus flachen türkisfarbenen Kanälen, Lagunen und Sandinseln.",
+          "Umgeben von geheimen, unberichten Korallengärten abseits der überfüllten öffentlichen Plätze.",
+          "Bietet tiefblaues Wasser für rasante Erkundungen mit luxuriösen Schnellbooten."
+        ],
+        lore: "Der Falkengott Horus, symbolisch für Schnelligkeit und göttliche Sicht, patrouillierte angeblich vom Himmel aus über den Gewässern des Roten Meeres. Pharaonische Späher segelten mit schnellen Papyrusbooten durch diese Lagunen und gaben Spiegelsignale, um die Grenzen im Landesinneren zu schützen.",
+        relatedExcursionId: "speedboat-1",
+        relatedExcursionName: "Horus' Falkenauge-Schnellbootfahrt"
+      }
+    ];
+  }, [language]);
+
+  const selectedSite = useMemo(() => {
+    return localizedSites.find(site => site.id === selectedSiteId) || localizedSites[0];
+  }, [localizedSites, selectedSiteId]);
+
   // Filter sites based on search
   const filteredSites = useMemo(() => {
-    return ANCIENT_SITES.filter(site => 
+    return localizedSites.filter(site => 
       site.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       site.ancientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       site.region.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [searchQuery]);
+  }, [localizedSites, searchQuery]);
 
   const handleScrollToExcursion = (excursionId: string) => {
     const el = document.getElementById(`excursion-card-${excursionId}`);
@@ -164,13 +273,15 @@ export default function AncientSitesMap() {
       <div className="text-center space-y-2 mb-8">
         <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em] flex items-center justify-center gap-1.5">
           <Map className="w-3.5 h-3.5" />
-          𓉶 Kemet Geography Guide 𓋹
+          {language === 'de' ? '𓉶 Kemet Geographie-Führer 𓋹' : '𓉶 Kemet Geography Guide 𓋹'}
         </span>
         <h2 className="font-serif text-3xl font-extrabold text-[#e6c280] uppercase">
-          Interactive Ancient Sites Map
+          {language === 'de' ? 'Interaktive Karte der antiken Stätten' : 'Interactive Ancient Sites Map'}
         </h2>
         <p className="text-stone-400 text-xs max-w-xl mx-auto leading-relaxed">
-          Traverse the land of the Pharaohs. Click on the golden glowing ruins or coral reefs to discover mythological lore, quick facts, and our direct travel excursions.
+          {language === 'de' 
+            ? 'Durchqueren Sie das Land der Pharaonen. Klicken Sie auf die golden leuchtenden Ruinen oder Korallenriffe, um mythologische Überlieferungen, kurze Fakten und unsere direkten Reiseangebote zu entdecken.'
+            : 'Traverse the land of the Pharaohs. Click on the golden glowing ruins or coral reefs to discover mythological lore, quick facts, and our direct travel excursions.'}
         </p>
       </div>
 
@@ -189,21 +300,21 @@ export default function AncientSitesMap() {
           <div className="absolute bottom-4 left-4 flex flex-col gap-0.5 font-mono text-[8px] text-stone-600 pointer-events-none select-none">
             <div className="flex items-center gap-1">
               <span className="w-8 h-[1px] bg-stone-700"></span>
-              <span>100 Km</span>
+              <span>{language === 'de' ? '100 km' : '100 Km'}</span>
             </div>
-            <span>Sinai & Nile Valley Scale</span>
+            <span>{language === 'de' ? 'Maßstab Sinai & Niltal' : 'Sinai & Nile Valley Scale'}</span>
           </div>
 
           {/* Egyptology Legends Overlay */}
           <div className="absolute bottom-4 right-4 bg-[#14100c]/80 border border-[#d4af37]/15 rounded-lg p-2 space-y-1.5 text-[8.5px] font-mono text-stone-400 pointer-events-none select-none backdrop-blur-sm z-10">
-            <div className="text-[#d4af37] uppercase tracking-wider font-bold mb-0.5 border-b border-[#d4af37]/15 pb-0.5">Map Legend</div>
+            <div className="text-[#d4af37] uppercase tracking-wider font-bold mb-0.5 border-b border-[#d4af37]/15 pb-0.5">{language === 'de' ? 'Kartenlegende' : 'Map Legend'}</div>
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-              <span>Ancient Tomb / Ruin</span>
+              <span>{language === 'de' ? 'Antikes Grab / Ruine' : 'Ancient Tomb / Ruin'}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></span>
-              <span>Red Sea Diving Reef</span>
+              <span>{language === 'de' ? 'Rotes Meer Tauchriff' : 'Red Sea Diving Reef'}</span>
             </div>
           </div>
 
@@ -214,7 +325,7 @@ export default function AncientSitesMap() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search sacred sites..."
+              placeholder={language === 'de' ? 'Heilige Stätten suchen...' : 'Search sacred sites...'}
               className="w-full bg-[#14100c]/90 border border-[#d4af37]/30 rounded-lg py-1.5 pl-8 pr-3 text-[11px] text-stone-200 focus:outline-none focus:ring-1 focus:ring-[#d4af37] placeholder:text-stone-600 font-sans"
             />
           </div>
@@ -231,7 +342,7 @@ export default function AncientSitesMap() {
               
               {/* Mediterranean Sea outline */}
               <path d="M 10,50 Q 150,55 300,50 T 590,45" fill="none" stroke="#2563eb" strokeWidth="1.5" className="opacity-15" />
-              <text x="120" y="35" className="fill-stone-600 font-serif text-[10px] tracking-[0.25em] uppercase opacity-40">Mediterranean Sea</text>
+              <text x="120" y="35" className="fill-stone-600 font-serif text-[10px] tracking-[0.25em] uppercase opacity-40">{language === 'de' ? 'Mittelmeer' : 'Mediterranean Sea'}</text>
 
               {/* The Nile Delta & River Path (Life of Egypt) */}
               <path
@@ -271,7 +382,7 @@ export default function AncientSitesMap() {
                 strokeLinecap="round"
                 className="opacity-60"
               />
-              <text x="210" y="300" transform="rotate(-78 210 300)" className="fill-[#0284c7] font-serif text-[9px] tracking-[0.15em] uppercase opacity-50">Iteru (The Nile)</text>
+              <text x="210" y="300" transform="rotate(-78 210 300)" className="fill-[#0284c7] font-serif text-[9px] tracking-[0.15em] uppercase opacity-50">{language === 'de' ? 'Iteru (Der Nil)' : 'Iteru (The Nile)'}</text>
 
               {/* Red Sea & Gulf of Suez & Gulf of Aqaba */}
               {/* Gulf of Suez path */}
@@ -281,14 +392,14 @@ export default function AncientSitesMap() {
               {/* Red Sea Proper */}
               <path d="M 382,205 Q 430,280 495,380 T 580,480" fill="none" stroke="#0f766e" strokeWidth="8" strokeLinecap="round" className="opacity-25" />
               <path d="M 382,205 Q 430,280 495,380 T 580,480" fill="none" stroke="#14b8a6" strokeWidth="2" strokeLinecap="round" className="opacity-45 animate-pulse" />
-              <text x="450" y="330" transform="rotate(50 450 330)" className="fill-teal-700 font-serif text-[9px] tracking-[0.2em] uppercase opacity-55">The Red Sea</text>
+              <text x="450" y="330" transform="rotate(50 450 330)" className="fill-teal-700 font-serif text-[9px] tracking-[0.2em] uppercase opacity-55">{language === 'de' ? 'Das Rote Meer' : 'The Red Sea'}</text>
 
               {/* Sinai Peninsula Label */}
-              <text x="365" y="150" className="fill-stone-600 font-serif text-[8.5px] tracking-[0.2em] uppercase opacity-60">Sinai Desert</text>
+              <text x="365" y="150" className="fill-stone-600 font-serif text-[8.5px] tracking-[0.2em] uppercase opacity-60">{language === 'de' ? 'Sinai-Wüste' : 'Sinai Desert'}</text>
 
               {/* Nubian Desert Label */}
-              <text x="140" y="440" className="fill-stone-700 font-serif text-[9px] tracking-[0.3em] uppercase opacity-35">Western Desert</text>
-              <text x="430" y="450" className="fill-stone-700 font-serif text-[9px] tracking-[0.3em] uppercase opacity-35">Eastern Desert</text>
+              <text x="140" y="440" className="fill-stone-700 font-serif text-[9px] tracking-[0.3em] uppercase opacity-35">{language === 'de' ? 'Westliche Wüste' : 'Western Desert'}</text>
+              <text x="430" y="450" className="fill-stone-700 font-serif text-[9px] tracking-[0.3em] uppercase opacity-35">{language === 'de' ? 'Östliche Wüste' : 'Eastern Desert'}</text>
 
               {/* Map Sites Grid Layers */}
               {filteredSites.map((site) => {
@@ -301,7 +412,7 @@ export default function AncientSitesMap() {
                   <g
                     key={site.id}
                     className="cursor-pointer group"
-                    onClick={() => setSelectedSite(site)}
+                    onClick={() => setSelectedSiteId(site.id)}
                     onMouseEnter={() => setHoveredSite(site.id)}
                     onMouseLeave={() => setHoveredSite(null)}
                   >
@@ -384,7 +495,9 @@ export default function AncientSitesMap() {
 
           {/* Quick instructions */}
           <div className="text-center md:text-left text-[10px] font-mono text-stone-500 italic pb-1">
-            𓋹 Tip: Hover or tap any location marker above to discover the geography of Egypt!
+            {language === 'de' 
+              ? '𓋹 Tipp: Bewegen Sie den Mauszeiger über einen Standort-Marker oben, um die Geographie Ägyptens zu entdecken!' 
+              : '𓋹 Tip: Hover or tap any location marker above to discover the geography of Egypt!'}
           </div>
 
         </div>
@@ -394,7 +507,7 @@ export default function AncientSitesMap() {
           
           {/* List sidebar fallback for accessibility and small screen tap targets */}
           <div className="bg-[#1a1410] border border-[#d4af37]/25 rounded-2xl p-4 space-y-3">
-            <span className="text-[9px] font-mono text-stone-500 uppercase tracking-widest block">Choose Site from Scroll-roll</span>
+            <span className="text-[9px] font-mono text-stone-500 uppercase tracking-widest block">{language === 'de' ? 'Wählen Sie eine Stätte aus der Schriftrolle' : 'Choose Site from Scroll-roll'}</span>
             
             <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-thin scrollbar-thumb-amber-950">
               {filteredSites.map((site) => {
@@ -402,7 +515,7 @@ export default function AncientSitesMap() {
                 return (
                   <button
                     key={site.id}
-                    onClick={() => setSelectedSite(site)}
+                    onClick={() => setSelectedSiteId(site.id)}
                     className={`py-2 px-3.5 rounded-lg border text-[10px] font-mono uppercase tracking-wider flex items-center gap-1.5 whitespace-nowrap cursor-pointer transition-all flex-shrink-0 ${
                       isSelected
                         ? 'bg-[#d4af37] text-stone-950 font-bold border-[#d4af37]'
@@ -448,7 +561,7 @@ export default function AncientSitesMap() {
                       {selectedSite.name}
                     </h3>
                     <p className="text-[10px] font-mono text-[#d4af37]/75 italic uppercase tracking-wider">
-                      Ancient Title: <span className="font-serif text-stone-200">{selectedSite.ancientName}</span>
+                      {language === 'de' ? 'Antiker Titel:' : 'Ancient Title:'} <span className="font-serif text-stone-200">{selectedSite.ancientName}</span>
                     </p>
                   </div>
                 </div>
@@ -458,7 +571,7 @@ export default function AncientSitesMap() {
                   <span className="absolute top-3.5 right-4 font-serif text-[#d4af37]/10 text-3xl select-none">𓂀</span>
                   <strong className="text-[9.5px] font-mono uppercase text-[#e6c280] tracking-widest block flex items-center gap-1.5">
                     <BookOpen className="w-3.5 h-3.5 text-[#d4af37]" />
-                    Pharaonic Lore & Myth
+                    {language === 'de' ? 'Pharaonische Legenden & Mythen' : 'Pharaonic Lore & Myth'}
                   </strong>
                   <p className="text-stone-300 text-[11px] leading-relaxed font-sans italic">
                     "{selectedSite.lore}"
@@ -469,7 +582,7 @@ export default function AncientSitesMap() {
                 <div className="space-y-2.5">
                   <strong className="text-[9.5px] font-mono uppercase text-stone-400 tracking-widest block flex items-center gap-1.5">
                     <Info className="w-3.5 h-3.5 text-[#d4af37]" />
-                    Historical Facts & Architecture
+                    {language === 'de' ? 'Historische Fakten & Architektur' : 'Historical Facts & Architecture'}
                   </strong>
                   <ul className="space-y-2 text-[11px] text-stone-300 font-sans leading-relaxed">
                     {selectedSite.facts.map((fact, idx) => (
@@ -486,28 +599,28 @@ export default function AncientSitesMap() {
               <div className="pt-4 border-t border-[#d4af37]/15">
                 {selectedSite.relatedExcursionId ? (
                   <div className="space-y-2">
-                    <span className="text-[8.5px] font-mono text-stone-500 uppercase tracking-widest block">Available Excursion Offering:</span>
+                    <span className="text-[8.5px] font-mono text-stone-500 uppercase tracking-widest block">{language === 'de' ? 'Verfügbares Ausflugsangebot:' : 'Available Excursion Offering:'}</span>
                     <button
                       onClick={() => handleScrollToExcursion(selectedSite.relatedExcursionId!)}
                       className="w-full bg-gradient-to-r from-amber-950/30 via-[#d4af37]/10 to-amber-950/30 hover:via-[#d4af37]/20 border border-[#d4af37]/45 hover:border-[#d4af37] text-[#e6c280] py-3 px-4 rounded-xl text-xs font-serif font-black uppercase tracking-widest flex items-center justify-between transition-all duration-300 cursor-pointer shadow-md"
                     >
                       <span className="flex items-center gap-2">
                         <Sparkles className="w-4 h-4 text-[#d4af37] animate-pulse" />
-                        Book {selectedSite.relatedExcursionName?.split(' (')[0]}
+                        {language === 'de' ? 'Buchen: ' : 'Book '}{selectedSite.relatedExcursionName?.split(' (')[0]}
                       </span>
                       <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <span className="text-[8.5px] font-mono text-stone-500 uppercase tracking-widest block">Special Custom Expedition:</span>
+                    <span className="text-[8.5px] font-mono text-stone-500 uppercase tracking-widest block">{language === 'de' ? 'Spezielle maßgeschneiderte Expedition:' : 'Special Custom Expedition:'}</span>
                     <button
                       onClick={handleScrollToScribe}
                       className="w-full bg-[#140f0c] hover:bg-[#201812] border border-stone-800 hover:border-stone-700 text-stone-300 py-3 px-4 rounded-xl text-xs font-serif font-bold uppercase tracking-widest flex items-center justify-between transition-all duration-300 cursor-pointer"
                     >
                       <span className="flex items-center gap-2 text-[11px] font-mono">
                         <Anchor className="w-4 h-4 text-[#d4af37]" />
-                        Request Custom Itinerary from AI Guide
+                        {language === 'de' ? 'Maßgeschneiderten Reiseplan vom KI-Reiseleiter anfordern' : 'Request Custom Itinerary from AI Guide'}
                       </span>
                       <ExternalLink className="w-3.5 h-3.5 text-stone-500" />
                     </button>
