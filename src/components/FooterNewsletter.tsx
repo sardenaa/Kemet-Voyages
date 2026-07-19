@@ -115,6 +115,12 @@ export default function FooterNewsletter() {
     { value: 'speedboat', label: '𓊡 Schnellbootausflüge', desc: 'Insel-Hopping mit Highspeed' },
     { value: 'safari', label: '𓅓 Wüstensafaris', desc: 'Quad-Rennen und Sternenbeobachtung' },
     { value: 'history', label: '𓉐 Historisches Luxor', desc: 'Antike Tempel und Gräberführungen' }
+  ] : language === 'pl' ? [
+    { value: 'diving', label: '𓆛 Nurkowanie', desc: 'Rafy koralowe i rezerwaty morskie' },
+    { value: 'boat', label: '𓊟 Rejsy jachtem i łodzią', desc: 'Luksusowe rejsy na wyspy i snorkeling' },
+    { value: 'speedboat', label: '𓊡 Wycieczki motorówką', desc: 'Szybkie przemieszczanie się między wyspami' },
+    { value: 'safari', label: '𓅓 Pustynne safari', desc: 'Wyścigi quadów i obserwacja gwiazd' },
+    { value: 'history', label: '𓉐 Historyczny Luksor', desc: 'Starożytne świątynie i zwiedzanie grobowców' }
   ] : [
     { value: 'diving', label: '𓆛 Scuba Diving', desc: 'Coral reefs and marine reserves' },
     { value: 'boat', label: '𓊟 Yacht & Boat Trips', desc: 'Island luxury cruises and snorkeling' },
@@ -127,6 +133,10 @@ export default function FooterNewsletter() {
     { value: 'citizen', name: 'Standard-Reisender', discount: '15% Rabatt', icon: '𓀚' },
     { value: 'scribe', name: 'Begeisterter Entdecker', discount: '20% Rabatt', icon: '𓁟' },
     { value: 'pharaoh', name: 'VIP-Abenteurer', discount: '30% Rabatt', icon: '𓁠' }
+  ] : language === 'pl' ? [
+    { value: 'citizen', name: 'Standardowy podróżnik', discount: '15% zniżki', icon: '𓀚' },
+    { value: 'scribe', name: 'Zapalony odkrywca', discount: '20% zniżki', icon: '𓁟' },
+    { value: 'pharaoh', name: 'Poszukiwacz przygód VIP', discount: '30% zniżki', icon: '𓁠' }
   ] : [
     { value: 'citizen', name: 'Standard Traveler', discount: '15% Off', icon: '𓀚' },
     { value: 'scribe', name: 'Avid Explorer', discount: '20% Off', icon: '𓁟' },
@@ -150,20 +160,22 @@ export default function FooterNewsletter() {
           <div className="md:col-span-7 space-y-2 text-center md:text-left">
             <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.25em] flex items-center gap-1.5 justify-center md:justify-start">
               <Sparkles className="w-3 h-3 text-[#d4af37] animate-pulse" />
-              {language === 'de' ? 'Sonderangebote & Reisedeals' : 'Special Offers & Travel Deals'}
+              {language === 'de' ? 'Sonderangebote & Reisedeals' : language === 'pl' ? 'Oferty specjalne i promocje' : 'Special Offers & Travel Deals'}
             </span>
             <h3 className="font-serif text-xl md:text-2xl font-black text-[#e6c280] uppercase tracking-wide">
-              {language === 'de' ? 'Reiserabatte & Neuigkeiten' : 'Travel Discount & Updates'}
+              {language === 'de' ? 'Reiserabatte & Neuigkeiten' : language === 'pl' ? 'Zniżki podróżnicze i aktualności' : 'Travel Discount & Updates'}
             </h3>
             <p className="text-stone-400 text-xs leading-relaxed max-w-md">
               {language === 'de' ? (
                 <>Geben Sie unten Ihre E-Mail-Adresse ein, um den Newsletter zu abonnieren und saisonale Rabatte von bis zu <span className="text-[#d4af37] font-semibold">30% Rabatt</span> auf Tauchausflüge, Wüstensafaris und Nil-Tagestouren freizuschalten.</>
+              ) : language === 'pl' ? (
+                <>Wpisz swój adres e-mail poniżej, aby zapisać się i odblokować sezonowe rabaty do <span className="text-[#d4af37] font-semibold">30% taniej</span> na wycieczki nurkowe, pustynne safari i jednodniowe wycieczki nad Nil.</>
               ) : (
                 <>Enter your email below to subscribe and unlock seasonal discounts up to <span className="text-[#d4af37] font-semibold">30% Off</span> on diving trips, desert safaris, and Nile day tours.</>
               )}
             </p>
           </div>
-
+ 
           {/* Action Input / Status */}
           <div className="md:col-span-5 w-full">
             {!hasSubscribed ? (
@@ -175,7 +187,7 @@ export default function FooterNewsletter() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder={language === 'de' ? "Geben Sie Ihre E-Mail-Adresse ein..." : "Enter your email address..."}
+                    placeholder={language === 'de' ? "Geben Sie Ihre E-Mail-Adresse ein..." : language === 'pl' ? "Wpisz swój adres e-mail..." : "Enter your email address..."}
                     className="w-full bg-[#1c1611] border border-[#d4af37]/30 rounded-xl py-2.5 pl-10 pr-3 text-stone-200 text-xs focus:outline-none focus:ring-1 focus:ring-[#d4af37] placeholder:text-stone-600"
                   />
                 </div>
@@ -183,7 +195,7 @@ export default function FooterNewsletter() {
                   type="submit"
                   className="bg-gradient-to-r from-[#d4af37] to-[#bca03b] hover:from-[#e2be4c] hover:to-[#cca73d] text-stone-950 font-mono text-[10px] uppercase font-bold tracking-widest px-5 py-2.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap active:scale-95"
                 >
-                  {language === 'de' ? 'Abonnieren' : 'Subscribe'} <ChevronRight className="w-3 h-3 stroke-[3px]" />
+                  {language === 'de' ? 'Abonnieren' : language === 'pl' ? 'Zapisz się' : 'Subscribe'} <ChevronRight className="w-3 h-3 stroke-[3px]" />
                 </button>
               </form>
             ) : (
@@ -197,11 +209,11 @@ export default function FooterNewsletter() {
                     ✓
                   </div>
                   <span className="font-serif text-[#e6c280] font-bold text-xs uppercase tracking-wider">
-                    {language === 'de' ? 'Abonnement bestätigt' : 'Subscription Confirmed'}
+                    {language === 'de' ? 'Abonnement bestätigt' : language === 'pl' ? 'Subskrypcja potwierdzona' : 'Subscription Confirmed'}
                   </span>
                 </div>
                 <p className="text-[11px] text-stone-400">
-                  {language === 'de' ? 'Willkommen bei unserem Newsletter! Ihr aktiver Rabattcode lautet:' : 'Welcome to our newsletter! Your active discount code is:'}
+                  {language === 'de' ? 'Willkommen bei unserem Newsletter! Ihr aktiver Rabattcode lautet:' : language === 'pl' ? 'Witamy w naszym newsletterze! Twój aktywny kod rabatowy to:' : 'Welcome to our newsletter! Your active discount code is:'}
                 </p>
                 <div className="flex items-center justify-between bg-black/50 border border-stone-800 rounded-lg p-2 font-mono text-xs text-[#d4af37] select-all">
                   <span className="font-bold tracking-widest">{assignedPromo}</span>
@@ -211,7 +223,7 @@ export default function FooterNewsletter() {
                   onClick={handleResetSubscription}
                   className="text-[9px] font-mono text-stone-600 hover:text-stone-400 uppercase tracking-widest block mx-auto sm:ml-0 underline cursor-pointer"
                 >
-                  {language === 'de' ? 'Abbestellen / E-Mail-Adresse ändern' : 'Unsubscribe / Change Email Address'}
+                  {language === 'de' ? 'Abbestellen / E-Mail-Adresse ändern' : language === 'pl' ? 'Anuluj subskrypcję / Zmień adres e-mail' : 'Unsubscribe / Change Email Address'}
                 </button>
               </motion.div>
             )}
@@ -253,10 +265,10 @@ export default function FooterNewsletter() {
                 </button>
                 <div className="text-2xl mb-1 text-[#d4af37]">𓂀</div>
                 <h3 className="font-serif text-lg md:text-xl font-extrabold text-[#e6c280] uppercase tracking-widest">
-                  {language === 'de' ? 'Reiseinteressen anpassen' : 'Customize Your Travel Interests'}
+                  {language === 'de' ? 'Reiseinteressen anpassen' : language === 'pl' ? 'Dostosuj swoje zainteresowania' : 'Customize Your Travel Interests'}
                 </h3>
                 <p className="text-stone-400 text-xs mt-1 font-mono">
-                  {language === 'de' ? 'Einstellungen auswählen für:' : 'Select preferences for:'} <span className="text-[#d4af37]">{email}</span>
+                  {language === 'de' ? 'Einstellungen auswählen für:' : language === 'pl' ? 'Wybierz preferencje dla:' : 'Select preferences for:'} <span className="text-[#d4af37]">{email}</span>
                 </p>
               </div>
 
@@ -267,10 +279,10 @@ export default function FooterNewsletter() {
                 <div className="space-y-3">
                   <div>
                     <label className="text-[10px] font-mono text-[#d4af37] uppercase tracking-wider block">
-                      {language === 'de' ? 'Schritt 1: Wählen Sie Ihre Lieblingsaktivitäten' : 'Step 1: Select Your Favorite Activities'}
+                      {language === 'de' ? 'Schritt 1: Wählen Sie Ihre Lieblingsaktivitäten' : language === 'pl' ? 'Krok 1: Wybierz swoje ulubione zajęcia' : 'Step 1: Select Your Favorite Activities'}
                     </label>
                     <p className="text-stone-400 text-[11px] leading-relaxed">
-                      {language === 'de' ? 'An welchen Arten von Reisen und Ausflügen sind Sie interessiert?' : 'Which types of travel and excursions are you interested in?'}
+                      {language === 'de' ? 'An welchen Arten von Reisen und Ausflügen sind Sie interessiert?' : language === 'pl' ? 'Jakimi rodzajami podróży i wycieczek się interesujesz?' : 'Which types of travel and excursions are you interested in?'}
                     </p>
                   </div>
 
@@ -311,10 +323,10 @@ export default function FooterNewsletter() {
                 <div className="space-y-3">
                   <div>
                     <label className="text-[10px] font-mono text-[#d4af37] uppercase tracking-wider block">
-                      {language === 'de' ? 'Schritt 2: Wählen Sie Ihre Profilebene' : 'Step 2: Choose Your Profile Level'}
+                      {language === 'de' ? 'Schritt 2: Wählen Sie Ihre Profilebene' : language === 'pl' ? 'Krok 2: Wybierz poziom profilu' : 'Step 2: Choose Your Profile Level'}
                     </label>
                     <p className="text-stone-400 text-[11px] leading-relaxed">
-                      {language === 'de' ? 'Wählen Sie die Art von Reiseangeboten und Neuigkeiten, die Sie interessieren.' : 'Choose the type of travel offers and news you are interested in.'}
+                      {language === 'de' ? 'Wählen Sie die Art von Reiseangeboten und Neuigkeiten, die Sie interessieren.' : language === 'pl' ? 'Wybierz rodzaj ofert turystycznych i wiadomości, które Cię interesują.' : 'Choose the type of travel offers and news you are interested in.'}
                     </p>
                   </div>
 
@@ -349,7 +361,7 @@ export default function FooterNewsletter() {
                 <div className="bg-[#1d1611] border border-[#d4af37]/15 rounded-xl p-3 flex gap-3 items-start">
                   <div className="text-lg text-[#d4af37] select-none">𓋹</div>
                   <p className="text-[10px] text-stone-400 leading-relaxed">
-                    {language === 'de' ? 'Wir schätzen Ihre Privatsphäre. Wir werden Ihre E-Mail-Adresse niemals weitergeben oder Spam senden. Sie erhalten nur maßgeschneiderte Rabattcodes und saisonale Reiseangebote.' : 'We value your privacy. We will never share your email address or send spam. You will only receive custom discount codes and seasonal travel deals.'}
+                    {language === 'de' ? 'Wir schätzen Ihre Privatsphäre. Wir werden Ihre E-Mail-Adresse niemals weitergeben oder Spam senden. Sie erhalten nur maßgeschneiderte Rabattcodes und saisonale Reiseangebote.' : language === 'pl' ? 'Cenimy Twoją prywatność. Nigdy nie udostępnimy Twojego adresu e-mail ani nie będziemy wysyłać spamu. Otrzymasz tylko spersonalizowane kody rabatowe i sezonowe oferty.' : 'We value your privacy. We will never share your email address or send spam. You will only receive custom discount codes and seasonal travel deals.'}
                   </p>
                 </div>
 
@@ -362,12 +374,12 @@ export default function FooterNewsletter() {
                   {isSubmitting ? (
                     <>
                       <span className="w-4 h-4 border-2 border-stone-950 border-t-transparent rounded-full animate-spin"></span>
-                      {language === 'de' ? 'Einstellungen werden gespeichert...' : 'Saving Preferences...'}
+                      {language === 'de' ? 'Einstellungen werden gespeichert...' : language === 'pl' ? 'Zapisywanie preferencji...' : 'Saving Preferences...'}
                     </>
                   ) : (
                     <>
                       <Compass className="w-4 h-4 animate-spin-slow" />
-                      {language === 'de' ? 'Reiseeinstellungen speichern' : 'Save Travel Preferences'}
+                      {language === 'de' ? 'Reiseeinstellungen speichern' : language === 'pl' ? 'Zapisz preferencje podróży' : 'Save Travel Preferences'}
                     </>
                   )}
                 </button>

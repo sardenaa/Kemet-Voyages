@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Star, MessageSquare, Check, Sparkles, AlertCircle } from 'lucide-react';
+import { Star, MessageSquare, Check, Sparkles, AlertCircle, Compass } from 'lucide-react';
 import { Review, Excursion } from '../types';
 import { useLanguage } from './LanguageContext';
 
@@ -195,10 +195,14 @@ export default function ExcursionFeedbackForm({
       </div>
 
       <div className="flex items-center gap-2 mb-3">
-        <MessageSquare className="w-4 h-4 text-[#d4af37]" />
+        <Compass className="w-4 h-4 text-[#d4af37]" />
         <h5 className={`font-serif text-xs uppercase tracking-wider ${textTitleClass}`}>
           {language === 'de' 
             ? (hasExistingReview ? '𓍼 Ihre Bewertung aktualisieren' : '𓍼 Ausflugs-Erfahrungsberichte') 
+            : language === 'pl'
+            ? (hasExistingReview ? '𓍼 Zaktualizuj swoją opinię' : '𓍼 Tablica opinii o wycieczce')
+            : language === 'cs'
+            ? (hasExistingReview ? '𓍼 Aktualizovat své hodnocení' : '𓍼 Tabule hodnocení výletu')
             : (hasExistingReview ? '𓍼 Update Your Testimony' : '𓍼 Excursion Testimony Board')}
         </h5>
       </div>
@@ -208,7 +212,7 @@ export default function ExcursionFeedbackForm({
         {/* Rating Stars Selection */}
         <div>
           <label className={`block text-[10px] uppercase tracking-wider font-mono ${textMutedClass} mb-1.5`}>
-            {language === 'de' ? 'Pharaonische Bewertung (1-5 Sterne)' : 'Pharaonic Rating (1-5 Stars)'}
+            {language === 'de' ? 'Pharaonische Bewertung (1-5 Sterne)' : language === 'pl' ? 'Ocena faraońska (1-5 gwiazdek)' : language === 'cs' ? 'Faraonské hodnocení (1-5 hvězdiček)' : 'Pharaonic Rating (1-5 Stars)'}
           </label>
           <div className="flex items-center gap-1.5">
             {[1, 2, 3, 4, 5].map((starValue) => {
@@ -235,6 +239,10 @@ export default function ExcursionFeedbackForm({
             <span className="text-[10px] font-mono text-stone-500 ml-1.5">
               {language === 'de' ? (
                 rating === 5 ? '𓂀 Großartig' : rating === 4 ? '𓋹 Herrlich' : rating === 3 ? '𓏞 Günstig' : rating === 2 ? '𓆗 Mäßig' : '𓀚 Mangelhaft'
+              ) : language === 'pl' ? (
+                rating === 5 ? '𓂀 Wspaniale' : rating === 4 ? '𓋹 Zachwycająco' : rating === 3 ? '𓏞 Korzystnie' : rating === 2 ? '𓆗 Umiarkowanie' : '𓀚 Niezadowalająco'
+              ) : language === 'cs' ? (
+                rating === 5 ? '𓂀 Skvělé' : rating === 4 ? '𓋹 Nádherné' : rating === 3 ? '𓏞 Příznivé' : rating === 2 ? '𓆗 Průměrné' : '𓀚 Neuspokojivé'
               ) : (
                 rating === 5 ? '𓂀 Magnificent' : rating === 4 ? '𓋹 Splendid' : rating === 3 ? '𓏞 Favorable' : rating === 2 ? '𓆗 Moderate' : '𓀚 Unsatisfying'
               )}
@@ -247,14 +255,14 @@ export default function ExcursionFeedbackForm({
           {/* Author Name Input */}
           <div>
             <label className={`block text-[10px] uppercase tracking-wider font-mono ${textMutedClass} mb-1`}>
-              {language === 'de' ? 'Name des Schreibers/Autors' : 'Scribe/Author Name'}
+              {language === 'de' ? 'Name des Schreibers/Autors' : language === 'pl' ? 'Imię pisarza/autora' : language === 'cs' ? 'Jméno písaře/autora' : 'Scribe/Author Name'}
             </label>
             <input
               type="text"
               required
               value={author}
               onChange={(e) => setAuthor(e.target.value)}
-              placeholder={language === 'de' ? 'z. B. Cleopatra, Schreiber Amenhotep' : 'e.g. Cleopatra, Scribe Amenhotep'}
+              placeholder={language === 'de' ? 'z. B. Cleopatra, Schreiber Amenhotep' : language === 'pl' ? 'np. Kleopatra, Pisarz Amenhotep' : language === 'cs' ? 'např. Kleopatra, písař Amenhotep' : 'e.g. Cleopatra, Scribe Amenhotep'}
               className={`w-full px-3 py-1.5 text-xs rounded-md border focus:outline-none focus:border-[#d4af37]/60 transition-all font-sans ${inputBgClass}`}
             />
           </div>
@@ -262,7 +270,7 @@ export default function ExcursionFeedbackForm({
           {/* Avatar Selector Dropdown */}
           <div>
             <label className={`block text-[10px] uppercase tracking-wider font-mono ${textMutedClass} mb-1`}>
-              {language === 'de' ? 'Thematische Persona / Siegel' : 'Thematic Persona / Seal'}
+              {language === 'de' ? 'Thematische Persona / Siegel' : language === 'pl' ? 'Tematyczna persona / Pieczęć' : language === 'cs' ? 'Tematická osobnost / pečeť' : 'Thematic Persona / Seal'}
             </label>
             <select
               value={selectedAvatar}
@@ -281,20 +289,20 @@ export default function ExcursionFeedbackForm({
         {/* Testimony Comment Text Area */}
         <div>
           <label className={`block text-[10px] uppercase tracking-wider font-mono ${textMutedClass} mb-1`}>
-            {language === 'de' ? 'Schreiben Sie Ihr Feedback (archiviert im Haus des Lebens)' : 'Scribe your feedback (archived in House of Life)'}
+            {language === 'de' ? 'Schreiben Sie Ihr Feedback (archiviert im Haus des Lebens)' : language === 'pl' ? 'Napisz swoją opinię (zarchiwizowaną w Domu Życia)' : language === 'cs' ? 'Napište svou zpětnou vazbu (archivováno v Domě života)' : 'Scribe your feedback (archived in House of Life)'}
           </label>
           <textarea
             required
             rows={2.5}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            placeholder={language === 'de' ? 'Teilen Sie Ihre göttliche Erfahrung bezüglich Sand, Korallen oder sternenklaren Tempelgewölben...' : 'Share your divine experience regarding the sands, corals, or starry temple vaults...'}
+            placeholder={language === 'de' ? 'Teilen Sie Ihre göttliche Erfahrung bezüglich Sand, Korallen oder sternenklaren Tempelgewölben...' : language === 'pl' ? 'Podziel się swoim boskim doświadczeniem dotyczącym piasków, koralowców lub gwieździstych sklepień świątyń...' : language === 'cs' ? 'Podělte se o své božské zkušenosti s pískem, korály nebo hvězdnou chrámovou klenbou...' : 'Share your divine experience regarding the sands, corals, or starry temple vaults...'}
             className={`w-full px-3 py-1.5 text-xs rounded-md border focus:outline-none focus:border-[#d4af37]/60 transition-all font-sans resize-none ${inputBgClass}`}
             maxLength={300}
           />
           <div className="flex justify-between items-center text-[9px] text-stone-500 font-mono mt-0.5">
-            <span>{language === 'de' ? 'Ägyptische Register verifiziert.' : 'Egyptian Registries verified.'}</span>
-            <span>{comment.length}/300 {language === 'de' ? 'Zeichen' : 'characters'}</span>
+            <span>{language === 'de' ? 'Ägyptische Register verifiziert.' : language === 'pl' ? 'Egipskie rejestry zweryfikowane.' : language === 'cs' ? 'Egyptské registry ověřeny.' : 'Egyptian Registries verified.'}</span>
+            <span>{comment.length}/300 {language === 'de' ? 'Zeichen' : language === 'pl' ? 'znaków' : language === 'cs' ? 'znaků' : 'characters'}</span>
           </div>
         </div>
 
@@ -309,16 +317,16 @@ export default function ExcursionFeedbackForm({
                 className="flex items-center gap-1.5 text-emerald-400 text-[10px] font-mono uppercase font-black"
               >
                 <Check className="w-3.5 h-3.5" />
-                <span>{language === 'de' ? 'Erfahrungsbericht eingetragen!' : 'Testimony inscribed!'}</span>
+                <span>{language === 'de' ? 'Erfahrungsbericht eingetragen!' : language === 'pl' ? 'Świadectwo zapisane!' : language === 'cs' ? 'Svědectví zapsáno!' : 'Testimony inscribed!'}</span>
               </motion.div>
             ) : hasExistingReview ? (
               <div className="flex items-center gap-1 text-[#d4af37]/60 text-[9px] font-mono">
                 <AlertCircle className="w-3 h-3" />
-                <span>{language === 'de' ? 'Sie haben diesen Ausflug bereits bewertet.' : 'You have reviewed this excursion before.'}</span>
+                <span>{language === 'de' ? 'Sie haben diesen Ausflug bereits bewertet.' : language === 'pl' ? 'Oceniłeś już tę wycieczkę.' : language === 'cs' ? 'Tento výlet jste již ohodnotili.' : 'You have reviewed this excursion before.'}</span>
               </div>
             ) : (
               <span className="text-[9px] text-stone-500 font-mono italic">
-                {language === 'de' ? 'Wird automatisch in den lokalen Registern gespeichert.' : 'Saves automatically to local scroll registries.'}
+                {language === 'de' ? 'Wird automatisch in den lokalen Registern gespeichert.' : language === 'pl' ? 'Zapisuje się automatycznie w lokalnych rejestrach zwojów.' : language === 'cs' ? 'Automaticky se ukládá do místních registrů svitků.' : 'Saves automatically to local scroll registries.'}
               </span>
             )}
           </AnimatePresence>
@@ -329,10 +337,10 @@ export default function ExcursionFeedbackForm({
             className={`px-4 py-1.5 bg-[#d4af37] text-[#140f0c] rounded-md text-[10px] font-mono font-bold uppercase tracking-wider hover:bg-[#e6c280] active:scale-95 transition-all cursor-pointer disabled:opacity-55 disabled:scale-100 disabled:pointer-events-none`}
           >
             {isSubmitting 
-              ? (language === 'de' ? 'Eintragen...' : 'Inscribing...') 
+              ? (language === 'de' ? 'Eintragen...' : language === 'pl' ? 'Zapisywanie...' : language === 'cs' ? 'Zapisování...' : 'Inscribing...') 
               : hasExistingReview 
-                ? (language === 'de' ? 'Bewertung aktualisieren 𓏞' : 'Update Testimony 𓏞') 
-                : (language === 'de' ? 'Eintragen 𓋹' : 'Inscribe Testimony 𓋹')}
+                ? (language === 'de' ? 'Bewertung aktualisieren 𓏞' : language === 'pl' ? 'Zaktualizuj opinię 𓏞' : language === 'cs' ? 'Aktualizovat svědectví 𓏞' : 'Update Testimony 𓏞') 
+                : (language === 'de' ? 'Eintragen 𓋹' : language === 'pl' ? 'Zapisz opinię 𓋹' : language === 'cs' ? 'Zapsat svědectví 𓋹' : 'Inscribe Testimony 𓋹')}
           </button>
         </div>
       </form>

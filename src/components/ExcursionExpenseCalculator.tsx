@@ -154,10 +154,10 @@ export default function ExcursionExpenseCalculator({ bookings }: ExcursionExpens
           </div>
           <div>
             <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.2em] block">
-              {language === 'de' ? 'Tribut-Schatzkammer' : 'Offerings Treasury'}
+              {language === 'de' ? 'Tribut-Schatzkammer' : language === 'pl' ? 'Skarbiec Ofiar' : 'Offerings Treasury'}
             </span>
             <h3 className="font-serif text-lg font-bold text-[#e6c280] uppercase tracking-wider">
-              {language === 'de' ? 'Ausgaben-Rechner' : 'Excursion Expense Calculator'}
+              {language === 'de' ? 'Ausgaben-Rechner' : language === 'pl' ? 'Kalkulator Wydatków Wycieczki' : 'Excursion Expense Calculator'}
             </h3>
           </div>
         </div>
@@ -168,13 +168,13 @@ export default function ExcursionExpenseCalculator({ bookings }: ExcursionExpens
               onClick={selectAll}
               className="px-2 py-1 text-[10px] font-mono uppercase bg-[#d4af37]/10 hover:bg-[#d4af37]/20 border border-[#d4af37]/25 text-[#fbf5e6] rounded-md transition-colors cursor-pointer"
             >
-              {language === 'de' ? 'Alle' : 'All'}
+              {language === 'de' ? 'Alle' : language === 'pl' ? 'Wszystko' : 'All'}
             </button>
             <button
               onClick={clearAll}
               className="px-2 py-1 text-[10px] font-mono uppercase bg-red-950/20 hover:bg-red-950/40 border border-red-500/20 text-stone-400 hover:text-red-300 rounded-md transition-colors cursor-pointer"
             >
-              {language === 'de' ? 'Leeren' : 'Clear'}
+              {language === 'de' ? 'Leeren' : language === 'pl' ? 'Wyczyść' : 'Clear'}
             </button>
           </div>
         )}
@@ -184,6 +184,8 @@ export default function ExcursionExpenseCalculator({ bookings }: ExcursionExpens
         <div className="text-center py-12 text-stone-500 italic text-xs bg-[#15110d] rounded-xl border border-dashed border-[#d4af37]/15">
           {language === 'de' 
             ? '𓀚 Noch keine Ausflüge gebucht. Fügen Sie oben Expeditionen hinzu, um Ihr heiliges Reisebudget zu berechnen!' 
+            : language === 'pl'
+            ? '𓀚 Nie zarezerwowano jeszcze żadnych wycieczek. Dodaj ekspedycje powyżej, aby obliczyć swój święty budżet podróży!'
             : '𓀚 No excursions booked yet. Add expeditions above to calculate your sacred travel budget!'}
         </div>
       ) : (
@@ -193,7 +195,7 @@ export default function ExcursionExpenseCalculator({ bookings }: ExcursionExpens
           <div className="md:col-span-5 space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-mono text-stone-400 uppercase tracking-wider">
-                {language === 'de' ? 'Expeditionen Auswählen' : 'Select Expeditions'} ({selectedBookings.length}/{bookings.length})
+                {language === 'de' ? 'Expeditionen Auswählen' : language === 'pl' ? 'Wybierz ekspedycje' : 'Select Expeditions'} ({selectedBookings.length}/{bookings.length})
               </span>
             </div>
 
@@ -253,7 +255,7 @@ export default function ExcursionExpenseCalculator({ bookings }: ExcursionExpens
             {/* Treasury Offering Limit Setting */}
             <div className="bg-[#17130f] rounded-xl p-3 border border-stone-800 space-y-2">
               <div className="flex justify-between items-center text-[10px] font-mono text-stone-400 uppercase tracking-widest">
-                <span>{language === 'de' ? 'Goldtribut-Limit (Budget)' : 'Gold Offering Cap (Budget)'}</span>
+                <span>{language === 'de' ? 'Goldtribut-Limit (Budget)' : language === 'pl' ? 'Limit budżetu oferowanego złota' : 'Gold Offering Cap (Budget)'}</span>
                 <span className="text-[#d4af37] font-bold">${budgetLimit}</span>
               </div>
               <input
@@ -280,11 +282,13 @@ export default function ExcursionExpenseCalculator({ bookings }: ExcursionExpens
                 <AlertTriangle className="w-8 h-8 text-amber-500 animate-bounce" />
                 <div>
                   <h4 className="font-serif text-xs font-bold text-stone-300 uppercase">
-                    {language === 'de' ? 'Kein Tribut berechnet' : 'No Offerings Computed'}
+                    {language === 'de' ? 'Kein Tribut berechnet' : language === 'pl' ? 'Nie obliczono ofiary' : 'No Offerings Computed'}
                   </h4>
                   <p className="text-[10px] text-stone-500 max-w-[200px] mt-1">
                     {language === 'de' 
                       ? 'Wählen Sie Karawanenreisen aus der Liste aus, um Ihren steuerlichen Tribut im Diagramm darzustellen.' 
+                      : language === 'pl'
+                      ? 'Wybierz podróże karawan z listy kontrolnej, aby przedstawić swoje ofiary finansowe na wykresie.'
                       : 'Select caravan voyages from the checklist to map your fiscal tribute in the chart.'}
                   </p>
                 </div>
@@ -367,7 +371,7 @@ export default function ExcursionExpenseCalculator({ bookings }: ExcursionExpens
                                 className="space-y-0.5"
                               >
                                 <span className="text-[9px] font-mono text-stone-500 uppercase tracking-widest block">
-                                  {language === 'de' ? 'Gesamttribut' : 'Total Offering'}
+                                  {language === 'de' ? 'Gesamttribut' : language === 'pl' ? 'Suma ofiar' : 'Total Offering'}
                                 </span>
                                 <span className={`font-mono text-2xl font-black leading-none block transition-colors ${
                                   isBudgetExceeded ? 'text-red-400' : 'text-[#d4af37]'
@@ -376,8 +380,8 @@ export default function ExcursionExpenseCalculator({ bookings }: ExcursionExpens
                                 </span>
                                 <span className="text-[8px] text-stone-400 font-serif uppercase tracking-wider block">
                                   {selectedBookings.length} {selectedBookings.length === 1 
-                                    ? (language === 'de' ? 'Reise aktiv' : 'Trip Active') 
-                                    : (language === 'de' ? 'Reisen aktiv' : 'Trips Active')}
+                                    ? (language === 'de' ? 'Reise aktiv' : language === 'pl' ? 'Aktywna podróż' : 'Trip Active') 
+                                    : (language === 'de' ? 'Reisen aktiv' : language === 'pl' ? 'Aktywne podróże' : 'Trips Active')}
                                 </span>
                               </motion.div>
                             )}
@@ -401,7 +405,7 @@ export default function ExcursionExpenseCalculator({ bookings }: ExcursionExpens
                       >
                         <div className="flex items-center justify-center gap-1.5 text-red-400 font-mono text-[10px] font-bold uppercase tracking-wider">
                           <AlertTriangle className="w-3.5 h-3.5" />
-                          <span>{language === 'de' ? 'Tributgrenze überschritten!' : 'Treasury Cap Exceeded!'}</span>
+                          <span>{language === 'de' ? 'Tributgrenze überschritten!' : language === 'pl' ? 'Przekroczono limit skarbu!' : 'Treasury Cap Exceeded!'}</span>
                         </div>
                         <p className="text-stone-300 text-[10px] leading-relaxed max-w-xs mx-auto">
                           {language === 'de' ? (
@@ -409,6 +413,12 @@ export default function ExcursionExpenseCalculator({ bookings }: ExcursionExpens
                               Das Opfer übersteigt die Obergrenze um{' '}
                               <span className="text-red-400 font-bold font-mono">${totalCost - budgetLimit}</span>
                               . Die Königliche Schatzkammer ist überlastet! Passen Sie die Pläne an oder erhöhen Sie das Limit.
+                            </>
+                          ) : language === 'pl' ? (
+                            <>
+                              Oferta przekracza limit o{' '}
+                              <span className="text-red-400 font-bold font-mono">${totalCost - budgetLimit}</span>
+                              . Królewski skarbiec jest przeciążony! Dostosuj plany lub podnieś limit.
                             </>
                           ) : (
                             <>
@@ -429,7 +439,7 @@ export default function ExcursionExpenseCalculator({ bookings }: ExcursionExpens
                         <div className="space-y-0.5">
                           <div className="flex items-center justify-center gap-1 text-[9px] uppercase tracking-wider font-mono text-stone-500">
                             <User className="w-3 h-3 text-stone-400" />
-                            <span>{language === 'de' ? 'Gäste gesamt' : 'Total Guests'}</span>
+                            <span>{language === 'de' ? 'Gäste gesamt' : language === 'pl' ? 'Suma gości' : 'Total Guests'}</span>
                           </div>
                           <span className="text-sm font-bold text-[#e6c280] font-mono">{totalGuests}</span>
                         </div>
@@ -439,7 +449,7 @@ export default function ExcursionExpenseCalculator({ bookings }: ExcursionExpens
                         <div className="space-y-0.5">
                           <div className="flex items-center justify-center gap-1 text-[9px] uppercase tracking-wider font-mono text-stone-500">
                             <TrendingUp className="w-3 h-3 text-stone-400" />
-                            <span>{language === 'de' ? 'Schnitt pro Gast' : 'Avg Per Guest'}</span>
+                            <span>{language === 'de' ? 'Schnitt pro Gast' : language === 'pl' ? 'Śr. na gościa' : 'Avg Per Guest'}</span>
                           </div>
                           <span className="text-sm font-bold text-[#d4af37] font-mono">${avgCostPerGuest}</span>
                         </div>

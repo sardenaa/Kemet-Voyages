@@ -165,6 +165,11 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
     "Głębinowe życie morskie i nurkowanie",
     "Adrenalinowe pustynne safari i przejażdżki na wielbłądach",
     "Faraońskie świątynie i starożytna egiptologia (wycieczki do Luksoru)"
+  ] : language === 'cs' ? [
+    "Vyvážené poznávání (korály, poušť, historie)",
+    "Hlubinný mořský život a potápění",
+    "Adrenalinové pouštní safari a jízda na velbloudu",
+    "Faraonské chrámy a starověká egyptologie (výlety do Luxoru)"
   ] : [
     "Balanced Exploration (Corals, Desert, History)",
     "Deep-Sea Marine Life & Diving",
@@ -180,6 +185,10 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
     "Rekreacyjne (wolniejsze tempo, rejsy o zachodzie słońca i lekkie spacery po rafie)",
     "Zrównoważone (aktywna eksploracja + relaks w świątyniach)",
     "Intensywne (jazda na quadach o wschodzie słońca, głębokie nurkowanie, całodniowe wędrówki po zabytkach)"
+  ] : language === 'cs' ? [
+    "Pohodové (pomalé tempo, plavby při západu slunce a lehké procházky po útesech)",
+    "Vyvážené (aktivní poznávání + odpočinek v chrámech)",
+    "Intensivní (ranní jízda v dunách, hluboké potápění, celodenní pěší túry po památkách)"
   ] : [
     "Leisurely (Slower-paced, sunset sails & light reef walks)",
     "Balanced (Active exploration + temple relaxation)",
@@ -196,6 +205,11 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
     "Para / Partnerzy",
     "Królewska rodzina (z dziećmi)",
     "Grupa odkrywców (znajomi/grupa)"
+  ] : language === 'cs' ? [
+    "Sólo dobrodruh",
+    "Pár / partneři",
+    "Královská rodina (včetně dětí)",
+    "Skupina objevitelů (přátelé/skupina)"
   ] : [
     "Solo Adventurer",
     "Couple / Partners",
@@ -233,7 +247,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
     } catch (err: any) {
       console.warn("Express endpoint failed or unconfigured, utilizing royal scribe fallback: ", err);
       // Fallback elegant customized simulated itinerary based on user inputs
-      const simulated: CustomItinerary = generateFallbackItinerary(duration, interest, intensity);
+      const simulated: CustomItinerary = generateFallbackItinerary(duration, interest, intensity, language);
       setItinerary(simulated);
       onScribeSuccess?.();
     } finally {
@@ -308,7 +322,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
     } catch (err) {
       console.warn("Express chat failed, utilizing offline scribe response.");
       // Simulated wise responses
-      const reply = getOfflineScribeResponse(userMsg.text);
+      const reply = getOfflineScribeResponse(userMsg.text, language);
       setTimeout(() => {
         setChatMessages(prev => [...prev, {
           id: `scribe-${Date.now()}`,
@@ -635,27 +649,27 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                       <button
                         onClick={() => setShowPrintModal(true)}
                         className="bg-[#8b6508] hover:bg-[#6e4e03] text-white px-4 py-2 rounded-xl text-xs font-serif font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer active:scale-95 group/btn border border-yellow-600/30"
-                        title={language === 'de' ? 'Reiseplan exportieren (PDF)' : language === 'pl' ? 'Eksportuj plan podróży (PDF)' : 'Export Itinerary (PDF)'}
+                        title={language === 'de' ? 'Reiseplan exportieren (PDF)' : language === 'pl' ? 'Eksportuj plan podróży (PDF)' : language === 'cs' ? 'Exportovat itinerář (PDF)' : 'Export Itinerary (PDF)'}
                       >
                         <Printer className="w-3.5 h-3.5 text-yellow-200 group-hover/btn:scale-110 transition-transform" />
-                        <span>{language === 'de' ? 'Reiseplan exportieren' : language === 'pl' ? 'Eksportuj plan' : 'Export Itinerary'}</span>
+                        <span>{language === 'de' ? 'Reiseplan exportieren' : language === 'pl' ? 'Eksportuj plan' : language === 'cs' ? 'Exportovat itinerář' : 'Export Itinerary'}</span>
                       </button>
 
                       {onAddBooking && (
                         <button
                           onClick={initExportBooking}
                           className="bg-gradient-to-r from-[#d4af37] to-[#b08e23] hover:from-[#e6c280] hover:to-[#d4af37] text-[#140f0a] px-4 py-2 rounded-xl text-xs font-serif font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer active:scale-95 group/btn border border-yellow-600/30"
-                          title={language === 'de' ? 'Buchungsanfrage für diesen Reiseplan senden' : language === 'pl' ? 'Prześlij prośbę o rezerwację tego planu' : 'Submit booking request for this itinerary'}
+                          title={language === 'de' ? 'Buchungsanfrage für diesen Reiseplan senden' : language === 'pl' ? 'Prześlij prośbę o rezerwację tego planu' : language === 'cs' ? 'Odeslat žádost o rezervaci tohoto itineráře' : 'Submit booking request for this itinerary'}
                         >
                           <Calendar className="w-3.5 h-3.5 text-[#140f0a] group-hover/btn:scale-110 transition-transform" />
-                          <span>{language === 'de' ? 'Reise buchen' : language === 'pl' ? 'Zarezerwuj plan' : 'Book Itinerary'}</span>
+                          <span>{language === 'de' ? 'Reise buchen' : language === 'pl' ? 'Zarezerwuj plan' : language === 'cs' ? 'Rezervovat itinerář' : 'Book Itinerary'}</span>
                         </button>
                       )}
                     </div>
 
                     <div className="text-center border-b-2 border-[#8b6508]/20 pb-6 mb-6 md:pr-48">
                       <span className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#8b6508] font-bold">
-                        {language === 'de' ? 'Ihr individueller Reiseplan' : language === 'pl' ? 'Twój spersonalizowany plan podróży' : 'Your Customized Travel Plan'}
+                        {language === 'de' ? 'Ihr individueller Reiseplan' : language === 'pl' ? 'Twój spersonalizowany plan podróży' : language === 'cs' ? 'Váš spersonalizovaný plán cesty' : 'Your Customized Travel Plan'}
                       </span>
                       <h3 className="font-serif text-3xl font-black text-[#5c4001] tracking-wide mt-1 uppercase">
                         {itinerary.title}
@@ -685,10 +699,10 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                         </div>
                         <div className="text-right flex md:flex-col items-baseline md:items-end gap-1.5">
                           <span className="text-xs font-mono font-bold text-[#8b6508] bg-[#faf3e0] px-2 py-0.5 rounded border border-[#8b6508]/20 shadow-sm">
-                            {totalActivities} / {targetActivities} {language === 'de' ? 'Aktivitäten' : language === 'pl' ? 'Aktywności' : 'Activities'}
+                            {totalActivities} / {targetActivities} {language === 'de' ? 'Aktivitäten' : language === 'pl' ? 'Aktywności' : language === 'cs' ? 'Aktivity' : 'Activities'}
                           </span>
                           <span className="text-xs font-serif font-black text-[#5c4001]">
-                            {progressPercent}% {language === 'de' ? 'Abgeschlossen' : language === 'pl' ? 'Ukończono' : 'Complete'}
+                            {progressPercent}% {language === 'de' ? 'Abgeschlossen' : language === 'pl' ? 'Ukończono' : language === 'cs' ? 'Dokončeno' : 'Complete'}
                           </span>
                         </div>
                       </div>
@@ -721,9 +735,9 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
 
                       {/* Progress Marks */}
                       <div className="flex justify-between text-[9px] font-mono text-stone-500 mt-1.5 px-1">
-                        <span>{language === 'de' ? 'Kurztrip' : language === 'pl' ? 'Krótki wyjazd' : 'Short Trip'} (0%)</span>
-                        <span className={`${progressPercent >= 50 ? 'text-[#8b6508] font-bold' : ''}`}>{language === 'de' ? 'Ausgewogen' : language === 'pl' ? 'Zrównoważony' : 'Balanced'} (50%)</span>
-                        <span className={`${progressPercent === 100 ? 'text-[#8b6508] font-bold' : ''}`}>{language === 'de' ? 'Volles Erlebnis' : language === 'pl' ? 'Pełne doświadczenie' : 'Full Experience'} (100%)</span>
+                        <span>{language === 'de' ? 'Kurztrip' : language === 'pl' ? 'Krótki wyjazd' : language === 'cs' ? 'Krátký výlet' : 'Short Trip'} (0%)</span>
+                        <span className={`${progressPercent >= 50 ? 'text-[#8b6508] font-bold' : ''}`}>{language === 'de' ? 'Ausgewogen' : language === 'pl' ? 'Zrównoważony' : language === 'cs' ? 'Vyvážený' : 'Balanced'} (50%)</span>
+                        <span className={`${progressPercent === 100 ? 'text-[#8b6508] font-bold' : ''}`}>{language === 'de' ? 'Volles Erlebnis' : language === 'pl' ? 'Pełne doświadczenie' : language === 'cs' ? 'Plný zážitek' : 'Full Experience'} (100%)</span>
                       </div>
                     </div>
 
@@ -743,7 +757,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
 
                           <div className="space-y-2">
                             <h4 className="font-serif text-lg font-bold text-[#5c4001] uppercase flex items-center gap-2">
-                              {language === 'de' ? 'Tag' : language === 'pl' ? 'Dzień' : 'Day'} {day.dayNumber}: {day.theme}
+                              {language === 'de' ? 'Tag' : language === 'pl' ? 'Dzień' : language === 'cs' ? 'Den' : 'Day'} {day.dayNumber}: {day.theme}
                             </h4>
                             
                             {/* Interactive Activities list */}
@@ -764,7 +778,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                                   <button
                                     onClick={() => removeActivity(day.dayNumber, i)}
                                     className="text-stone-400 hover:text-red-700 p-1 rounded-md hover:bg-red-50 transition-colors opacity-0 group-hover/item:opacity-100 focus:opacity-100 cursor-pointer"
-                                    title={language === 'de' ? 'Aktivität entfernen' : language === 'pl' ? 'Usuń tę aktywność' : 'Remove this activity'}
+                                    title={language === 'de' ? 'Aktivität entfernen' : language === 'pl' ? 'Usuń tę aktywność' : language === 'cs' ? 'Odebrat tuto aktivitu' : 'Remove this activity'}
                                   >
                                     <span className="text-xs font-bold font-mono">✕</span>
                                   </button>
@@ -787,7 +801,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                               >
                                 <input
                                   type="text"
-                                  placeholder={language === 'de' ? 'Eigene Aktivität eingeben...' : language === 'pl' ? 'Wpisz własną aktywność...' : 'Enter custom activity...'}
+                                  placeholder={language === 'de' ? 'Eigene Aktivität eingeben...' : language === 'pl' ? 'Wpisz własną aktywność...' : language === 'cs' ? 'Zadejte vlastní aktivitu...' : 'Enter custom activity...'}
                                   value={newActivityInputs[day.dayNumber] || ""}
                                   onChange={(e) => setNewActivityInputs(prev => ({ ...prev, [day.dayNumber]: e.target.value }))}
                                   className="flex-1 bg-[#fcfaf4] border border-[#8b6508]/25 rounded-lg px-3 py-1.5 text-xs text-stone-800 focus:outline-none focus:ring-1 focus:ring-[#8b6508] placeholder-stone-400"
@@ -797,7 +811,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                                   className="bg-[#8b6508] hover:bg-[#6e4e03] text-white px-3 py-1.5 rounded-lg text-xs font-serif font-bold transition-all shadow-sm flex items-center gap-1 cursor-pointer active:scale-95"
                                 >
                                   <span>+</span>
-                                  <span>{language === 'de' ? 'Hinzufügen' : language === 'pl' ? 'Dodaj' : 'Add'}</span>
+                                  <span>{language === 'de' ? 'Hinzufügen' : language === 'pl' ? 'Dodaj' : language === 'cs' ? 'Přidat' : 'Add'}</span>
                                 </button>
                               </form>
                             </div>
@@ -805,7 +819,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                             {/* Scribe Wisdom Box */}
                             <div className="mt-3 bg-[#f2e7c9] border border-[#8b6508]/15 rounded-lg p-3 text-xs text-stone-600 italic">
                               <span className="font-serif font-bold text-[#8b6508] block not-italic mb-1 uppercase tracking-wider">
-                                {language === 'de' ? '𓋹 Historischer & kultureller Tipp:' : language === 'pl' ? '𓋹 Wskazówka historyczno-kulturowa:' : '𓋹 Historical & Cultural Tip:'}
+                                {language === 'de' ? '𓋹 Historischer & kultureller Tipp:' : language === 'pl' ? '𓋹 Wskazówka historyczno-kulturowa:' : language === 'cs' ? '𓋹 Historický a kulturní tip:' : '𓋹 Historical & Cultural Tip:'}
                               </span>
                               {day.scribeWisdom}
                             </div>
@@ -837,9 +851,9 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
             className="flex flex-col h-[550px]"
           >
             <div className="text-center mb-4">
-              <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">{language === 'de' ? 'KI-Chat' : language === 'pl' ? 'Czat AI' : 'AI Chat'}</span>
+              <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">{language === 'de' ? 'KI-Chat' : language === 'pl' ? 'Czat AI' : language === 'cs' ? 'AI Chat' : 'AI Chat'}</span>
               <h2 className="font-serif text-2xl font-bold text-[#e6c280] mt-1 uppercase">
-                {language === 'de' ? 'Mit KI-Reiseführer chatten' : language === 'pl' ? 'Rozmawiaj z przewodnikiem AI' : 'Chat with AI Travel Guide'}
+                {language === 'de' ? 'Mit KI-Reiseführer chatten' : language === 'pl' ? 'Rozmawiaj z przewodnikiem AI' : language === 'cs' ? 'Chatovat s AI průvodcem' : 'Chat with AI Travel Guide'}
               </h2>
             </div>
 
@@ -859,7 +873,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                   >
                     {/* Timestamp */}
                     <div className={`text-[9px] font-mono mb-1 ${msg.role === 'user' ? 'text-[#140f0a]/60' : 'text-stone-500'}`}>
-                      {msg.role === 'user' ? (language === 'de' ? 'Reisender' : language === 'pl' ? 'Podróżnik' : 'Traveler') : (language === 'de' ? 'Schreiber Sennedjem' : language === 'pl' ? 'Pisarz Sennedjem' : 'Scribe Sennedjem')} • {msg.timestamp}
+                      {msg.role === 'user' ? (language === 'de' ? 'Reisender' : language === 'pl' ? 'Podróżnik' : language === 'cs' ? 'Cestovatel' : 'Traveler') : (language === 'de' ? 'Schreiber Sennedjem' : language === 'pl' ? 'Pisarz Sennedjem' : language === 'cs' ? 'Písař Sennedjem' : 'Scribe Sennedjem')} • {msg.timestamp}
                     </div>
                     <p>{msg.text}</p>
                   </div>
@@ -876,7 +890,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                       >
                         𓋹
                       </motion.div>
-                      <span className="italic tracking-wide text-[#e6c280]/95">{language === 'de' ? 'KI-Reiseführer schreibt...' : language === 'pl' ? 'Przewodnik AI pisze...' : 'AI Travel Guide is writing...'}</span>
+                      <span className="italic tracking-wide text-[#e6c280]/95">{language === 'de' ? 'KI-Reiseführer schreibt...' : language === 'pl' ? 'Przewodnik AI pisze...' : language === 'cs' ? 'AI průvodce píše...' : 'AI Travel Guide is writing...'}</span>
                     </div>
                     {/* Floating gold hieroglyphs typing transition */}
                     <div className="flex items-center gap-3 bg-[#1c1611] px-4 py-2 rounded-xl border border-[#d4af37]/10 w-fit">
@@ -922,6 +936,8 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                   ? 'Fragen Sie nach historischen Stätten, Tauchplätzen, Wüstensafaris oder der Übersetzung eines Namens...'
                   : language === 'pl'
                   ? 'Zapytaj o miejsca historyczne, miejsca do nurkowania, safari pustynne lub przetłumaczenie imienia...'
+                  : language === 'cs'
+                  ? 'Zeptejte se na historická místa, potápěčské lokality, pouštní safari nebo na překlad jména...'
                   : 'Ask about historical sites, diving spots, desert safaris, or translating a name...'}
                 className="flex-1 bg-[#201a14] border border-[#d4af37]/45 rounded-xl py-3 px-4 text-[#f3e5c8] text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/50"
                 id="scribe-chat-input"
@@ -932,7 +948,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                 id="scribe-chat-send-btn"
               >
                 <Send className="w-4 h-4 text-[#140f0a]" />
-                {language === 'de' ? 'Senden' : language === 'pl' ? 'Wyślij' : 'Send'}
+                {language === 'de' ? 'Senden' : language === 'pl' ? 'Wyślij' : language === 'cs' ? 'Odeslat' : 'Send'}
               </button>
             </form>
           </motion.div>
@@ -965,13 +981,15 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
               <div className="bg-[#f2e7c9] border-l-4 border-[#8b6508] p-4 rounded-r-lg mb-6 shadow-sm">
                 <h4 className="font-serif text-sm font-bold text-[#5c4001] uppercase flex items-center gap-1.5">
                   <Printer className="w-4 h-4 text-[#8b6508]" />
-                  {language === 'de' ? 'Reiseplan exportieren & drucken' : language === 'pl' ? 'Eksportuj i wydrukuj plan' : 'Export & Print Itinerary'}
+                  {language === 'de' ? 'Reiseplan exportieren & drucken' : language === 'pl' ? 'Eksportuj i wydrukuj plan' : language === 'cs' ? 'Exportovat a vytisknout itinerář' : 'Export & Print Itinerary'}
                 </h4>
                 <p className="text-xs text-stone-700 mt-1 leading-relaxed">
                   {language === 'de' 
                     ? 'Ihr maßgeschneiderter Reiseplan ist fertig! Klicken Sie auf "Reiseplan drucken", um das Druckmenü Ihres Browsers zu öffnen. Sie können "Als PDF speichern" wählen, um eine digitale Kopie zu speichern, oder ihn direkt ausdrucken.'
                     : language === 'pl'
                     ? 'Twój spersonalizowany plan podróży jest gotowy! Kliknij „Wydrukuj plan podróży”, aby otworzyć menu drukowania przeglądarki. Możesz wybrać „Zapisz jako PDF”, aby zachować kopię cyfrową, lub wydrukować go bezpośrednio.'
+                    : language === 'cs'
+                    ? 'Váš spersonalizovaný plán cesty je připraven! Kliknutím na "Vytisknout itinerář" otevřete tiskové menu vašeho prohlížeče. Můžete zvolit "Uložit jako PDF" pro uchování digitální kopie, nebo jej přímo vytisknout.'
                     : 'Your custom travel plan is ready! Click Print Itinerary to open your browser\'s print menu. You can choose Save as PDF to save a digital copy or print it directly.'}
                 </p>
               </div>
@@ -980,7 +998,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
               <div className="border-4 border-double border-[#8b6508]/40 p-4 md:p-6 bg-[#fbf8ee]/70 rounded-xl space-y-6 max-h-[50vh] overflow-y-auto mb-6">
                 <div className="text-center border-b-2 border-[#8b6508]/20 pb-4 mb-4">
                   <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-[#8b6508] font-bold block mb-1">
-                    {language === 'de' ? 'Ihr maßgeschneiderter Reiseplan' : language === 'pl' ? 'Twój spersonalizowany plan podróży' : 'Your Customized Travel Plan'}
+                    {language === 'de' ? 'Ihr maßgeschneiderter Reiseplan' : language === 'pl' ? 'Twój spersonalizowany plan podróży' : language === 'cs' ? 'Váš spersonalizovaný plán cesty' : 'Your Customized Travel Plan'}
                   </span>
                   <h3 className="font-serif text-2xl font-black text-[#5c4001] uppercase">
                     {itinerary.title}
@@ -995,7 +1013,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                   {itinerary.days.map((day) => (
                     <div key={day.dayNumber} className="space-y-1.5">
                       <h4 className="font-serif text-sm font-bold text-[#5c4001] uppercase">
-                        {language === 'de' ? `Tag ${day.dayNumber}: ${day.theme}` : language === 'pl' ? `Dzień ${day.dayNumber}: ${day.theme}` : `Day ${day.dayNumber}: ${day.theme}`}
+                        {language === 'de' ? `Tag ${day.dayNumber}: ${day.theme}` : language === 'pl' ? `Dzień ${day.dayNumber}: ${day.theme}` : language === 'cs' ? `Den ${day.dayNumber}: ${day.theme}` : `Day ${day.dayNumber}: ${day.theme}`}
                       </h4>
                       <ul className="list-disc list-inside space-y-1 text-stone-700 text-xs pl-2">
                         {day.activities.map((act, i) => (
@@ -1019,7 +1037,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                   onClick={() => setShowPrintModal(false)}
                   className="px-4 py-2 border border-[#8b6508]/30 rounded-xl text-xs font-semibold hover:bg-stone-200/50 transition-colors cursor-pointer"
                 >
-                  {language === 'de' ? 'Abbrechen' : language === 'pl' ? 'Anuluj' : 'Cancel'}
+                  {language === 'de' ? 'Abbrechen' : language === 'pl' ? 'Anuluj' : language === 'cs' ? 'Zrušit' : 'Cancel'}
                 </button>
                 <button
                   onClick={() => {
@@ -1028,7 +1046,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                   className="bg-[#8b6508] hover:bg-[#6e4e03] text-white px-5 py-2.5 rounded-xl text-xs font-serif font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95 border border-yellow-600/30"
                 >
                   <Printer className="w-4 h-4 text-yellow-200" />
-                  <span>{language === 'de' ? 'Reiseplan drucken (oder als PDF speichern)' : language === 'pl' ? 'Wydrukuj plan podróży (lub zapisz jako PDF)' : 'Print Itinerary (or Save as PDF)'}</span>
+                  <span>{language === 'de' ? 'Reiseplan drucken (oder als PDF speichern)' : language === 'pl' ? 'Wydrukuj plan podróży (lub zapisz jako PDF)' : language === 'cs' ? 'Vytisknout itinerář (nebo uložit jako PDF)' : 'Print Itinerary (or Save as PDF)'}</span>
                 </button>
               </div>
             </motion.div>
@@ -1056,23 +1074,25 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                 type="button"
                 onClick={() => setShowExportBookingModal(false)}
                 className="absolute top-4 right-4 text-stone-400 hover:text-red-400 p-2 rounded-full transition-colors cursor-pointer z-20"
-                title={language === 'de' ? 'Abbrechen' : language === 'pl' ? 'Anuluj' : 'Cancel'}
+                title={language === 'de' ? 'Abbrechen' : language === 'pl' ? 'Anuluj' : language === 'cs' ? 'Zrušit' : 'Cancel'}
               >
                 <X className="w-5 h-5" />
               </button>
 
               <div className="text-center border-b border-[#d4af37]/25 pb-4 mb-5">
                 <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.25em] block mb-1">
-                  {language === 'de' ? '𓋹 Heilige Registerinschrift 𓋹' : language === 'pl' ? '𓋹 Święty wpis do rejestru 𓋹' : '𓋹 Sacred Ledger Inscription 𓋹'}
+                  {language === 'de' ? '𓋹 Heilige Registerinschrift 𓋹' : language === 'pl' ? '𓋹 Święty wpis do rejestru 𓋹' : language === 'cs' ? '𓋹 Posvátný zápis do registru 𓋹' : '𓋹 Sacred Ledger Inscription 𓋹'}
                 </span>
                 <h3 className="font-serif text-xl font-bold text-[#e6c280] uppercase tracking-wide">
-                  {language === 'de' ? 'Maßgeschneiderte Reise buchen' : language === 'pl' ? 'Zarezerwuj spersonalizowaną podróż' : 'Book Custom Itinerary'}
+                  {language === 'de' ? 'Maßgeschneiderte Reise buchen' : language === 'pl' ? 'Zarezerwuj spersonalizowaną podróż' : language === 'cs' ? 'Rezervovat spersonalizovanou cestu' : 'Book Custom Itinerary'}
                 </h3>
                 <p className="text-stone-400 text-xs mt-1">
                   {language === 'de' 
                     ? 'Senden Sie eine ausstehende Buchungsanfrage für:' 
                     : language === 'pl'
                     ? 'Wyślij oczekujące zapytanie rezerwacyjne na:'
+                    : language === 'cs'
+                    ? 'Odeslat předběžnou žádost o rezervaci pro:'
                     : 'Submit a pending booking request for:'}{' '}
                   <span className="text-amber-300 font-semibold">{itinerary.title}</span>
                 </p>
@@ -1088,13 +1108,15 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                     𓋹
                   </motion.div>
                   <h4 className="font-serif text-lg font-bold text-emerald-400 uppercase tracking-wider">
-                    {language === 'de' ? 'Erfolgreich eingetragen!' : language === 'pl' ? 'Pomyślnie zapisano!' : 'Inscribed Successfully!'}
+                    {language === 'de' ? 'Erfolgreich eingetragen!' : language === 'pl' ? 'Pomyślnie zapisano!' : language === 'cs' ? 'Úspěšně zapsáno!' : 'Inscribed Successfully!'}
                   </h4>
                   <p className="text-stone-300 text-xs max-w-sm mx-auto leading-relaxed">
                     {language === 'de' 
                       ? 'Ihre maßgeschneiderte Reiseanfrage ist nun im heiligen Buchungsregister besiegelt. Die Hohenpriester prüfen Ihre Anfrage.'
                       : language === 'pl'
                       ? 'Twoje spersonalizowane zapytanie o podróż zostało zapieczętowane w świętej księdze rezerwacji. Arcykapłani sprawdzają Twoją prośbę.'
+                      : language === 'cs'
+                      ? 'Vaše spersonalizovaná žádost o cestu je nyní zpečetěna v posvátné knize rezervací. Arcykněží vaši žádost kontrolují.'
                       : 'Your custom voyage request is now sealed inside the sacred Booking Ledger. The high priests are reviewing your petition.'}
                   </p>
                 </div>
@@ -1108,12 +1130,12 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
 
                   <div className="space-y-1">
                     <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-400">
-                      {language === 'de' ? 'Name des Entdeckers' : language === 'pl' ? 'Imię odkrywcy' : 'Explorer Name'}
+                      {language === 'de' ? 'Name des Entdeckers' : language === 'pl' ? 'Imię odkrywcy' : language === 'cs' ? 'Jméno objevitele' : 'Explorer Name'}
                     </label>
                     <input
                       type="text"
                       required
-                      placeholder={language === 'de' ? 'z. B. Edler Schreiber Sophia' : language === 'pl' ? 'np. Szlachetny Pisarz Zofia' : 'e.g. Noble Scribe Sophia'}
+                      placeholder={language === 'de' ? 'z. B. Edler Schreiber Sophia' : language === 'pl' ? 'np. Szlachetny Pisarz Zofia' : language === 'cs' ? 'např. Ušlechtilý písař Sofie' : 'e.g. Noble Scribe Sophia'}
                       value={bookingTravelerName}
                       onChange={(e) => setBookingTravelerName(e.target.value)}
                       className="w-full bg-[#110d0a] border border-[#d4af37]/25 rounded-xl p-3 text-stone-200 text-xs focus:outline-none focus:border-[#d4af37] transition-colors"
@@ -1122,7 +1144,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
 
                   <div className="space-y-1">
                     <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-400">
-                      {language === 'de' ? 'E-Mail des Entdeckers' : language === 'pl' ? 'E-mail odkrywcy' : 'Explorer Email'}
+                      {language === 'de' ? 'E-Mail des Entdeckers' : language === 'pl' ? 'E-mail odkrywcy' : language === 'cs' ? 'E-mail objevitele' : 'Explorer Email'}
                     </label>
                     <input
                       type="email"
@@ -1137,7 +1159,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-400">
-                        {language === 'de' ? 'Abreisedatum' : language === 'pl' ? 'Data wyjazdu' : 'Departure Date'}
+                        {language === 'de' ? 'Abreisedatum' : language === 'pl' ? 'Data wyjazdu' : language === 'cs' ? 'Datum odjezdu' : 'Departure Date'}
                       </label>
                       <input
                         type="date"
@@ -1150,7 +1172,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
 
                     <div className="space-y-1">
                       <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-400">
-                        {language === 'de' ? 'Anzahl der Gäste' : language === 'pl' ? 'Liczba gości' : 'Number of Guests'}
+                        {language === 'de' ? 'Anzahl der Gäste' : language === 'pl' ? 'Liczba gości' : language === 'cs' ? 'Počet hostů' : 'Number of Guests'}
                       </label>
                       <input
                         type="number"
@@ -1166,7 +1188,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
 
                   <div className="space-y-1">
                     <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-400">
-                      {language === 'de' ? 'Besondere Wünsche & Eigene Inschrift' : language === 'pl' ? 'Specjalne życzenia i własny wpis' : 'Special Requests & Custom Inscription'}
+                      {language === 'de' ? 'Besondere Wünsche & Eigene Inschrift' : language === 'pl' ? 'Specjalne życzenia i własny wpis' : language === 'cs' ? 'Zvláštní přání a vlastní nápis' : 'Special Requests & Custom Inscription'}
                     </label>
                     <textarea
                       rows={3}
@@ -1180,10 +1202,10 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                   <div className="bg-[#241c14] border border-[#d4af37]/20 rounded-xl p-3.5 flex justify-between items-center">
                     <div>
                       <span className="text-[10px] font-mono text-stone-400 uppercase tracking-wider block">
-                        {language === 'de' ? 'Geschätzte Opfergabe' : language === 'pl' ? 'Szacowany koszt oferty' : 'Estimated Offering Cost'}
+                        {language === 'de' ? 'Geschätzte Opfergabe' : language === 'pl' ? 'Szacowany koszt oferty' : language === 'cs' ? 'Odhadovaná obětina' : 'Estimated Offering Cost'}
                       </span>
                       <span className="text-[11px] text-stone-500">
-                        ({duration} {language === 'de' ? 'Tage' : language === 'pl' ? 'Dni' : 'Days'} • {bookingGuestsCount} {language === 'de' ? 'Gäste' : language === 'pl' ? 'Goście' : 'Guests'})
+                        ({duration} {language === 'de' ? 'Tage' : language === 'pl' ? 'Dni' : language === 'cs' ? 'Dní' : 'Days'} • {bookingGuestsCount} {language === 'de' ? 'Gäste' : language === 'pl' ? 'Goście' : language === 'cs' ? 'Hosté' : 'Guests'})
                       </span>
                     </div>
                     <span className="font-mono text-xl font-bold text-[#d4af37]">
@@ -1197,7 +1219,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                       onClick={() => setShowExportBookingModal(false)}
                       className="flex-1 border border-stone-800 hover:bg-stone-900 text-stone-400 py-3 rounded-xl text-xs font-mono uppercase tracking-widest transition-colors cursor-pointer"
                     >
-                      {language === 'de' ? 'Abbrechen' : language === 'pl' ? 'Anuluj' : 'Cancel'}
+                      {language === 'de' ? 'Abbrechen' : language === 'pl' ? 'Anuluj' : language === 'cs' ? 'Zrušit' : 'Cancel'}
                     </button>
                     <button
                       type="submit"
@@ -1233,13 +1255,15 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
                 ? '𓋹 Heilige Reisedepesche von Sennedjem, königlicher Schreiber 𓋹' 
                 : language === 'pl'
                 ? '𓋹 Święta Karta Podróży Sennedjema, Królewskiego Pisarza 𓋹' 
+                : language === 'cs'
+                ? '𓋹 Posvátná cestovní listina písaře Sennedjema, královského písaře 𓋹'
                 : '𓋹 Sacred Travel Charter of Sennedjem, Royal Scribe 𓋹'}
             </span>
             <h1 className="font-serif text-4xl font-black text-[#5c4001] tracking-wide uppercase">
               {itinerary.title}
             </h1>
             <p className="text-xs text-stone-500 italic mt-2 font-serif">
-              {language === 'de' ? 'Eingetragen im Nil-Kalender,' : language === 'pl' ? 'Zapisano w kalendarzu nilowym,' : 'Inscribed on the Nile Calendar,'} {new Date().toLocaleDateString(undefined, { dateStyle: 'full' })}
+              {language === 'de' ? 'Eingetragen im Nil-Kalender,' : language === 'pl' ? 'Zapisano w kalendarzu nilowym,' : language === 'cs' ? 'Zapsáno v nilském kalendáři,' : 'Inscribed on the Nile Calendar,'} {new Date().toLocaleDateString(undefined, { dateStyle: 'full' })}
             </p>
           </div>
 
@@ -1251,7 +1275,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
             {itinerary.days.map((day) => (
               <div key={day.dayNumber} className="print-avoid-break border-b border-[#8b6508]/20 pb-6 last:border-0">
                 <h3 className="font-serif text-xl font-bold text-[#5c4001] uppercase flex items-center gap-2 mb-3">
-                  <span className="text-[#8b6508]">{language === 'de' ? 'Tag' : language === 'pl' ? 'Dzień' : 'Day'} {day.dayNumber}:</span> {day.theme}
+                  <span className="text-[#8b6508]">{language === 'de' ? 'Tag' : language === 'pl' ? 'Dzień' : language === 'cs' ? 'Den' : 'Day'} {day.dayNumber}:</span> {day.theme}
                 </h3>
                 
                 <ul className="space-y-2 text-stone-800 text-sm pl-4 list-disc mb-4">
@@ -1262,7 +1286,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
 
                 <div className="bg-[#f2e7c9] border border-[#8b6508]/20 rounded-lg p-4 text-xs text-stone-700 italic">
                   <span className="font-serif font-bold text-[#8b6508] block not-italic mb-1 uppercase tracking-wider">
-                    {language === 'de' ? '𓋹 Alte Weisheit des Schreibers:' : language === 'pl' ? '𓋹 Starożytna mądrość pisarza:' : '𓋹 Scribe\'s Ancient Wisdom:'}
+                    {language === 'de' ? '𓋹 Alte Weisheit des Schreibers:' : language === 'pl' ? '𓋹 Starożytna mądrość pisarza:' : language === 'cs' ? '𓋹 Starožitná mądrość písaře:' : "𓋹 Scribe's Ancient Wisdom:"}
                   </span>
                   {day.scribeWisdom}
                 </div>
@@ -1285,108 +1309,274 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
 }
 
 // Generate fallback itinerary in case Gemini key isn't provided
-function generateFallbackItinerary(days: number, focus: string, pace: string): CustomItinerary {
+function generateFallbackItinerary(days: number, focus: string, pace: string, language?: string): CustomItinerary {
   const lowercaseFocus = focus.toLowerCase();
   
   let daysArray: any[] = [];
   
-  if (lowercaseFocus.includes("diving") || lowercaseFocus.includes("corals")) {
+  const isDe = language === 'de';
+  const isPl = language === 'pl';
+  const isCs = language === 'cs';
+
+  if (lowercaseFocus.includes("diving") || lowercaseFocus.includes("corals") || lowercaseFocus.includes("tauch") || lowercaseFocus.includes("nurkow") || lowercaseFocus.includes("potápě")) {
     daysArray = [
       {
         dayNumber: 1,
-        theme: "Anointing of Nun (Red Sea Arrival)",
-        activities: [
+        theme: isDe ? "Salbung von Nun (Ankunft am Roten Meer)" : isPl ? "Namaszczenie Nun (Przybycie nad Morze Czerwone)" : isCs ? "Pomazání Nun (Příjezd k Rudému moři)" : "Anointing of Nun (Red Sea Arrival)",
+        activities: isDe ? [
+          "Begrüßen Sie die kristallklaren Ufer von Hurghada und beziehen Sie Ihre königliche Unterkunft am Strand",
+          "Eine Schnorchelsafari am Nachmittag an den Riffen der Giftun-Insel unter dem warmen Auge von Ra",
+          "Entspannen Sie sich auf einem traditionellen hölzernen Felucca-Segelboot bei Sonnenuntergang und lauschen Sie alten nubischen Flöten"
+        ] : isPl ? [
+          "Powitaj krystaliczne brzegi Hurghady, meldując się w swojej nadmorskiej królewskiej kwaterze",
+          "Popołudniowe safari snurkowym na rafach wyspy Giftun pod ciepłym okiem Ra",
+          "Zrelaksuj się na tradycyjnej drewnianej łodzi żaglowej Felucca o zachodzie słońca, słuchając starożytnych nubijskich fletów"
+        ] : isCs ? [
+          "Přivítejte křišťálové břehy Hurghady a ubytujte se ve svém královském ubytování na pláži",
+          "Odpolední šnorchlovací safari u útesů ostrova Giftun pod hřejivým dohledem boha Ra",
+          "Odpočiňte si na tradiční dřevěné plachetnici Felucca při západu slunce za doprovodu starověkých nubijských fléten"
+        ] : [
           "Greet the crystalline shores of Hurghada, checking into your beachside royal lodging",
           "An afternoon snorkeling safari at Giftun Island reefs under the warm eye of Ra",
           "Unwind on a traditional sunset wooden Felucca sailboat listening to ancient Nubian flutes"
         ],
-        scribeWisdom: "In Kemet myth, the primordial waters are called 'Nun'. Respect the sea's currents; they are the ancient currents of creation itself. Remember to apply coral-safe sun protection."
+        scribeWisdom: isDe 
+          ? "In der Kemet-Mythologie werden die Urgewässer 'Nun' genannt. Respektieren Sie die Strömungen des Meeres; sie sind die uralten Strömungen der Schöpfung selbst. Denken Sie daran, korallenfreundlichen Sonnenschutz aufzutragen."
+          : isPl
+          ? "W mitologii Kemet wody pierwotne nazywane są 'Nun'. Szanuj prądy morskie; są to starożytne prądy samego stworzenia. Pamiętaj o nałożeniu filtra bezpiecznego dla rafy koralowej."
+          : isCs
+          ? "V egyptské mytologii se prvotní vody nazývají 'Nun'. Respektujte mořské proudy; jsou to starověké proudy samotného stvoření. Nezapomeňte použít opalovací krém šetrný ke korálům."
+          : "In Kemet myth, the primordial waters are called 'Nun'. Respect the sea's currents; they are the ancient currents of creation itself. Remember to apply coral-safe sun protection."
       },
       {
         dayNumber: 2,
-        theme: "The Abyss of Ras Mohammed",
-        activities: [
+        theme: isDe ? "Der Abgrund von Ras Mohammed" : isPl ? "Otchłań Ras Mohammed" : isCs ? "Propast Ras Mohammed" : "The Abyss of Ras Mohammed",
+        activities: isDe ? [
+          "Morgendlicher Transfer mit dem Schnellboot zum Meeresschutzgebiet Ras Mohammed",
+          "Erster tiefer Tauchgang am 'Yolanda Reef' mit Blick auf riesige Korallen, Hammerhaie und alte versunkene Amphoren",
+          "Gourmet-Mittagessen, frisch an Bord zubereitet von lokalen Seefahrer-Beduinen"
+        ] : isPl ? [
+          "Poranny transfer szybką łodzią do Rezerwatu Morskiego Ras Mohammed",
+          "Pierwsze głębokie nurkowanie na 'Yolanda Reef' podziwiając gigantyczne koralowce, młoty i starożytne zatopione amfory",
+          "Wykwintny lunch przygotowany świeżo na pokładzie przez lokalnych beduińskich żeglarzy"
+        ] : isCs ? [
+          "Ranní transfer rychlým člunem do mořské rezervace Ras Mohammed",
+          "První hloubkový ponor na útesu 'Yolanda Reef' s pozorováním obřích korálů, kladivounů a starověkých potopených amfor",
+          "Gurmánský oběd čerstvě připravený na palubě místními beduínskými námořníky"
+        ] : [
           "Morning high-speed boat transfer to the Ras Mohammed Marine Sanctuary",
           "First deep scuba dive at 'Yolanda Reef' gazing at giant corals, hammerheads, and ancient submerged amphorae",
           "Gourmet lunch cooked fresh on board by local seafaring Bedouins"
         ],
-        scribeWisdom: "Gaze upon the corals, which resemble the lotus flower of Nefertem. The deep sea holds treasures of peace; keep your breathing steady like the reed in the wind."
+        scribeWisdom: isDe
+          ? "Betrachten Sie die Korallen, die der Lotusblume von Nefertem ähneln. Die Tiefsee birgt Schätze des Friedens; halten Sie Ihren Atem ruhig wie das Schilf im Wind."
+          : isPl
+          ? "Spójrz na koralowce, które przypominają kwiat lotosu Nefertema. Głębokie morze kryje skarby spokoju; zachowaj spokojny oddech, jak trzcina na wietrze."
+          : isCs
+          ? "Pohleďte na korály, které připomínají lotosový květ boha Nefertema. Hluboké moře skrývá poklady klidu; udržujte svůj dech stabilní jako rákos ve větru."
+          : "Gaze upon the corals, which resemble the lotus flower of Nefertem. The deep sea holds treasures of peace; keep your breathing steady like the reed in the wind."
       },
       {
         dayNumber: 3,
-        theme: "Temple of the Submerged Pharaohs",
-        activities: [
+        theme: isDe ? "Tempel der versunkenen Pharaonen" : isPl ? "Świątynia Zatopionych Faraonów" : isCs ? "Chrám potopených faraonů" : "Temple of the Submerged Pharaohs",
+        activities: isDe ? [
+          "Spezialisierte Tauch-/Schnorchelerkundung des 'Hauses der Steinstatuen' auf der Suche nach versunkenen pharaonischen Monumenten",
+          "Abendliche Sternenbeobachtung an der Küste mit einem Ägyptologen, der erklärt, wie antike Astronomen den Himmel von Nut kartierten",
+          "Ein üppiges Meeresfrüchte-Festmahl, verfeinert mit ägyptischem Kreuzkümmel und lokaler Limette"
+        ] : isPl ? [
+          "Specjalistyczna wycieczka nurkowa/snurkowa do Domu Kamiennych Posągów w poszukiwaniu zatopionych faraońskich zabytków",
+          "Wieczorna sesja obserwacji gwiazd nad wybrzeżem z egiptologiem wyjaśniającym, jak starożytni astronomowie mapowali niebo Nut",
+          "Wspaniała uczta z owoców morza przyprawiona egipskim kminem rzymskim i lokalną limonką"
+        ] : isCs ? [
+          "Specializovaný ponor/šnorchlování v Domě kamenných soch s hledáním potopených faraonských památek",
+          "Večerní pozorování hvězd na pobřeží s egyptologem, který vám přiblíží, jak starověcí astronomové mapovali nebe bohyně Nut",
+          "Bohatá hostina z mořských plodů ochucená egyptským kmínem a místní limetkou"
+        ] : [
           "A specialized dive/snorkel exploration of the House of Stone Statues, searching for the submerged Pharaonic monuments",
           "Evening stargazing session by the coast with an Egyptologist detailing how ancient astronomers mapped the sky of Nut",
           "A lavish seafood feast flavored with Egyptian cumin and local lime"
         ],
-        scribeWisdom: "Ancient sailors navigated the Red Sea to Punt (Somalia) to retrieve rare frankincense for Hatshepsut. The stars you see tonight guided their cedar ships safely back."
+        scribeWisdom: isDe
+          ? "Antike Seefahrer navigierten auf dem Roten Meer nach Punt (Somalia), um seltenen Weihrauch für Hatschepsut zu holen. Die Sterne, die Sie heute Nacht sehen, führten ihre Zedernholzschiffe sicher zurück."
+          : isPl
+          ? "Starożytni żeglarze pływali po Morzu Czerwonym do Punt (Somalia), aby sprowadzić rzadkie kadzidło dla Hatszepsut. Gwiazdy, które widzisz dzisiaj, bezpiecznie poprowadziły ich cedrowe statki z powrotem."
+          : isCs
+          ? "Starověcí mořeplavci se plavili po Rudém moři do země Punt (Somálsko), aby přivezli vzácné kadidlo pro královnu Hatšepsut. Hvězdy, které dnes vidíte, bezpečně vedly jejich cedrové lodě zpět."
+          : "Ancient sailors navigated the Red Sea to Punt (Somalia) to retrieve rare frankincense for Hatshepsut. The stars you see tonight guided their cedar ships safely back."
       }
     ];
-  } else if (lowercaseFocus.includes("safari") || lowercaseFocus.includes("desert")) {
+  } else if (lowercaseFocus.includes("safari") || lowercaseFocus.includes("desert") || lowercaseFocus.includes("wüste") || lowercaseFocus.includes("pustyn") || lowercaseFocus.includes("poušť")) {
     daysArray = [
       {
         dayNumber: 1,
-        theme: "The Red Dunes of Hurghada",
-        activities: [
+        theme: isDe ? "Die Roten Dünen von Hurghada" : isPl ? "Czerwone Wydmy Hurghady" : isCs ? "Červené duny Hurghady" : "The Red Dunes of Hurghada",
+        activities: isDe ? [
+          "Nachmittags Abholung im klimatisierten 4x4 Offroader zur Durchquerung der Wüstenebenen",
+          "Rasen mit dem Quad über goldene Sandwellen und um hochragende Sinai-Felsnadeln",
+          "Ankunft in einem traditionellen, abgelegenen Beduinenlager, Begrüßung mit frischem Hibiskustee (Karkadeh)"
+        ] : isPl ? [
+          "Popołudniowy odbiór klimatyzowanym samochodem terenowym 4x4 w celu przemierzenia pustynnych równin",
+          "Szybka jazda na quadach po złotych wydmach i wokół strzelistych iglic skalnych Synaju",
+          "Przyjazd do tradycyjnego, ustronnego obozu beduińskiego, powitanie świeżą herbatą z hibiskusa (Karkadeh)"
+        ] : isCs ? [
+          "Odpolední vyzvednutí klimatizovaným terénním vozem 4x4 a cesta přes pouštní pláně",
+          "Rychlá jízda na čtyřkolkách po zlatých písečných dunách a kolem tyčících se skalních jehel na Sinaji",
+          "Příjezd do tradičního odlehlého beduínského tábora, uvítání čerstvým ibiškovým čajem (Karkadeh)"
+        ] : [
           "Afternoon pickup in an air-conditioned 4x4 off-road vehicle to cross the desert plains",
           "High-speed quad biking across golden sand ripples and around towering Sinai rock needles",
           "Arrival at a traditional secluded Bedouin camp, welcoming you with fresh hibiscus tea (Karkadeh)"
         ],
-        scribeWisdom: "The desert is 'Deshret', the red land, ruled by Set, the god of storms and wilderness. Tread with honor; the sands have memory. Dress in loose linens to shield your skin from the sun's fire."
+        scribeWisdom: isDe
+          ? "Die Wüste ist 'Deshret', das rote Land, regiert von Set, dem Gott der Stürme und der Wildnis. Wandeln Sie mit Ehrfurcht; der Sand hat ein Gedächtnis. Tragen Sie lockeres Leinen, um Ihre Haut vor dem Feuer der Sonne zu schützen."
+          : isPl
+          ? "Pustynia to 'Deshret', czerwona ziemia rządzona przez Seta, boga burz i dziczy. Stąpaj z honorem; piaski mają pamięć. Noś luźne lniane ubrania, aby chronić skórę przed żarem słońca."
+          : isCs
+          ? "Poušť je 'Dešret', červená země, které vládne Sutech (Set), bůh bouří a divočiny. Kráčejte s úctou; písek má paměť. Oblečte si volný len, abyste chránili svou pokožku před žárem slunce."
+          : "The desert is 'Deshret', the red land, ruled by Set, the god of storms and wilderness. Tread with honor; the sands have memory. Dress in loose linens to shield your skin from the sun's fire."
       },
       {
         dayNumber: 2,
-        theme: "The Caravan of Nut",
-        activities: [
+        theme: isDe ? "Die Karawane von Nut" : isPl ? "Karawana Nut" : isCs ? "Karavana bohyně Nut" : "The Caravan of Nut",
+        activities: isDe ? [
+          "Sonnenaufgangs-Kamelexpedition in die stillen, tiefen Täler im ruhigen Tempo der antiken Karawanen",
+          "Lernen Sie die beduinische Kunst, traditionelles ungesäuertes Fladenbrot über offener Akazienkohle zu backen",
+          "Eine aufregende Wüstenfahrt mit dem Dünenbuggy, während die Sonne hinter dem Horizont versinkt"
+        ] : isPl ? [
+          "Wyprawa na wielbłądach o wschodzie słońca w ciche, głębokie doliny, dopasowana do spokojnego tempa starożytnych karawan",
+          "Poznaj beduińską sztukę wypieku tradycyjnego przaśnego chleba na otwartych węglach akacjowych",
+          "Ekscytująca wycieczka buggy po pustyni, gdy słońce zaczyna chować się za horyzontem"
+        ] : isCs ? [
+          "Expedice na velbloudech při východu slunce do tichých hlubokých údolí v klidném tempu starověkých karavan",
+          "Naučte se beduínskému umění pečení tradičního nekvašeného chleba na rozžhaveném akáciovém uhlí",
+          "Vzrušující jízda v pouštní bugině v době, kdy slunce začíná zapadat za obzor"
+        ] : [
           "Sunrise camel expedition into the quiet deep valleys, matching the calm tempo of the ancient caravans",
           "Learn the Bedouin art of baking traditional unleavened flatbread over open acacia coals",
           "A thrilling dune-buggy desert racing tour as the sun begins to dip below the horizon"
         ],
-        scribeWisdom: "Camel caravans have carried gold, spices, and copper since the times of Ramses. Let the slow rocking rhythm of the camel align your spirit with the pacing of the dunes."
+        scribeWisdom: isDe
+          ? "Kamelkarawanen transportieren seit den Zeiten von Ramses Gold, Gewürze und Kupfer. Lassen Sie den langsam schaukelnden Rhythmus des Kamels Ihren Geist auf das Tempo der Dünen einstimmen."
+          : isPl
+          ? "Karawany wielbłądów przewoziły złoto, przyprawy i miedź od czasów Ramzesu. Pozwól, aby powolny, kołyszący rytm wielbłąda zsynchronizował Twojego ducha z tempem wydm."
+          : isCs
+          ? "Karavany velbloudů přepravovaly zlato, koření a měď již od dob Ramesse II. Nechte pomalý houpavý rytmus velblouda sladit vaši mysl s tempem dun."
+          : "Camel caravans have carried gold, spices, and copper since the times of Ramses. Let the slow rocking rhythm of the camel align your spirit with the pacing of the dunes."
       },
       {
         dayNumber: 3,
-        theme: "The Midnight Oracle & Stars",
-        activities: [
+        theme: isDe ? "Das Mitternachtsorakel & die Sterne" : isPl ? "Północna Wyrocznia i Gwiazdy" : isCs ? "Půlnoční věštírna a hvězdy" : "The Midnight Oracle & Stars",
+        activities: isDe ? [
+          "Traditionelles Beduinenfestmahl mit langsam gegartem Lammfleisch, ägyptischem Fladenbrot und Sesam-Tahini",
+          "Live-Unterhaltung am Lagerfeuer mit ägyptischen Rababa-Instrumenten und dem mystischen Tannoura-Wirbeltanz",
+          "Beobachtung des Nachthimmels mit einem leistungsstarken Teleskop unter der kristallklaren, pechschwarzen Wüstenkuppel"
+        ] : isPl ? [
+          "Tradycyjna beduińska uczta z wolno pieczoną jagnięciną, egipskim chlebem i sezamową tahini",
+          "Rozrywka na żywo przy ognisku z egipskimi instrumentami Rababa i mistycznym tańcem obrotowym Tannoura",
+          "Obserwacja nieba przez potężny teleskop pod krystalicznie czystą, ciemną kopułą pustyni"
+        ] : isCs ? [
+          "Tradiční beduínská hostina s pomalu pečeným jehněčím masem, egyptským chlebem a sezamovou tahini",
+          "Zábava u táborového ohně s tradičními egyptskými nástroji Rababa a mystickým točivým tancem Tannoura",
+          "Pozorování noční oblohy výkonným dalekohledem pod křišťálově čistou a dokonale temnou pouštní klenbou"
+        ] : [
           "Traditional Bedouin feast with slow-roasted lamb, Egyptian flatbread, and sesame tahini",
           "Live fireside entertainment featuring Egyptian Rababa instruments and the mystical Tannoura spiral dance",
           "Powerful telescope stargazing session under the crystal clear pitch-black desert dome"
         ],
-        scribeWisdom: "The goddess Nut bends over the earth, her body studded with stars. Look for the constellation Sah (Orion), which represented the mighty soul of Osiris rising in the night."
+        scribeWisdom: isDe
+          ? "Die Göttin Nut beugt sich über die Erde, ihr Körper ist mit Sternen übersät. Suchen Sie nach dem Sternbild Sah (Orion), das die mächtige Seele von Osiris darstellt, die sich in der Nacht erhebt."
+          : isPl
+          ? "Bogini Nut pochyla się nad ziemią, a jej ciało usiane jest gwiazdami. Poszukaj gwiazdozaworu Sah (Orion), który reprezentował potężną duszę Ozyrysa wschodzącą w nocy."
+          : isCs
+          ? "Bohyně Nut se klene nad zemí a její tělo je poseto hvězdami. Hledejte souhvězdí Sah (Orion), které představovalo mocnou duši boha Usira (Osirida) stoupající k nočnímu nebi."
+          : "The goddess Nut bends over the earth, her body studded with stars. Look for the constellation Sah (Orion), which represented the mighty soul of Osiris rising in the night."
       }
     ];
-  } else if (lowercaseFocus.includes("history") || lowercaseFocus.includes("temple") || lowercaseFocus.includes("luxor")) {
+  } else if (lowercaseFocus.includes("history") || lowercaseFocus.includes("temple") || lowercaseFocus.includes("luxor") || lowercaseFocus.includes("geschicht") || lowercaseFocus.includes("histor") || lowercaseFocus.includes("chram") || lowercaseFocus.includes("pamat")) {
     daysArray = [
       {
         dayNumber: 1,
-        theme: "Pilgrimage to Waset (Luxor Journey)",
-        activities: [
+        theme: isDe ? "Wallfahrt nach Waset (Luxor-Reise)" : isPl ? "Pielgrzymka do Waset (Podróż do Luksoru)" : isCs ? "Pouť do Vesetu (Cesta do Luxoru)" : "Pilgrimage to Waset (Luxor Journey)",
+        activities: isDe ? [
+          "Malerische Fahrt bei Sonnenaufgang von der Küste des Roten Meeres durch die hohen Berge ins Nil-Tal",
+          "Ankunft in Waset (Luxor), der glorreichen Hauptstadt des Neuen Reiches von Ägypten",
+          "Spaziergang auf der großen Allee der Sphinxe, die den Luxor-Tempel mit der riesigen Tempelanlage von Karnak verbindet"
+        ] : isPl ? [
+          "Malownicza podróż o wschodzie słońca z wybrzeża Morza Czerwonego przez wysokie góry do Doliny Nilu",
+          "Przyjazd do Waset (Luksor), wspaniałej stolicy Nowego Państwa Egipskiego",
+          "Spacer wzdłuż wspaniałej Alei Sfinksów łączącej Świątynię Luksoru z ogromnym kompleksem świątynnym w Karnaku"
+        ] : isCs ? [
+          "Malebná cesta při východu slunce od pobřeží Rudého moře přes vysoké hory do údolí Nilu",
+          "Příjezd do Vesetu (Luxoru), slavného hlavního města Nové říše Egypta",
+          "Procházka po velkolepé Aleji sfing, která spojuje chrám v Luxoru s obrovským komplexem v Karnaku"
+        ] : [
           "Scenic sunrise journey from the Red Sea coast through the high mountains to the Nile Valley",
           "Arrival in Waset (Luxor), the glorious capital of the New Kingdom of Egypt",
           "Walk the grand Avenue of Sphinxes, connecting Luxor Temple and the immense Karnak Temple complex"
         ],
-        scribeWisdom: "Karnak is the largest temple complex ever constructed by human hands, built over 2,000 years. Touch the giant sandstone pillars to connect with the divine architectural genius of Imhotep."
+        scribeWisdom: isDe
+          ? "Karnak ist der größte jemals von Menschenhand errichtete Tempelkomplex, erbaut über 2.000 Jahre. Berühren Sie die riesigen Sandsteinsäulen, um sich mit dem genialen architektonischen Geist von Imhotep zu verbinden."
+          : isPl
+          ? "Karnak to największy kompleks świątynny, jaki kiedykolwiek wzniesiono ludzkimi rękami, budowany przez ponad 2000 lat. Dotknij gigantycznych piaskowcowych filarów, aby połączyć się z boskim architektonicznym geniuszem Imhotepa."
+          : isCs
+          ? "Karnak je největší chrámový komplex, jaký byl kdy lidskou rukou postaven, budovaný po více než 2 000 let. Dotkněte se obřích pískovcových sloupů a spojte se s božským architektonickým géniem Imhotepem."
+          : "Karnak is the largest temple complex ever constructed by human hands, built over 2,000 years. Touch the giant sandstone pillars to connect with the divine architectural genius of Imhotep."
       },
       {
         dayNumber: 2,
-        theme: "The Valley of the Shadows",
-        activities: [
+        theme: isDe ? "Das Tal der Schatten" : isPl ? "Dolina Cieni" : isCs ? "Údolí stínů" : "The Valley of the Shadows",
+        activities: isDe ? [
+          "Überquerung des heiligen Nils im Morgengrauen zum Westufer, dem Reich der Toten",
+          "Hinabsteigen in die farbenfroh bemälten Gräber im Tal der Könige, darunter Tutanchamun und Ramses IV.",
+          "Ehrfürchtiges Staunen vor den Memnonkolossen, zwei riesigen Steinstatuen, die im Wüstenwind flüstern"
+        ] : isPl ? [
+          "Przeprawa przez święty Nil o świcie na Zachodni Brzeg, domenę umarłych",
+          "Zejście do tętniących życiem, malowanych podziemnych grobowców w Dolinie Królów, w tym Tutenchamona i Ramzesa IV",
+          "Podziwiaj Kolosy Memnona, dwa masywne kamienne posągi szepczące na pustynnym wietrze"
+        ] : isCs ? [
+          "Přechod posvátného Nilu za úsvitu na západní břeh, do říše mrtvých",
+          "Sestup do pestrobarevně zdobených podzemních hrobek v Údolí králů, včetně hrobky Tutanchamona a Ramesse IV.",
+          "Zastavení v němém úžasu před Memnonovými kolosy, dvěma obřími kamennými sochami šeptajícími v pouštním větru"
+        ] : [
           "Cross the sacred Nile River at dawn to the West Bank, the domain of the dead",
           "Descend into the vibrantly painted underground tombs of the Valley of the Kings, including Tutankhamun and Ramses IV",
           "Stand in awe before the Colossi of Memnon, two massive stone statues whispering in the desert wind"
         ],
-        scribeWisdom: "The West Bank is where Ra sets, entering the Underworld (Duat). The tomb walls are decorated with the Book of Gates to guide the Pharaohs through tests of the afterlife. Keep silent inside to honor the dead."
+        scribeWisdom: isDe
+          ? "Am Westufer geht Ra unter und betritt die Unterwelt (Duat). Die Grabwände sind mit dem Buch der Pforten verziert, um die Pharaonen durch die Prüfungen des Jenseits zu führen. Schweigen Sie im Inneren, um die Toten zu ehren."
+          : isPl
+          ? "Na Zachodnim Brzegu Ra zachodzi, wkraczając do Zaświatów (Duat). Ściany grobowców są ozdobione Księgą Bram, aby prowadzić faraonów przez próby życia pośmiertnego. Zachowaj ciszę w środku, aby uczcić zmarłych."
+          : isCs
+          ? "Na západním břehu slunce (Ra) zapadá a vstupuje do podsvětí (Duat). Stěny hrobek jsou zdobeny Knihou bran, která provází faraony zkouškami posmrtného života. Uvnitř zachovávejte ticho k uctění zesnulých."
+          : "The West Bank is where Ra sets, entering the Underworld (Duat). The tomb walls are decorated with the Book of Gates to guide the Pharaohs through tests of the afterlife. Keep silent inside to honor the dead."
       },
       {
         dayNumber: 3,
-        theme: "The Temple of the Sun Queen",
-        activities: [
+        theme: isDe ? "Der Tempel der Sonnenkönigin" : isPl ? "Świątynia Królowej Słońca" : isCs ? "Chrám sluneční královny" : "The Temple of the Sun Queen",
+        activities: isDe ? [
+          "Erkundung des terrassierten Totentempels der Königin Hatschepsut, der direkt in die steilen Klippen von Deir el-Bahari gehauen wurde",
+          "Traditionelle Felucca-Bootsfahrt auf dem Nil zurück zum Ostufer, mit lokalen Datteln und Honigkuchen",
+          "Rückreise zur Küste des Roten Meeres unter einem Baldachin aus Wüstensternen"
+        ] : isPl ? [
+          "Eksploracja tarasowej świątyni grobowej królowej Hatszepsut, wykutej bezpośrednio w stromych klifach Deir el-Bahari",
+          "Tradycyjny rejs łodzią Felucca po Nilu z powrotem na Wschodni Brzeg, jedzenie lokalnych daktyli i ciastek miodowych",
+          "Podróż powrotna na wybrzeże Morza Czerwonego pod baldachimem pustynnych gwiazd"
+        ] : isCs ? [
+          "Průzkum terasovitého chrámového komplexu královny Hatšepsut, vytesaného přímo do strmých útesů Deir el-Bahrí",
+          "Tradiční plavba lodí Felucca po Nilu zpět na východní břeh, ochutnávka místních datlí a medových koláčků",
+          "Návrat k pobřeží Rudého moře pod nebeskou klenbou pouštních hvězd"
+        ] : [
           "Explore the terraced mortuary temple of Queen Hatshepsut, carved directly into the sheer cliffs of Deir el-Bahari",
           "A traditional Felucca boat ride on the Nile back to the East Bank, dining on local dates and honey cakes",
           "Return trip to the Red Sea coast under a canopy of desert stars"
         ],
-        scribeWisdom: "Hatshepsut was one of Egypt's greatest pharaohs, ruling as a king. Her temple design is a masterpiece of symmetry and matches the rhythm of the cliffs. Be strong and independent in your life journeys."
+        scribeWisdom: isDe
+          ? "Hatschepsut war eine der größten Pharaoninnen Ägyptens und regierte als König. Ihr Tempeldesign ist ein Meisterwerk der Symmetrie und passt sich dem Rhythmus der Klippen an. Seien Sie stark und unabhängig auf Ihren Lebenswegen."
+          : isPl
+          ? "Hatszepsut była jednym z największych faraonów Egiptu, rządzącym jako król. Architektura jej świątyni to arcydzieło symetrii harmonizujące z rytmem klifów. Bądź silny i niezależny w swoich życiowych podróżach."
+          : isCs
+          ? "Hatšepsut byla jedním z největších egyptských faraonů a vládla jako král. Architektura jejího chrámu je mistrovským dílem symetrie, které dokonale ladí s rytmem útesů. Buďte silní a nezávislí na svých životních cestách."
+          : "Hatshepsut was one of Egypt's greatest pharaohs, ruling as a king. Her temple design is a masterpiece of symmetry and matches the rhythm of the cliffs. Be strong and independent in your life journeys."
       }
     ];
   } else {
@@ -1394,33 +1584,87 @@ function generateFallbackItinerary(days: number, focus: string, pace: string): C
     daysArray = [
       {
         dayNumber: 1,
-        theme: "The Golden Shores of Kemet",
-        activities: [
+        theme: isDe ? "Die Goldenen Küsten von Kemet" : isPl ? "Złote Wybrzeża Kemet" : isCs ? "Zlaté břehy Kemetu" : "The Golden Shores of Kemet",
+        activities: isDe ? [
+          "Herzlicher pharaonischer Empfang am Roten Meer, Beziehen Ihres Küstenrückzugsortes",
+          "Nachmittags Schnorcheln im Hausriff mit neonglänzenden Papageienfischen und goldenen Anemonen",
+          "Ein stimmungsvolles Abendessen am Meer bei Fackelschein mit traditionellen ägyptischen Mezze-Tellern"
+        ] : isPl ? [
+          "Ciepłe faraońskie powitanie nad Morzem Czerwonym, zameldowanie w nadmorskim ustroniu",
+          "Popołudniowy snurkowanie na domowej rafie, podziwianie neonowoniebieskich papugoryb i złotych ukwiałów",
+          "Nastrojowa kolacja nad brzegiem morza przy blasku pochodni, tradycyjne egipskie dania Mezze"
+        ] : isCs ? [
+          "Vřelé faraonské přivítání u Rudého moře a ubytování ve vašem přímořském útočišti",
+          "Odpolední šnorchlování na domácím útesu s pozorováním neonově modrých ploskozubců a zlatých hřebenatek",
+          "Atmosférická večeře na pobřeží při svitu pochodní s tradičním egyptským předkrmem Mezze"
+        ] : [
           "Warm Pharaonic welcome at the Red Sea, checking into your coastal retreat",
           "Afternoon snorkeling in the house reef, seeing neon-blue parrotfish and golden anemones",
           "An atmospheric seaside dinner under torchlight, enjoying traditional Egyptian Mezze plates"
         ],
-        scribeWisdom: "Welcome to Kemet's great sea! The ancient pharaohs sent expeditions here to navigate to distant lands. Gaze out at the water and feel the serenity of Nun."
+        scribeWisdom: isDe
+          ? "Willkommen an Kemets großem Meer! Die alten Pharaonen sandten Expeditionen hierher, um ferne Länder zu befahren. Blicken Sie auf das Wasser und spüren Sie die Gelassenheit von Nun."
+          : isPl
+          ? "Witaj nad wielkim morzem Kemet! Starożytni faraonowie wysyłali stąd ekspedycje do odległych krajów. Spójrz na wodę i poczuj spokój Nun."
+          : isCs
+          ? "Vítejte u velkého moře Kemetu! Starověcí faraoni odtud vysílali expedice do dalekých zemí. Pohleďte na vodní hladinu a vnímejte klid Nun."
+          : "Welcome to Kemet's great sea! The ancient pharaohs sent expeditions here to navigate to distant lands. Gaze out at the water and feel the serenity of Nun."
       },
       {
         dayNumber: 2,
-        theme: "Set's Desert Sands & Bedouin Stars",
-        activities: [
+        theme: isDe ? "Sets Wüstensand & beduinische Sterne" : isPl ? "Pustynne Piaski Seta i Beduńskie Gwiazdy" : isCs ? "Sutechův pouštní písek a beduínské hvězdy" : "Set's Desert Sands & Bedouin Stars",
+        activities: isDe ? [
+          "Spannende Nachmittags-Quad-Tour über die rollenden Wüstensandwellen",
+          "Einzug in ein traditionelles Beduinenlager für frischen Minztee und Fotos im Sonnenuntergang",
+          "Epische Sternenbeobachtung mit Teleskopen in den dunklen Bergtälern, Lesen der Himmelsgeschichten von Nut"
+        ] : isPl ? [
+          "Ekscytująca popołudniowa wycieczka na quadach po falujących piaskach pustyni",
+          "Odpoczynek w tradycyjnym beduińskim obozie przy świeżej miętowej herbacie i zdjęcia o zachodzie słońca",
+          "Niesamowita obserwacja gwiazd przez teleskop w ciemnych dolinach górskich, czytanie opowieści z nieba Nut"
+        ] : isCs ? [
+          "Vzrušující odpolední jízda na čtyřkolkách po zvlněných pouštních dunách",
+          "Posezení v tradičním pouštním beduínském táboře u čerstvého mátového čaje a fotografování při západu slunce",
+          "Velkolepé pozorování hvězd dalekohledem v tmavých horských údolích a čtení nebeských příběhů bohyně Nut"
+        ] : [
           "Thrilling afternoon quad bike tour across the rolling desert sand waves",
           "Settle into a traditional desert Bedouin encampment for fresh mint tea and sunset photos",
           "Epic telescope stargazing in the black mountain valleys, reading the celestial tales of Nut"
         ],
-        scribeWisdom: "The desert air is pure, carrying the breath of Shu. In the silence of the dunes, you can hear the heartbeat of the Earth. Listen closely and find your inner peace."
+        scribeWisdom: isDe
+          ? "Die Wüstenluft ist rein und trägt den Atem von Shu. In der Stille der Dünen hören Sie den Herzschlag der Erde. Lauschen Sie genau und finden Sie Ihren inneren Frieden."
+          : isPl
+          ? "Pustynne powietrze jest czyste i niesie oddech Szu. W ciszy wydm usłyszysz bicie serca Ziemi. Słuchaj uważnie i znajdź swój wewnętrzny spokój."
+          : isCs
+          ? "Pouštní vzduch je čistý a nese dech boha Šu. V tichu dun můžete slyšet tlukot srdce samotné Země. Naslouchejte pozorně a najděte svůj vnitřní klid."
+          : "The desert air is pure, carrying the breath of Shu. In the silence of the dunes, you can hear the heartbeat of the Earth. Listen closely and find your inner peace."
       },
       {
         dayNumber: 3,
-        theme: "Pilgrimage to Karnak",
-        activities: [
+        theme: isDe ? "Wallfahrt nach Karnak" : isPl ? "Pielgrzymka do Karnaku" : isCs ? "Pouť do Karnaku" : "Pilgrimage to Karnak",
+        activities: isDe ? [
+          "Ganztägiger Ausflug über die Wüste nach Luxor, der antiken Stadt Waset",
+          "Erkunden Sie die Säulenhalle des Karnak-Tempels und wandern Sie zwischen 134 riesigen Sandsteinsäulen",
+          "Eine magische Felucca-Fahrt bei Sonnenuntergang auf dem heiligen Nil, mit lokal gewürztem Fleisch und süßen Datteln"
+        ] : isPl ? [
+          "Całodniowa wycieczka przez pustynię do Luksoru, starożytnego miasta Waset",
+          "Eksploruj Salę Kolumnową w Świątyni Karnak, spacerując wśród 134 masywnych filarów z piaskowca",
+          "Magiczny rejs łodzią Felucca o zachodzie słońca po świętym Nilu, kolacja z lokalnym przyprawionym mięsem i słodkimi daktylami"
+        ] : isCs ? [
+          "Celodenní výlet přes poušť do Luxoru, starověkého města Vesetu",
+          "Průzkum Velkého sloupového sálu v chrámu v Karnaku a procházka mezi 134 masivními pískovcovými sloupy",
+          "Magická plavba lodí Felucca při západu slunce po posvátné řece Nil, s ochutnávkou místního kořeněného masa a sladkých datlí"
+        ] : [
           "Full day excursion crossing the desert to Luxor, the ancient city of Waset",
           "Explore the Hypostyle Hall of Karnak Temple, wandering through 134 massive sandstones pillars",
           "A magical sunset Felucca cruise on the holy Nile River, dining on local spiced meats and sweet dates"
         ],
-        scribeWisdom: "The Nile is the lifespring of Egypt. As the sun sets over the West Bank, you witness the cycle of rebirth that inspired three thousand years of kings and queens."
+        scribeWisdom: isDe
+          ? "Der Nil ist die Lebensader Ägyptens. Wenn die Sonne am Westufer untergeht, werden Sie Zeuge des Zyklus der Wiedergeburt, der dreitausend Jahre von Königen und Königinnen inspirierte."
+          : isPl
+          ? "Nil jest źródłem życia Egiptu. Gdy słońce zachodzi nad Zachodnim Brzegiem, jesteś świadkiem cyklu odrodzenia, który inspirował królów i królowe przez trzy tysiące lat."
+          : isCs
+          ? "Nil je životodárnou tepnou Egypta. Když slunce zapadá nad západním břehem, stáváte se svědky cyklu znovuzrození, který po tři tisíce let inspiroval krále a královny."
+          : "The Nile is the lifespring of Egypt. As the sun sets over the West Bank, you witness the cycle of rebirth that inspired three thousand years of kings and queens."
       }
     ];
   }
@@ -1431,78 +1675,202 @@ function generateFallbackItinerary(days: number, focus: string, pace: string): C
       if (d === 4) {
         daysArray.push({
           dayNumber: 4,
-          theme: "El Gouna Lagoon Navigation",
-          activities: [
+          theme: isDe ? "El Gouna Lagunen-Navigation" : isPl ? "Nawigacja po Lagunie El Gouna" : isCs ? "Plavba v lagunách El Gouna" : "El Gouna Lagoon Navigation",
+          activities: isDe ? [
+            "Ein entspannter Tag beim Segeln durch die ruhigen türkisfarbenen Lagunen von El Gouna in einem traditionellen Boot",
+            "Schnorchelsafari am Riff 'Dolphin House', Schwimmen mit wilden Großen Tümmlern",
+            "Cocktailempfang bei Sonnenuntergang auf einer eleganten Hafenterrasse mit Harfenmusik"
+          ] : isPl ? [
+            "Relaksujący dzień pływania po cichych turkusowych lagunach El Gouny na tradycyjnej łodzi",
+            "Snurkowanie w rezerwacie 'Dolphin House', pływanie u boku dzikich delfinów butlonosych",
+            "Wieczorne przyjęcie koktajlowe na eleganckim tarasie w marinie z muzyką na harfie na żywo"
+          ] : isCs ? [
+            "Relaxační den strávený plavbou po klidných tyrkysových lagunách El Gouna na tradiční lodi",
+            "Šnorchlovací safari v zátoce 'Dolphin House' a plavání po boku divokých delfínů",
+            "Koktejlová recepce při západu slunce na elegantní terase v přístavu za doprovodu živé hudby"
+          ] : [
             "A relaxing day sailing through the quiet turquoise lagoons of El Gouna in a traditional boat",
             "Snorkeling safari at the 'Dolphin House' reef, swimming alongside wild bottle-nose dolphins",
             "Sunset cocktail reception on an elegant marina terrace with live harp music"
           ],
-          scribeWisdom: "Dolphins are wise creatures, friends of seafaring guardians. Treat them with deep respect, never rushing them, allowing them to swim alongside in peace."
+          scribeWisdom: isDe
+            ? "Delfine sind weise Kreaturen, Freunde seefahrender Wächter. Behandeln Sie sie mit tiefem Respekt und hetzen Sie sie niemals, damit sie friedlich mitschwimmen."
+            : isPl
+            ? "Delfiny to mądre stworzenia, przyjaciele morskich strażników. Traktuj je z głębokim szacunkiem, nigdy ich nie pospieszaj, pozwalając im pływać obok w spokoju."
+            : isCs
+            ? "Delfíni jsou moudrá stvoření, přátelé mořských strážců. Zacházejte s nimi s hlubokou úctou, nikdy na ně nespěchejte a nechte je plavat po vašem boku v klidu."
+            : "Dolphins are wise creatures, friends of seafaring guardians. Treat them with deep respect, never rushing them, allowing them to swim alongside in peace."
         });
       } else if (d === 5) {
         daysArray.push({
           dayNumber: 5,
-          theme: "The Monasteries of the Desert Fathers",
-          activities: [
+          theme: isDe ? "Die Klöster der Wüstenväter" : isPl ? "Klasztory Ojców Pustyni" : isCs ? "Kláštery pouštních otců" : "The Monasteries of the Desert Fathers",
+          activities: isDe ? [
+            "Morgendliche Reise in die rauen Hügel des Roten Meeres, um das St.-Antonius-Kloster zu besuchen, das älteste aktive Kloster der Welt",
+            "Wanderung zur Berghöhle des Heiligen Antonius mit spektakulärem Panoramablick auf die Wüstenwildnis",
+            "Ein herzhaftes Mittagessen mit lokalen Oliven, warmem Fladenbrot und frischem Ziegenkäse"
+          ] : isPl ? [
+            "Poranna podróż w góry Morza Czerwonego, aby odwiedzić klasztor św. Antoniego, najstarszy działający klasztor na świecie",
+            "Wędrówka do jaskini górskiej św. Antoniego, podziwianie spektakularnych panoramicznych widoków na pustynię",
+            "Pożywny lunch z lokalnymi oliwkami, ciepłym chlebem i świeżym kozim serem"
+          ] : isCs ? [
+            "Ranní cesta do drsných hor u Rudého moře a návštěva kláštera sv. Antonína, nejstaršího aktivního kláštera na světě",
+            "Výšlap k jeskyni sv. Antonína v horách, odkud se otevírá nádherný panoramatický výhled na pustou poušť",
+            "Vydatný oběd s místními olivami, teplým chlebem a čerstvým kozím sýrem"
+          ] : [
             "Morning journey into the rugged Red Sea hills to visit St. Anthony, the oldest active monastery in the world",
             "Hike the mountain cave of St. Anthony, gazing at spectacular panoramic desert wilderness views",
             "A hearty lunch featuring local olives, warm flatbread, and fresh goat cheese"
           ],
-          scribeWisdom: "These mountains have hosted spiritual hermits since the 4th century. The quietness of the hills acts as a purifying tonic for the active mind."
+          scribeWisdom: isDe
+            ? "Diese Berge beherbergen seit dem 4. Jahrhundert spirituelle Einsiedler. Die Stille der Hügel wirkt wie ein reinigendes Tonikum für den aktiven Geist."
+            : isPl
+            ? "W tych górach od IV wieku żyli duchowi pustelnicy. Cisza wzgórz działa jak oczyszczający balsam dla aktywnego umysłu."
+            : isCs
+            ? "V těchto horách žili duchovní poustevníci již od 4. století. Ticho zdejších kopců působí jako očistný balzám pro neklidnou mysl."
+            : "These mountains have hosted spiritual hermits since the 4th century. The quietness of the hills acts as a purifying tonic for the active mind."
         });
       } else if (d === 6) {
         daysArray.push({
           dayNumber: 6,
-          theme: "Sovereign Spa & Horus Bath",
-          activities: [
+          theme: isDe ? "Königliches Spa & Horus-Bad" : isPl ? "Królewskie Spa i Kąpiel Horusa" : isCs ? "Královské lázně a Horova koupel" : "Sovereign Spa & Horus Bath",
+          activities: isDe ? [
+            "Gönnen Sie sich ein exquises ägyptisches Spa-Ritual mit Meersalzpeelings, warmem Sesamöl und süßer Weihrauchmassage",
+            "Abendlicher Spaziergang durch die historische Altstadt von Hurghada (El Dahar), Mangosäfte probieren und Gewürzmärkte besuchen",
+            "Traditionelles ägyptisches Abendessen mit Koshary (dem legendären Komfortgericht aus Linsen, Reis und Makkaroni)"
+          ] : isPl ? [
+            "Zafunduj sobie wyjątkowy rytuał spa z użyciem peelingu z soli morskiej, ciepłego oleju sezamowego i masażu z pachnącym kadzidłem",
+            "Wieczorny spacer po zabytkowej starówce Hurghady (El Dahar), degustacja świeżych soków mango i wizyta na bazarach przypraw",
+            "Tradycyjna egipska kolacja składająca się z Koshary (legendarnego rozgrzewającego dania z soczewicy, ryżu i makaronu)"
+          ] : isCs ? [
+            "Dopřejte si jedinečný lázeňský rituál s peelingem z mořské soli, teplým sezamovým olejem a jemnou masáží s kadidlem",
+            "Večerní procházka historickým starým městem Hurghady (El Dahar), ochutnávka čerstvého mangového džusu a návštěva bazarů s kořením",
+            "Tradiční egyptská večeře s národním jídlem Košari (legendární pokrm z čočky, rýže, těstovin a pikantní omáčky)"
+          ] : [
             "Indulge in a signature Egyptian spa ritual utilizing sea salt scrubs, warm sesame oil, and sweet frankincense massage",
             "An evening stroll through Hurghada's historic Old Town (El Dahar), sampling local mango juices and visiting the spice bazaars",
             "Traditional Egyptian dinner featuring Koshary (the legendary spiced lentil, rice, and macaroni comfort dish)"
           ],
-          scribeWisdom: "Ancient queens like Cleopatra bathed in milk and honey to preserve their glow. Frankincense was worth more than gold, used to cleanse both physical and spiritual bodies."
+          scribeWisdom: isDe
+            ? "Antike Königinnen wie Cleopatra badeten in Milch und Honig, um ihre Ausstrahlung zu bewahren. Weihrauch war wertvoller als Gold und wurde zur Reinigung von Körper und Geist verwendet."
+            : isPl
+            ? "Starożytne królowe, takie jak Kleopatra, kąpały się w mleku i miodzie, aby zachować swój blask. Kadzidło było warte więcej niż złoto, używane do oczyszczania ciał fizycznych i duchowych."
+            : isCs
+            ? "Starověké královny jako Kleopatra se koupaly v mléce a medu, aby si uchovaly svůj půvab. Kadidlo mělo větší hodnotu než zlato a používalo se k očištění těla i ducha."
+            : "Ancient queens like Cleopatra bathed in milk and honey to preserve their glow. Frankincense was worth more than gold, used to cleanse both physical and spiritual bodies."
         });
       } else if (d === 7) {
         daysArray.push({
           dayNumber: 7,
-          theme: "The Blessing of Ra (Departure)",
-          activities: [
+          theme: isDe ? "Der Segen von Ra (Abreise)" : isPl ? "Błogosławieństwo Ra (Wyjazd)" : isCs ? "Požehnání boha Ra (Odjezd)" : "The Blessing of Ra (Departure)",
+          activities: isDe ? [
+            "Eine abschließende Meditation bei Sonnenaufgang am Strand zur Begrüßung des aufsteigenden Sonnengottes Khepri",
+            "Letzte Souvenirkäufe im Jachthafen, Erwerb von lokalen Papyrusrollen und Statuen aus reinem Alabaster",
+            "Privater Transfer in einer königlichen Kutsche zurück zum Flughafen für Ihren Rückflug"
+          ] : isPl ? [
+            "Ostatnia medytacja o wschodzie słońca na plaży, pozdrawiająca wschodzącego boga słońca Khepri",
+            "Zakupy pamiątek w marinie w ostatniej chwili, zakup lokalnych zwojów papirusu i posążków z czystego alabastru",
+            "Prywatny transfer królewskim powozem z powrotem na lotnisko przed powrotem do domu"
+          ] : isCs ? [
+            "Závěrečná meditace při východu slunce na pláži a pozdrav vycházejícímu bohu slunce Cheperovi",
+            "Nákupy suvenýrů v přístavu na poslední chvíli, nákup originálních papyrusů a sošek z čistého alabastru",
+            "Soukromý transfer luxusním vozem zpět na letiště a odlet domů"
+          ] : [
             "A final sunrise meditation on the beach, saluting the rising sun god Khepri",
             "Last-minute souvenir shopping in the marina, acquiring local papyrus scrolls and pure alabaster statues",
             "Private royal chariot transfer back to the airport for your departure back home"
           ],
-          scribeWisdom: "Every departure is merely a cycle of return. May Ra make his face shine upon your travels, and may your heart remain light as a feather on Ma'at's scale of justice."
+          scribeWisdom: isDe
+            ? "Jede Abreise ist nur ein Kreislauf der Rückkehr. Möge Ra sein Gesicht über Ihren Reisen leuchten lassen, und möge Ihr Herz leicht wie eine Fehter auf Ma'ats Waagschale der Gerechtigkeit bleiben."
+            : isPl
+            ? "Każde odejście jest tylko cyklem powrotu. Niech Ra rozświetli swoje oblicze nad Twoimi podróżami, a Twoje serce niech pozostanie lekkie jak piórko na szali sprawiedliwości Maat."
+            : isCs
+            ? "Každý odjezd je pouze začátkem dalšího návratu. Nechť bůh Ra rozjasní svou tvář nad vašimi cestami a vaše srdce zůstane lehké jako pírko na váze spravedlnosti bohyně Maat."
+            : "Every departure is merely a cycle of return. May Ra make his face shine upon your travels, and may your heart remain light as a feather on Ma'at's scale of justice."
         });
       }
     }
   }
 
   return {
-    royalGreeting: "Welcome, explorer! We are excited to help you plan your upcoming journey. Here is a custom itinerary designed for your preferences:",
-    title: `${days}-Day Customized Travel Itinerary`,
+    royalGreeting: isDe 
+      ? "Willkommen, Entdecker! Wir freuen uns, Ihnen bei der Planung Ihrer Reise zu helfen. Hier ist Ihr maßgeschneiderter Reiseplan:" 
+      : isPl
+      ? "Witaj, odkrywco! Z przyjemnością pomożemy Ci zaplanować podróż. Oto Twój spersonalizowany plan:"
+      : isCs
+      ? "Vítejte, objeviteli! Rádi vám pomůžeme naplánovat vaši cestu. Zde je váš spersonalizovaný itinerář:"
+      : "Welcome, explorer! We are excited to help you plan your upcoming journey. Here is a custom itinerary designed for your preferences:",
+    title: isDe
+      ? `${days}-Tage Individueller Reiseplan`
+      : isPl
+      ? `Spersonalizowany plan podróży na ${days} dni`
+      : isCs
+      ? `${days}denní spersonalizovaný plán cesty`
+      : `${days}-Day Customized Travel Itinerary`,
     days: daysArray,
-    blessing: "We hope this travel itinerary inspires your next adventure. Safe travels and have an amazing trip!"
+    blessing: isDe
+      ? "Wir hoffen, dieser Reiseplan inspiriert Ihr nächstes Abenteuer. Gute Reise und eine fantastische Zeit!"
+      : isPl
+      ? "Mamy nadzieję, że ten plan zainspiruje Cię do kolejnej przygody. Bezpiecznej podróży i wspaniałego wyjazdu!"
+      : isCs
+      ? "Doufáme, že vás tento itinerář inspiruje k dalšímu dobrodružství. Šťastnou cestu a úžasný pobyt!"
+      : "We hope this travel itinerary inspires your next adventure. Safe travels and have an amazing trip!"
   };
 }
 
 // Get offline scribe responses for different queries
-function getOfflineScribeResponse(query: string): string {
+function getOfflineScribeResponse(query: string, language?: string): string {
   const text = query.toLowerCase();
   
-  if (text.includes("name") || text.includes("hieroglyph") || text.includes("translate")) {
-    return "To see your name written in ancient Egyptian hieroglyphs, check out our Name Translator tool above! Just type in your name, and we will translate each letter into its matching hieroglyphic symbol.";
+  const isDe = language === 'de';
+  const isPl = language === 'pl';
+  const isCs = language === 'cs';
+
+  if (text.includes("name") || text.includes("hieroglyph") || text.includes("translate") || text.includes("übersetz") || text.includes("tłumacz") || text.includes("překlad") || text.includes("jméno")) {
+    return isDe
+      ? "Um Ihren Namen in altägyptischen Hieroglyphen zu sehen, nutzen Sie unser Namensübersetzer-Tool oben! Geben Sie einfach Ihren Namen ein, und wir übersetzen jeden Buchstaben in das entsprechende Hieroglyphen-Symbol."
+      : isPl
+      ? "Aby zobaczyć swoje imię zapisane starożytnymi egipskimi hieroglifami, skorzystaj z naszego Tłumacza Imion powyżej! Po prostu wpisz swoje imię, a my przetłumaczymy każdą literę na odpowiadający jej symbol hieroglificzny."
+      : isCs
+      ? "Chcete-li vidět své jméno napsané ve starověkých egyptských hieroglyfech, podívejte se na náš Překladač jmen výše! Stačí zadat své jméno a my přeložíme každé písmeno do odpovídajícího hieroglyfického symbolu."
+      : "To see your name written in ancient Egyptian hieroglyphs, check out our Name Translator tool above! Just type in your name, and we will translate each letter into its matching hieroglyphic symbol.";
   }
   
-  if (text.includes("dive") || text.includes("coral") || text.includes("reef") || text.includes("sea")) {
-    return "The Red Sea is world-famous for its crystal-clear waters and vibrant marine life. When diving at sites like Ras Mohammed, you can explore spectacular coral gardens, historic shipwrecks, and hundreds of species of fish.";
+  if (text.includes("dive") || text.includes("coral") || text.includes("reef") || text.includes("sea") || text.includes("tauch") || text.includes("meer") || text.includes("nurkow") || text.includes("rafa") || text.includes("potápě") || text.includes("moř") || text.includes("korál")) {
+    return isDe
+      ? "Das Rote Meer ist weltweit bekannt für sein kristallklares Wasser und seine lebendige Unterwasserwelt. Beim Tauchen an Orten wie Ras Mohammed können Sie spektakuläre Korallengärten, historische Schiffswracks und Hunderte von Fischarten erkunden."
+      : isPl
+      ? "Morze Czerwone słynie na całym świecie z krystalicznie czystej wody i tętniącego życiem życia morskiego. Podczas nurkowania w miejscach takich jak Ras Mohammed możesz odkrywać spektakularne ogrody koralowe, historyczne wraki statków i setki gatunków ryb."
+      : isCs
+      ? "Rudé moře je světově proslulé svou křišťálově čistou vodou a živým mořským životem. Při potápění v lokalitách jako Ras Mohammed můžete objevovat spektakulární korálové zahrady, historické vraky lodí a stovky druhů ryb."
+      : "The Red Sea is world-famous for its crystal-clear waters and vibrant marine life. When diving at sites like Ras Mohammed, you can explore spectacular coral gardens, historic shipwrecks, and hundreds of species of fish.";
   }
 
-  if (text.includes("safari") || text.includes("desert") || text.includes("camel") || text.includes("quad")) {
-    return "Our desert safaris offer a perfect blend of adventure and culture. You can race over the dunes on a quad bike, enjoy a quiet camel trek at sunset, and visit a Bedouin camp to experience traditional hospitality and tea.";
+  if (text.includes("safari") || text.includes("desert") || text.includes("camel") || text.includes("quad") || text.includes("wüste") || text.includes("pustyn") || text.includes("velbloud") || text.includes("poušť") || text.includes("čtyřkol")) {
+    return isDe
+      ? "Unsere Wüstensafaris bieten eine perfekte Mischung aus Abenteuer und Kultur. Sie können mit dem Quad über die Dünen rasen, einen ruhigen Kamelritt bei Sonnenuntergang genießen und ein Beduinenlager besuchen, um traditionelle Gastfreundschaft und Tee zu erleben."
+      : isPl
+      ? "Nasze pustynne safari oferują idealne połączenie przygody i kultury. Możesz pędzić po wydmach na quadzie, cieszyć się spokojną przejażdżką na wielbłądzie o zachodzie słońca i odwiedzić obóz Beduinów, aby doświadczyć tradycyjnej gościnności i herbaty."
+      : isCs
+      ? "Naše pouštní safari nabízí dokonalou kombinaci dobrodružství a kultury. Můžete se prohánět po dunách na čtyřkolce, užít si klidnou projížďku na velbloudu při západu slunce a navštívit beduínský tábor, abyste zažili tradiční pohostinnost a čaj."
+      : "Our desert safaris offer a perfect blend of adventure and culture. You can race over the dunes on a quad bike, enjoy a quiet camel trek at sunset, and visit a Bedouin camp to experience traditional hospitality and tea.";
   }
 
-  if (text.includes("luxor") || text.includes("temple") || text.includes("king") || text.includes("ruin") || text.includes("history")) {
-    return "Luxor is home to some of the world's most incredible historical sites. On the East Bank of the Nile, you can visit the massive Karnak and Luxor temples. On the West Bank, you can descend into the beautifully painted tombs of the Valley of the Kings.";
+  if (text.includes("luxor") || text.includes("temple") || text.includes("king") || text.includes("ruin") || text.includes("history") || text.includes("geschicht") || text.includes("histor") || text.includes("ruine") || text.includes("zabyt") || text.includes("pamat") || text.includes("chrám")) {
+    return isDe
+      ? "Luxor beheimatet einige der unglaublichsten historischen Stätten der Welt. Am Ostufer des Nils können Sie die riesigen Tempelanlagen von Karnak und Luxor besichtigen. Am Westufer können Sie in die wunderschön bemälten Gräber im Tal der Könige hinabsteigen."
+      : isPl
+      ? "Luksor jest domem dla niektórych z najwspanialszych zabytków historycznych na świecie. Na wschodnim brzegu Nilu można odwiedzić ogromne kompleksy świątynne Karnak i Luksor. Na zachodnim brzegu można zejść do pięknie pomalowanych grobowców w Dolinie Królów."
+      : isCs
+      ? "Luxor je domovem některých z nejúžasnějších historických památek na světě. Na východním břehu Nilu můžete navštívit masivní chrámy v Karnaku a Luxoru. Na západním břehu můžete sestoupit do nádherně zdobených hrobek v Údolí králů."
+      : "Luxor is home to some of the world's most incredible historical sites. On the East Bank of the Nile, you can visit the massive Karnak and Luxor temples. On the West Bank, you can descend into the beautifully painted tombs of the Valley of the Kings.";
   }
 
-  return "Thank you for your question! I can help you with anything related to the Red Sea coral reefs, desert safaris, or historical tours to Luxor. What would you like to know more about?";
+  return isDe
+    ? "Vielen Dank für Ihre Frage! Ich kann Ihnen bei allen Fragen zu den Korallenriffen des Roten Meeres, Wüstensafaris oder historischen Touren nach Luxor behilflich sein. Worüber möchten Sie mehr erfahren?"
+    : isPl
+    ? "Dziękuję za pytanie! Mogę pomóc Ci we wszystkim, co dotyczy raf koralowych Morza Czerwonego, pustynnego safari lub wycieczek historycznych do Luksoru. O czym chcesz dowiedzieć się więcej?"
+    : isCs
+    ? "Děkuji za vaši otázku! Mohu vám pomoci s čímkoli, co se týká korálových útesů Rudého moře, pouštního safari nebo historických výletů do Luxoru. O čem byste se chtěli dozvědět více?"
+    : "Thank you for your question! I can help you with anything related to the Red Sea coral reefs, desert safaris, or historical tours to Luxor. What would you like to know more about?";
 }

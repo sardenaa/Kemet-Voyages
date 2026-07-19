@@ -233,7 +233,7 @@ export default function AdminDashboard({
   onCancelBooking,
   onUpdateBookingsList
 }: AdminDashboardProps) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const [activeTab, setActiveTab] = useState<CRMTab>('dashboard');
 
   // Subscribers state
@@ -863,12 +863,12 @@ export default function AdminDashboard({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#d4af37] bg-[#d4af37]/10 px-2 py-0.5 rounded-full border border-[#d4af37]/25">
-                {language === 'de' ? 'Nur Mitarbeiter • Freigabe für Hohepriester' : 'Staff Only • High Priest Clearance'}
+              <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#d4af37] bg-[#d4af37]/10 px-2 py-0.5 rounded-full border border-[#d4af37]/25">
+                {t('admin_clearance', 'Staff Only • High Priest Clearance')}
               </span>
             </div>
             <h2 className="font-serif text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#faf5e6] via-[#d4af37] to-[#e6c280] uppercase tracking-wider mt-1">
-              {language === 'de' ? 'Königliches Scribe Admin-Dashboard' : 'Royal Scribe Admin Dashboard'}
+              {t('admin_title', 'Royal Scribe Admin Dashboard')}
             </h2>
           </div>
         </div>
@@ -896,13 +896,13 @@ export default function AdminDashboard({
       {/* CRM Navigation Tabs */}
       <div className="flex flex-wrap gap-2 border-b border-stone-800 pb-4">
         {[
-          { key: 'dashboard', label: language === 'de' ? '📊 Befehls-Dashboard' : '📊 Command Dashboard', desc: language === 'de' ? 'Finanz- & Leadtrichter' : 'Financial & Lead funnels' },
-          { key: 'caravans', label: language === 'de' ? '𓎬 Karawanenbuch' : '𓎬 Caravan Ledger', desc: language === 'de' ? `${bookings.length} aktive Buchungen` : `${bookings.length} active bookings` },
-          { key: 'nobles', label: language === 'de' ? '𓀚 Reisende-CRM' : '𓀚 Traveler CRM', desc: language === 'de' ? `${crmProfiles.length} Reisekarten` : `${crmProfiles.length} traveler cards` },
-          { key: 'offerings', label: language === 'de' ? '𓆛 Angebote-Katalog' : '𓆛 Offerings Catalog', desc: language === 'de' ? `${excursions.length} aktive Touren` : `${excursions.length} active trips` },
-          { key: 'testimonies', label: language === 'de' ? '𓁠 Bewertungsmoderation' : '𓁠 Review Moderation', desc: language === 'de' ? 'Reiseberichte überprüfen' : 'Verify traveler testimonies' },
-          { key: 'oracle', label: language === 'de' ? '𓋹 Orakel-Lead-Protokolle' : '𓋹 Oracle Lead Logs', desc: language === 'de' ? 'Letzte Chats einsehen' : 'Inspect recent chats' },
-          { key: 'subscribers', label: language === 'de' ? '𓇚 Kaiserliche Schriftrollen' : '𓇚 Imperial Scrolls', desc: language === 'de' ? `${subscribers.length} Newsletter-Anmeldungen` : `${subscribers.length} newsletter signups` }
+          { key: 'dashboard', label: t('admin_label_dashboard', '📊 Command Dashboard'), desc: t('admin_desc_dashboard', 'Financial & Lead funnels') },
+          { key: 'caravans', label: t('admin_label_caravans', '𓎬 Caravan Ledger'), desc: `${bookings.length} ${t('admin_active_bookings', 'active bookings')}` },
+          { key: 'nobles', label: t('admin_label_nobles', '𓀚 Traveler CRM'), desc: `${crmProfiles.length} ${t('admin_traveler_cards', 'traveler cards')}` },
+          { key: 'offerings', label: t('admin_label_offerings', '𓆛 Offerings Catalog'), desc: `${excursions.length} ${t('admin_active_trips', 'active trips')}` },
+          { key: 'testimonies', label: t('admin_label_testimonies', '𓁠 Review Moderation'), desc: t('admin_desc_testimonies', 'Verify traveler testimonies') },
+          { key: 'oracle', label: t('admin_label_oracle', '𓋹 Oracle Lead Logs'), desc: t('admin_desc_oracle', 'Inspect recent chats') },
+          { key: 'subscribers', label: t('admin_label_subscribers', '𓇚 Imperial Scrolls'), desc: `${subscribers.length} ${t('admin_newsletter_signups', 'newsletter signups')}` }
         ].map((tab) => (
           <button
             key={tab.key}

@@ -622,7 +622,7 @@ export default function CartoucheGenerator() {
         <div className="flex items-center justify-center gap-2 mb-2">
           <Sparkles className="text-[#d4af37] w-5 h-5 animate-pulse" />
           <h3 className="font-serif text-2xl font-bold tracking-wider text-[#e6c280] uppercase">
-            {language === 'de' ? 'Hieroglyphen-Namensübersetzer' : language === 'pl' ? 'Tłumacz egipskich imion' : 'Hieroglyphic Name Translator'}
+            {language === 'de' ? 'Hieroglyphen-Namensübersetzer' : language === 'pl' ? 'Tłumacz egipskich imion' : language === 'cs' ? 'Překladač jmen do hieroglyfů' : 'Hieroglyphic Name Translator'}
           </h3>
           <Sparkles className="text-[#d4af37] w-5 h-5 animate-pulse" />
         </div>
@@ -631,6 +631,8 @@ export default function CartoucheGenerator() {
             ? 'Übersetzen Sie Ihren Namen in altägyptische Hieroglyphen. Im alten Ägypten wurden königliche Namen zum Schutz in einer ovalen goldenen Schleife – Kartusche genannt – geschrieben. Tragen Sie Ihren Namen ein:'
             : language === 'pl'
             ? 'Przetłumacz swoje imię na starożytne egipskie hieroglify. W starożytnym Egipcie imiona królewskie zapisywano wewnątrz owalnej złotej pętli zwanej kartuszem dla ochrony. Wpisz swoje imię poniżej:'
+            : language === 'cs'
+            ? 'Přeložte své jméno do starověkých egyptských hieroglyfů. Ve starověkém Egyptě se královská jména pro ochranu zapisovala do oválné zlaté smyčky zvané kartuše. Zadejte své jméno níže:'
             : 'Translate your name into ancient Egyptian hieroglyphs. In ancient Egypt, royal names were written inside an oval golden loop called a cartouche for protection. Enter your name below to see it:'}
         </p>
       </div>
@@ -640,14 +642,14 @@ export default function CartoucheGenerator() {
         <div className="lg:col-span-5 space-y-5">
           <div>
             <label className="block text-xs font-mono uppercase tracking-widest text-stone-500 mb-1.5">
-              {language === 'de' ? 'Namen eingeben (Max. 8 Buchstaben)' : language === 'pl' ? 'Wpisz imię (Maks. 8 liter)' : 'Enter Name (Max 8 letters)'}
+              {language === 'de' ? 'Namen eingeben (Max. 8 Buchstaben)' : language === 'pl' ? 'Wpisz imię (Maks. 8 liter)' : language === 'cs' ? 'Zadejte jméno (max. 8 písmen)' : 'Enter Name (Max 8 letters)'}
             </label>
             <div className="relative">
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder={language === 'de' ? 'Z.B. RAMSES' : language === 'pl' ? 'Np. RAMZES' : 'E.g., RAMSES'}
+                placeholder={language === 'de' ? 'Z.B. RAMSES' : language === 'pl' ? 'Np. RAMZES' : language === 'cs' ? 'Např. RAMSES' : 'E.g., RAMSES'}
                 maxLength={8}
                 className="w-full bg-[#201a14] border border-[#d4af37]/40 rounded-lg py-2.5 px-4 text-[#f3e5c8] font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-[#d4af37]/50 focus:border-[#d4af37]"
                 id="cartouche-name-input"
@@ -681,10 +683,10 @@ export default function CartoucheGenerator() {
                     </span>
                   </div>
                   <p className="text-stone-300 text-sm">
-                     <strong className="text-stone-500">{language === 'de' ? 'Bedeutung:' : language === 'pl' ? 'Znaczenie:' : 'Meaning:'}</strong> {activeSymbol.meaning}
+                     <strong className="text-stone-500">{language === 'de' ? 'Bedeutung:' : language === 'pl' ? 'Znaczenie:' : language === 'cs' ? 'Význam:' : 'Meaning:'}</strong> {activeSymbol.meaning}
                   </p>
                   <p className="text-[#d4af37]/80 text-xs font-mono uppercase tracking-wider">
-                    {language === 'de' ? 'Phonetischer Laut:' : language === 'pl' ? 'Dźwięk fonetyczny:' : 'Phonetic sound:'} "{activeSymbol.pronunciation}"
+                    {language === 'de' ? 'Phonetischer Laut:' : language === 'pl' ? 'Dźwięk fonetyczny:' : language === 'cs' ? 'Fonetický zvuk:' : 'Phonetic sound:'} "{activeSymbol.pronunciation}"
                   </p>
                 </motion.div>
               ) : (
@@ -698,6 +700,8 @@ export default function CartoucheGenerator() {
                     ? 'Fahren Sie mit der Maus über ein Hieroglyphenzeichen oder tippen Sie darauf, um dessen Bedeutung und Aussprache zu erfahren.'
                     : language === 'pl'
                     ? 'Najedź kursorem lub dotknij dowolnego hieroglifu wewnątrz kartusza, aby poznać jego znaczenie i dźwięk fonetyczny.'
+                    : language === 'cs'
+                    ? 'Najetím myší nebo klepnutím na jakýkoli hieroglyf uvnitř kartuše se dozvíte jeho význam a fonetický zvuk.'
                     : 'Hover or tap on any hieroglyph inside your cartouche to learn its meaning and phonetic sound.'}
                 </motion.div>
               )}
@@ -717,7 +721,7 @@ export default function CartoucheGenerator() {
                 } border rounded-xl py-2.5 text-xs font-semibold transition-all shadow-md active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed`}
               >
                 <Download className="w-3.5 h-3.5 text-[#d4af37]" />
-                <span className="font-mono uppercase text-[10px] tracking-wider">{language === 'de' ? 'PNG Speichern' : language === 'pl' ? 'Zapisz PNG' : 'Save PNG Image'}</span>
+                <span className="font-mono uppercase text-[10px] tracking-wider">{language === 'de' ? 'PNG Speichern' : language === 'pl' ? 'Zapisz PNG' : language === 'cs' ? 'Uložit PNG' : 'Save PNG Image'}</span>
               </button>
 
               <button
@@ -726,7 +730,7 @@ export default function CartoucheGenerator() {
                 className="flex items-center justify-center gap-1.5 bg-[#120e0a] hover:bg-[#1a1410] border border-[#d4af37]/35 text-stone-300 rounded-xl py-2.5 text-xs font-semibold transition-all shadow-md active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Download className="w-3.5 h-3.5 text-[#e6c280]/75" />
-                <span className="font-mono uppercase text-[10px] tracking-wider">{language === 'de' ? 'SVG Speichern' : language === 'pl' ? 'Zapisz SVG' : 'Save SVG File'}</span>
+                <span className="font-mono uppercase text-[10px] tracking-wider">{language === 'de' ? 'SVG Speichern' : language === 'pl' ? 'Zapisz SVG' : language === 'cs' ? 'Uložit SVG' : 'Save SVG File'}</span>
               </button>
             </div>
 
@@ -736,7 +740,7 @@ export default function CartoucheGenerator() {
               className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#e6c280]/15 via-[#d4af37]/15 to-[#e6c280]/15 hover:from-[#e6c280]/30 hover:via-[#d4af37]/30 hover:to-[#e6c280]/30 border border-[#d4af37]/45 hover:border-[#d4af37] text-[#f3e5c8] rounded-xl py-2.5 text-xs font-semibold transition-all shadow-md active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Share2 className="w-3.5 h-3.5 text-[#d4af37]" />
-              <span className="font-mono uppercase text-[10px] tracking-wider">{language === 'de' ? 'Als Papyrus teilen' : language === 'pl' ? 'Udostępnij jako papirus' : 'Share as Papyrus Scroll'}</span>
+              <span className="font-mono uppercase text-[10px] tracking-wider">{language === 'de' ? 'Als Papyrus teilen' : language === 'pl' ? 'Udostępnij jako papirus' : language === 'cs' ? 'Sdílet jako papyrus' : 'Share as Papyrus Scroll'}</span>
             </button>
 
             {isSaved && (
@@ -774,13 +778,13 @@ export default function CartoucheGenerator() {
           >
             <span className="text-sm">𓂀</span>
             <span className="font-mono text-[8px] tracking-normal font-bold">
-              {language === 'de' ? 'Siegel des Pharaos' : language === 'pl' ? 'Pieczęć Faraona' : "Pharaoh's Seal"}
+              {language === 'de' ? 'Siegel des Pharaos' : language === 'pl' ? 'Pieczęć Faraona' : language === 'cs' ? 'Pečeť faraona' : "Pharaoh's Seal"}
             </span>
           </motion.div>
  
           <div className="text-center mb-6 space-y-1 z-10 select-none">
             <span className="text-[9px] font-mono text-[#d4af37] uppercase tracking-[0.25em] block animate-pulse">
-              {language === 'de' ? '𓂀 Heiliges Königssiegel 𓂀' : language === 'pl' ? '𓂀 Święta Pieczęć Królewska 𓂀' : '𓂀 Sacred Royal Seal 𓂀'}
+              {language === 'de' ? '𓂀 Heiliges Königssiegel 𓂀' : language === 'pl' ? '𓂀 Święta Pieczęć Królewska 𓂀' : language === 'cs' ? '𓂀 Posvátná královská pečeť 𓂀' : '𓂀 Sacred Royal Seal 𓂀'}
             </span>
             <h4 className="font-serif text-lg font-black text-[#e6c280] tracking-widest uppercase">
               Kemet Tours
@@ -842,7 +846,7 @@ export default function CartoucheGenerator() {
                 </div>
               ) : (
                 <div className="py-20 text-center text-stone-600 font-mono text-xs uppercase tracking-widest">
-                  {language === 'de' ? 'Namen eingeben' : language === 'pl' ? 'Wpisz imię' : 'Enter a name'}
+                  {language === 'de' ? 'Namen eingeben' : language === 'pl' ? 'Wpisz imię' : language === 'cs' ? 'Zadejte jméno' : 'Enter a name'}
                 </div>
               )}
             </div>
@@ -864,7 +868,7 @@ export default function CartoucheGenerator() {
           <div className="flex items-center gap-2 mb-3">
             <span className="text-sm text-[#d4af37]">𓍼</span>
             <h4 className="font-serif text-sm uppercase tracking-wider text-[#e6c280]">
-              {language === 'de' ? 'Königliches Archiv eingetragener Siegel' : language === 'pl' ? 'Królewskie Archiwum Zapisanych Pieczęci' : 'Royal Archives of Inscribed Seals'} ({savedCartouches.length})
+              {language === 'de' ? 'Königliches Archiv eingetragener Siegel' : language === 'pl' ? 'Królewskie Archiwum Zapisanych Pieczęci' : language === 'cs' ? 'Královský archiv zapsaných pečetí' : 'Royal Archives of Inscribed Seals'} ({savedCartouches.length})
             </h4>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -884,7 +888,7 @@ export default function CartoucheGenerator() {
                   <button
                     onClick={(e) => deleteSavedCartouche(e, item.id)}
                     className="text-stone-600 hover:text-red-400 p-0.5 rounded cursor-pointer transition-colors"
-                    title={language === 'de' ? 'Siegel auflösen' : language === 'pl' ? 'Rozpuść pieczęć' : 'Dissolve seal'}
+                    title={language === 'de' ? 'Siegel auflösen' : language === 'pl' ? 'Rozpuść pieczęć' : language === 'cs' ? 'Rozpustit pečeť' : 'Dissolve seal'}
                   >
                     ×
                   </button>
@@ -914,13 +918,13 @@ export default function CartoucheGenerator() {
 
               {/* Egyptian Ornamentations */}
               <div className="text-xl text-[#b38b3f] font-serif select-none pointer-events-none tracking-widest mt-4 mb-2">
-                𓋹 𓂀 𓆗 {language === 'de' ? 'HEILIGES KÖNIGLICHES DEKRET' : language === 'pl' ? 'ŚWIĘTY DEKRET KRÓLEWSKI' : 'SACRED ROYAL DECREE'} 𓆗 𓂀 𓋹
+                {language === 'de' ? '𓋹 𓂀 𓆗 HEILIGES KÖNIGLICHES DEKRET 𓆗 𓂀 𓋹' : language === 'pl' ? '𓋹 𓂀 𓆗 ŚWIĘTY DEKRET KRÓLEWSKI 𓆗 𓂀 𓋹' : language === 'cs' ? '𓋹 𓂀 𓆗 POSVÁTNÝ KRÁLOVSKÝ DEKRET 𓆗 𓂀 𓋹' : '𓋹 𓂀 𓆗 SACRED ROYAL DECREE 𓆗 𓂀 𓋹'}
               </div>
 
               <div className="border border-[#b38b3f]/35 p-4 rounded-xl bg-[#faf3e3]/75 space-y-4 my-4 shadow-inner relative">
                 {/* Vintage stamp */}
                 <div className="absolute -top-3 -right-3 w-10 h-10 rounded-full border-2 border-red-800/25 flex items-center justify-center text-red-800/35 font-serif text-[10px] uppercase font-black tracking-tighter rotate-12 select-none pointer-events-none">
-                  {language === 'de' ? 'Schreiber OK' : language === 'pl' ? 'Zatwierdzone przez Pisarza' : 'Scribe OK'}
+                  {language === 'de' ? 'Schreiber OK' : language === 'pl' ? 'Zatwierdzone przez Pisarza' : language === 'cs' ? 'Schváleno písařem' : 'Scribe OK'}
                 </div>
 
                 <p className="font-serif text-[#5c3c21] leading-relaxed text-sm">
@@ -940,6 +944,14 @@ export default function CartoucheGenerator() {
                       </strong>{' '}
                       został wpisany do Wiecznej Kartuszy <strong>Kemet Tours</strong>.
                     </>
+                  ) : language === 'cs' ? (
+                    <>
+                      Nechť je známo ve všech koutech království, že cestovatel{' '}
+                      <strong className="text-[#8c6020] uppercase font-mono tracking-wider font-bold">
+                        {cleanName}
+                      </strong>{' '}
+                      byl zapsán do Věčné kartuše <strong>Kemet Tours</strong>.
+                    </>
                   ) : (
                     <>
                       Let it be known to all corners of the Kingdom that the traveler{' '}
@@ -956,18 +968,20 @@ export default function CartoucheGenerator() {
                     ? '"Geschrieben unter der himmlischen Gunst von Osiris, Ra und Isis, wobei die Buchstaben des Westens mit den Hieroglyphen des Ostens übereinstimmen."'
                     : language === 'pl'
                     ? '"Napisane pod niebiańską przychylnością Ozyrysa, Re i Izydy, dopasowując litery Zachodu do hieroglifów Wschodu."'
+                    : language === 'cs'
+                    ? '"Napsáno pod nebeskou přízní Osirida, Rea a Isidy, spojující písmena Západu s hieroglyfy Východu."'
                     : '"Written under the celestial favor of Osiris, Ra, and Isis, matching the letters of the West with the hieroglyphs of the East."'}
                 </p>
 
                 <div className="flex items-center justify-center gap-1 text-[10px] text-[#b38b3f]/90 font-mono tracking-widest uppercase">
-                  <span>{language === 'de' ? '𓂀 Status: Ewiges Siegel Registriert 𓂀' : language === 'pl' ? '𓂀 Status: Wieczna Pieczęć Zarejestrowana 𓂀' : '𓂀 Status: Eternal Seal Registered 𓂀'}</span>
+                  <span>{language === 'de' ? '𓂀 Status: Ewiges Siegel Registriert 𓂀' : language === 'pl' ? '𓂀 Status: Wieczna Pieczęć Zarejestrowana 𓂀' : language === 'cs' ? '𓂀 Stav: Věčná pečeť zaregistrována 𓂀' : '𓂀 Status: Eternal Seal Registered 𓂀'}</span>
                 </div>
               </div>
 
               {/* Sharing link input field */}
               <div className="space-y-2 text-left mb-6">
                 <label className="block text-[10px] font-mono uppercase tracking-wider text-[#634832] font-semibold">
-                  {language === 'de' ? 'Heiliger Direktlink zu Ihrer Kartusche' : language === 'pl' ? 'Święty bezpośredni link do Twojego kartusza' : 'Sacred Direct Link to your Cartouche'}
+                  {language === 'de' ? 'Heiliger Direktlink zu Ihrer Kartusche' : language === 'pl' ? 'Święty bezpośredni link do Twojego kartusza' : language === 'cs' ? 'Posvátný přímý odkaz na vaši kartuši' : 'Sacred Direct Link to your Cartouche'}
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -983,12 +997,12 @@ export default function CartoucheGenerator() {
                     {copiedLink ? (
                       <>
                         <Check className="w-3.5 h-3.5" />
-                        <span>{language === 'de' ? 'Kopiert!' : language === 'pl' ? 'Skopiowano!' : 'Copied!'}</span>
+                        <span>{language === 'de' ? 'Kopiert!' : language === 'pl' ? 'Skopiowano!' : language === 'cs' ? 'Zkopírováno!' : 'Copied!'}</span>
                       </>
                     ) : (
                       <>
                         <Copy className="w-3.5 h-3.5" />
-                        <span>{language === 'de' ? 'Kopieren' : language === 'pl' ? 'Skopiuj' : 'Copy'}</span>
+                        <span>{language === 'de' ? 'Kopieren' : language === 'pl' ? 'Skopiuj' : language === 'cs' ? 'Zkopírovat' : 'Copy'}</span>
                       </>
                     )}
                   </button>
@@ -998,7 +1012,7 @@ export default function CartoucheGenerator() {
               {/* Social Buttons Grid */}
               <div className="space-y-3 mb-6">
                 <span className="block text-[10px] font-mono uppercase tracking-widest text-[#634832] font-bold">
-                  {language === 'de' ? 'Dem modernen Reich verkünden' : language === 'pl' ? 'Obwieść współczesnemu królestwu' : 'Proclaim to the Modern Realm'}
+                  {language === 'de' ? 'Dem modernen Reich verkünden' : language === 'pl' ? 'Obwieść współczesnemu królestwu' : language === 'cs' ? 'Oznámit moderní říši' : 'Proclaim to the Modern Realm'}
                 </span>
                 <div className="grid grid-cols-3 gap-2.5">
                   <button
@@ -1027,7 +1041,7 @@ export default function CartoucheGenerator() {
                 onClick={() => setIsShareOpen(false)}
                 className="w-full bg-[#4a2e16] hover:bg-[#341f0e] text-[#faf3e3] font-serif font-bold text-xs uppercase tracking-widest py-3 rounded-xl shadow-md transition-all cursor-pointer"
               >
-                {language === 'de' ? '𓏛 Ritus des Übergangs abschließen 𓏛' : language === 'pl' ? '𓏛 Ukończ rytuał przejścia 𓏛' : '𓏛 Complete Rite of Passage 𓏛'}
+                {language === 'de' ? '𓏛 Ritus des Übergangs abschließen 𓏛' : language === 'pl' ? '𓏛 Ukończ rytuał przejścia 𓏛' : language === 'cs' ? '𓏛 Dokončit rituál průchodu 𓏛' : '𓏛 Complete Rite of Passage 𓏛'}
               </button>
 
               {/* Bottom Wooden Rod Roll Simulation */}

@@ -123,105 +123,310 @@ export default function AncientSitesMap() {
 
   // Translate sites dynamically
   const localizedSites = useMemo(() => {
-    if (language !== 'de') return ANCIENT_SITES;
-    return [
-      {
-        id: 'giza-pyramids',
-        name: "Gizeh-Plateau",
-        ancientName: "Achet Chufu",
-        glyph: "𓉴",
-        coordinates: { x: 265, y: 140 },
-        region: "Unterägypten",
-        facts: [
-          "Heimat der Großen Pyramide von Gizeh, dem ältesten der sieben Weltwunder der Antike.",
-          "Bewacht von der kolossalen Großen Sphinx von Gizeh, die aus einem einzigen Kalksteinrücken gemeißelt wurde.",
-          "Die Pyramiden waren mit absoluter Präzision astronomisch auf den Oriongürtel ausgerichtet."
-        ],
-        lore: "Den Alten bekannt als 'Achet Chufu' (Der Horizont des Cheops), galt dieses Plateau als kosmische Startrampe. Es erlaubte der Seele des Pharaos, in die nördlichen zirkumpolaren Sterne aufzufahren und sich den unsterblichen Göttern im Jenseits anzuschließen.",
-        relatedExcursionId: undefined,
-        relatedExcursionName: "Individuelle Kairo-Erweiterung (Fragen Sie unseren KI-Assistenten!)"
-      },
-      {
-        id: 'luxor-waset',
-        name: "Luxor (Karnak & Tal der Könige)",
-        ancientName: "Waset",
-        glyph: "𓉐",
-        coordinates: { x: 308, y: 350 },
-        region: "Oberägypten",
-        facts: [
-          "Waset war das Machtzentrum des Neuen Reiches, gewidmet dem höchsten Sonnenschöpfer Amun-Ra.",
-          "Beherbergt Karnak, den größten jemals von Menschenhand errichteten Tempelkomplex.",
-          "Beherbergt das Tal der Könige, wo die Pharaonen in verzierten Felsengräbern versiegelt wurden."
-        ],
-        lore: "Die Überquerung vom Ostufer (Sonnenaufgang/Lebende) zum Westufer (Sonnenuntergang/Gräber) von Luxor bedeutet, den mystischen Schleier zu durchdringen. Die Königsgräber sind tief in die Kalksteinpyramide von Al-Qurn gemeißelt und ahmen Ras nächtliche Reise in die Unterwelt nach.",
-        relatedExcursionId: "history-1",
-        relatedExcursionName: "Pilgerfahrt des Pharaos nach Waset (Luxor)"
-      },
-      {
-        id: 'ras-mohammed',
-        name: "Ras-Mohammed-Naturschutzgebiet",
-        ancientName: "Nuns Tiefseebecken",
-        glyph: "𓆛",
-        coordinates: { x: 382, y: 205 },
-        region: "Rotes Meer & Sinai",
-        facts: [
-          "Ein geschützter Meeres-Nationalpark an der äußersten Spitze der Sinai-Halbinsel.",
-          "Bietet spektakuläre vertikale Korallenwände, die über 1.000 Meter tief in das Meer abfallen.",
-          "Heimat lebendiger Ökosysteme mit Riesen-Lippfischen, Meeresschildkröten und Hammerhaien."
-        ],
-        lore: "Antike Seefahrer und Priester von Hathor betrachteten die warmen Strömungen von Ras Mohammed als physische Manifestationen von Nun – dem Urabgrund, aus dem alles Leben hervorging. Unterwasser-Monumente wurden an den Küsten hinterlassen, um die Meeresgeister zu besänftigen.",
-        relatedExcursionId: "diving-1",
-        relatedExcursionName: "Königliches Korallentauchen in Ras Mohammed"
-      },
-      {
-        id: 'hurghada-coast',
-        name: "Hurghada-Dünen & Deshret",
-        ancientName: "Sets Deshret-Küste",
-        glyph: "𓅓",
-        coordinates: { x: 370, y: 238 },
-        region: "Rotes Meer & Östliche Wüste",
-        facts: [
-          "Eine majestätische Grenze, an der die goldenen Berge der Östlichen Wüste auf das Rote Meer treffen.",
-          "Berühmt für rollende Wüstendünen, Beduinen-Oasen und raue Gebirgspässe.",
-          "Idealer Ort für schnelle Quad-Expeditionen und langsame Kamelritte im Sonnenuntergang."
-        ],
-        lore: "Dieses rote Wüstenland wurde von den Pharaonen 'Deshret' (Das rote Land) genannt, gefürchtet und doch respektiert als das chaotische Reich von Set, dem Gott der Stürme. Antike Bergleute durchquerten diese rauen Länder, um Gold und Türkis für Tempelopfer zu sammeln.",
-        relatedExcursionId: "safari-1",
-        relatedExcursionName: "Sets Goldene Deshret-Safari"
-      },
-      {
-        id: 'giftun-island',
-        name: "Giftun-Insel (Orange Bay)",
-        ancientName: "Sobeks Türkisreich",
-        glyph: "𓍢",
-        coordinates: { x: 388, y: 242 },
-        region: "Rote-Meer-Inseln",
-        facts: [
-          "Ein geschütztes Naturschutzgebiet, berühmt für feine weiße Sandstrände und kristallklares Wasser.",
-          "Umgeben von flachen, kreisförmigen Lagunen voller farbenfroher Korallen.",
-          "Delfinschulen werden regelmäßig beim Spielen an den unberührten flachen Sandbänken gesichtet."
-        ],
-        lore: "In der Antike war das Segeln um die Inseln des Roten Meeres der Ehrung von Sobek, dem Krokodilgott der Wasserwege, gewidmet. Mit Blattgold verzierte Zedernholz-Lustschiffe ruderten durch diese türkisfarbenen Gewässer, um die Gunst der Götter zu erlangen.",
-        relatedExcursionId: "boat-1",
-        relatedExcursionName: "Sobeks Königliche Königin-Nefertari-Kreuzfahrt"
-      },
-      {
-        id: 'el-gouna',
-        name: "El Gouna & Nördliche Inseln",
-        ancientName: "Horus-Lagune",
-        glyph: "𓅃",
-        coordinates: { x: 362, y: 218 },
-        region: "Rote-Meer-Lagunen",
-        facts: [
-          "Ein atemberaubendes Netzwerk aus flachen türkisfarbenen Kanälen, Lagunen und Sandinseln.",
-          "Umgeben von geheimen, unberichten Korallengärten abseits der überfüllten öffentlichen Plätze.",
-          "Bietet tiefblaues Wasser für rasante Erkundungen mit luxuriösen Schnellbooten."
-        ],
-        lore: "Der Falkengott Horus, symbolisch für Schnelligkeit und göttliche Sicht, patrouillierte angeblich vom Himmel aus über den Gewässern des Roten Meeres. Pharaonische Späher segelten mit schnellen Papyrusbooten durch diese Lagunen und gaben Spiegelsignale, um die Grenzen im Landesinneren zu schützen.",
-        relatedExcursionId: "speedboat-1",
-        relatedExcursionName: "Horus' Falkenauge-Schnellbootfahrt"
-      }
-    ];
+    if (language === 'de') {
+      return [
+        {
+          id: 'giza-pyramids',
+          name: "Gizeh-Plateau",
+          ancientName: "Achet Chufu",
+          glyph: "𓉴",
+          coordinates: { x: 265, y: 140 },
+          region: "Unterägypten",
+          facts: [
+            "Heimat der Großen Pyramide von Gizeh, dem ältesten der sieben Weltwunder der Antike.",
+            "Bewacht von der kolossalen Großen Sphinx von Gizeh, die aus einem einzigen Kalksteinrücken gemeißelt wurde.",
+            "Die Pyramiden waren mit absoluter Präzision astronomisch auf den Oriongürtel ausgerichtet."
+          ],
+          lore: "Den Alten bekannt als 'Achet Chufu' (Der Horizont des Cheops), galt dieses Plateau als kosmische Startrampe. Es erlaubte der Seele des Pharaos, in die nördlichen zirkumpolaren Sterne aufzufahren und sich den unsterblichen Göttern im Jenseits anzuschließen.",
+          relatedExcursionId: undefined,
+          relatedExcursionName: "Individuelle Kairo-Erweiterung (Fragen Sie unseren KI-Assistenten!)"
+        },
+        {
+          id: 'luxor-waset',
+          name: "Luxor (Karnak & Tal der Könige)",
+          ancientName: "Waset",
+          glyph: "𓉐",
+          coordinates: { x: 308, y: 350 },
+          region: "Oberägypten",
+          facts: [
+            "Waset war das Machtzentrum des Neuen Reiches, gewidmet dem höchsten Sonnenschöpfer Amun-Ra.",
+            "Beherbergt Karnak, den größten jemals von Menschenhand errichteten Tempelkomplex.",
+            "Beherbergt das Tal der Könige, wo die Pharaonen in verzierten Felsengräbern versiegelt wurden."
+          ],
+          lore: "Die Überquerung vom Ostufer (Sonnenaufgang/Lebende) zum Westufer (Sonnenuntergang/Gräber) von Luxor bedeutet, den mystischen Schleier zu durchdringen. Die Königsgräber sind tief in die Kalksteinpyramide von Al-Qurn gemeißelt und ahmen Ras nächtliche Reise in die Unterwelt nach.",
+          relatedExcursionId: "history-1",
+          relatedExcursionName: "Pilgerfahrt des Pharaos nach Waset (Luxor)"
+        },
+        {
+          id: 'ras-mohammed',
+          name: "Ras-Mohammed-Naturschutzgebiet",
+          ancientName: "Nuns Tiefseebecken",
+          glyph: "𓆛",
+          coordinates: { x: 382, y: 205 },
+          region: "Rotes Meer & Sinai",
+          facts: [
+            "Ein geschützter Meeres-Nationalpark an der äußersten Spitze der Sinai-Halbinsel.",
+            "Bietet spektakuläre vertikale Korallenwände, die über 1.000 Meter tief in das Meer abfallen.",
+            "Heimat lebendiger Ökosysteme mit Riesen-Lippfischen, Meeresschildkröten und Hammerhaien."
+          ],
+          lore: "Antike Seefahrer und Priester von Hathor betrachteten die warmen Strömungen von Ras Mohammed als physische Manifestationen von Nun – dem Urabgrund, aus dem alles Leben hervorging. Unterwasser-Monumente wurden an den Küsten hinterlassen, um die Meeresgeister zu besänftigen.",
+          relatedExcursionId: "diving-1",
+          relatedExcursionName: "Königliches Korallentauchen in Ras Mohammed"
+        },
+        {
+          id: 'hurghada-coast',
+          name: "Hurghada-Dünen & Deshret",
+          ancientName: "Sets Deshret-Küste",
+          glyph: "𓅓",
+          coordinates: { x: 370, y: 238 },
+          region: "Rotes Meer & Östliche Wüste",
+          facts: [
+            "Eine majestätische Grenze, an der die goldenen Berge der Östlichen Wüste auf das Rote Meer treffen.",
+            "Berühmt für rollende Wüstendünen, Beduinen-Oasen und raue Gebirgspässe.",
+            "Idealer Ort für schnelle Quad-Expeditionen und langsame Kamelritte im Sonnenuntergang."
+          ],
+          lore: "Dieses rote Wüstenland wurde von den Pharaonen 'Deshret' (Das rote Land) genannt, gefürchtet und doch respektiert als das chaotische Reich von Set, dem Gott der Stürme. Antike Bergleute durchquerten diese rauen Länder, um Gold und Türkis für Tempelopfer zu sammeln.",
+          relatedExcursionId: "safari-1",
+          relatedExcursionName: "Sets Goldene Deshret-Safari"
+        },
+        {
+          id: 'giftun-island',
+          name: "Giftun-Insel (Orange Bay)",
+          ancientName: "Sobeks Türkisreich",
+          glyph: "𓍢",
+          coordinates: { x: 388, y: 242 },
+          region: "Rote-Meer-Inseln",
+          facts: [
+            "Ein geschütztes Naturschutzgebiet, berühmt für feine weiße Sandstrände und kristallklares Wasser.",
+            "Umgeben von flachen, kreisförmigen Lagunen voller farbenfroher Korallen.",
+            "Delfinschulen werden regelmäßig beim Spielen an den unberührten flachen Sandbänken gesichtet."
+          ],
+          lore: "In der Antike war das Segeln um die Inseln des Roten Meeres der Ehrung von Sobek, dem Krokodilgott der Wasserwege, gewidmet. Mit Blattgold verzierte Zedernholz-Lustschiffe ruderten durch diese türkisfarbenen Gewässer, um die Gunst der Götter zu erlangen.",
+          relatedExcursionId: "boat-1",
+          relatedExcursionName: "Sobeks Königliche Königin-Nefertari-Kreuzfahrt"
+        },
+        {
+          id: 'el-gouna',
+          name: "El Gouna & Nördliche Inseln",
+          ancientName: "Horus-Lagune",
+          glyph: "𓅃",
+          coordinates: { x: 362, y: 218 },
+          region: "Rote-Meer-Lagunen",
+          facts: [
+            "Ein atemberaubendes Netzwerk aus flachen türkisfarbenen Kanälen, Lagunen und Sandinseln.",
+            "Umgeben von geheimen, unberichten Korallengärten abseits der überfüllten öffentlichen Plätze.",
+            "Bietet tiefblaues Wasser für rasante Erkundungen mit luxuriösen Schnellbooten."
+          ],
+          lore: "Der Falkengott Horus, symbolisch für Schnelligkeit und göttliche Sicht, patrouillierte angeblich vom Himmel aus über den Gewässern des Roten Meeres. Pharaonische Späher segelten mit schnellen Papyrusbooten durch diese Lagunen und gaben Spiegelsignale, um die Grenzen im Landesinneren zu schützen.",
+          relatedExcursionId: "speedboat-1",
+          relatedExcursionName: "Horus' Falkenauge-Schnellbootfahrt"
+        }
+      ];
+    }
+
+    if (language === 'pl') {
+      return [
+        {
+          id: 'giza-pyramids',
+          name: "Płaskowyż Giza",
+          ancientName: "Akhet Khufu",
+          glyph: "𓉴",
+          coordinates: { x: 265, y: 140 },
+          region: "Dolny Egipt",
+          facts: [
+            "Dom Wielkiej Piramidy w Gizie, najstarszego z siedmiu cudów starożytnego świata.",
+            "Strzeżony przez kolosalnego Wielkiego Sfinksa z Gizy, wykutego z jednego grzbietu wapiennego.",
+            "Piramidy zostały astronomicznie dopasowane z absolutną precyzją do Pasa Oriona."
+          ],
+          lore: "Znany starożytnym jako „Akhet Khufu” (Horyzont Chufu), ten płaskowyż był uważany za kosmiczną platformę startową. Pozwalał on duszy Faraona wstąpić do północnych gwiazd okołobiegunowych, dołączając do nieśmiertelnych bogów w zaświatach.",
+          relatedExcursionId: undefined,
+          relatedExcursionName: "Niestandardowe rozszerzenie Kairu (Zgłoś prośbę przez Wyrocznię Pisarza!)"
+        },
+        {
+          id: 'luxor-waset',
+          name: "Luksor (Karnak i Dolina Królów)",
+          ancientName: "Waset",
+          glyph: "𓉐",
+          coordinates: { x: 308, y: 350 },
+          region: "Górny Egipt",
+          facts: [
+            "Waset było potęgą Nowego Państwa, poświęconą najwyższemu stwórcy słońca Amonowi-Ra.",
+            "Obejmuje Karnak, największy kompleks świątynny, jaki kiedykolwiek zbudowano ludzkimi rękami.",
+            "Mieści Dolinę Królów, gdzie faraonowie spoczywali zapieczętowani w zdobionych grobowcach skalnych."
+          ],
+          lore: "Przejście ze Wschodniego Brzegu (wschód słońca/życie) na Zachodni Brzeg (zachód słońca/grobowce) Luksoru to przekroczenie mistycznej zasłony. Grobowce królewskie są wyrzeźbione głęboko w wapiennej piramidzie Al-Qurn, naśladując nocną podróż Ra do podziemi.",
+          relatedExcursionId: "history-1",
+          relatedExcursionName: "Pielgrzymka Faraona do Waset (Luksor)"
+        },
+        {
+          id: 'ras-mohammed',
+          name: "Sanktuarium Ras Muhammad",
+          ancientName: "Głęboki Basin Nun",
+          glyph: "𓆛",
+          coordinates: { x: 382, y: 205 },
+          region: "Morze Czerwone i Synaj",
+          facts: [
+            "Chroniony morski park narodowy położony na samym krańcu Półwyspu Synaj.",
+            "Posiada spektakularne pionowe ściany koralowe opadające ponad 1000 metrów w głąb morza.",
+            "Dom tętniących życiem ekosystemów z wargaczami garbogłowymi, żółwiami morskimi i żarłaczami młotami."
+          ],
+          lore: "Starożytni żeglarze i kapłani Hathor uważali ciepłe prądy Ras Muhammad za fizyczną manifestację Nun — pierwotnej otchłani, z której wyłoniło się całe życie. Na brzegach pozostawiano zatopione pomniki, aby przebłagać duchy morskie.",
+          relatedExcursionId: "diving-1",
+          relatedExcursionName: "Królewskie nurkowanie koralowe w Ras Muhammad"
+        },
+        {
+          id: 'hurghada-coast',
+          name: "Wydmy Hurghady i Deshret",
+          ancientName: "Wybrzeże Deshret Seta",
+          glyph: "𓅓",
+          coordinates: { x: 370, y: 238 },
+          region: "Morze Czerwone i Pustynia Wschodnia",
+          facts: [
+            "Majestatyczna granica, na której złote góry Pustyni Wschodniej spotykają się z brzegiem Morza Czerwonego.",
+            "Słynie z ruchomych wydm pustynnych, oaz beduińskich i surowych przełęczy górskich.",
+            "Idealne miejsce na szybkie wyprawy quadami i powolne przejażdżki na wielbłądach o zachodzie słońca."
+          ],
+          lore: "Ta czerwona pustynna ziemia była nazywana przez faraonów „Deshret” (Czerwona Ziemia), budząc lęk, ale i szacunek jako chaotyczna domena Seta, boga burz. Starożytni górnicy przemierzali te surowe ziemie, aby zbierać złoto i turkus na ofiary świątynne.",
+          relatedExcursionId: "safari-1",
+          relatedExcursionName: "Złote Safari Deshret Seta"
+        },
+        {
+          id: 'giftun-island',
+          name: "Wyspa Giftun (Orange Bay)",
+          ancientName: "Turkusowe Królestwo Sobka",
+          glyph: "𓍢",
+          coordinates: { x: 388, y: 242 },
+          region: "Wyspy Morza Czerwonego",
+          facts: [
+            "Chroniony rezerwat przyrody, słynący z miękkiego białego piasku i przezroczystej, krystalicznej wody.",
+            "Otoczony płytkimi, kolistymi lagunami tętniącymi życiem kolorowych koralowców.",
+            "Stada delfinów są regularnie widywane podczas zabawy w pobliżu nieskazitelnych płytkich ławic piaszczystych."
+          ],
+          lore: "W starożytności żeglowanie wokół wysp Morza Czerwonego było poświęcone czci Sobka, krokodylego pana dróg wodnych. Cedrowe statki wycieczkowe zdobione płatkami złota pływały po tych turkusowych wodach, aby zdobyć boską przychylność.",
+          relatedExcursionId: "boat-1",
+          relatedExcursionName: "Królewski Rejs Królowej Nefertari dla Sobka"
+        },
+        {
+          id: 'el-gouna',
+          name: "El Gouna i Wyspy Północne",
+          ancientName: "Laguna Horusa",
+          glyph: "𓅃",
+          coordinates: { x: 362, y: 218 },
+          region: "Laguny Morza Czerwonego",
+          facts: [
+            "Zapierająca dech w piersiach sieć płytkich turkusowych kanałów, lagun i piaszczystych wysp.",
+            "Otoczona sekretnymi, nienaruszonymi ogrodami koralowymi z dala od zatłoczonych miejsc publicznych.",
+            "Oferuje głębokie błękitne wody idealne do szybkich eksploracji luksusowymi motorówkami."
+          ],
+          lore: "Mówiono, że bog sokół Horus, symbol prędkości i boskiego wzroku, patroluje wody Morza Czerwonego z niebios. Faraońscy zwiadowcy żeglowali szybkimi łodziami papirusowymi przez te laguny, wysyłając sygnały lustrzane, aby chronić granice śródlądowe.",
+          relatedExcursionId: "speedboat-1",
+          relatedExcursionName: "Rejs Motorówką Sokole Oko Horusa"
+        }
+      ];
+    }
+
+    if (language === 'cs') {
+      return [
+        {
+          id: 'giza-pyramids',
+          name: "Plošina v Gíze",
+          ancientName: "Achet Chufu",
+          glyph: "𓉴",
+          coordinates: { x: 265, y: 140 },
+          region: "Dolní Egypt",
+          facts: [
+            "Domov Velké pyramidy v Gíze, nejstaršího ze sedmi divů starověkého světa.",
+            "Střežen kolosální Velkou sfingou v Gíze, vytesanou z jediného vápencového hřebene.",
+            "Pyramidy byly astronomicky zarovnány s absolutní přesností podle Orionova pásu."
+          ],
+          lore: "Starověkým lidem známá jako 'Achet Chufu' (Chufuův obzor). Tato plošina byla považována za kosmickou startovací rampu, která umožňovala duši faraona vystoupit k severním hvězdám a připojit se k nesmrtelným bohům v posmrtném životě.",
+          relatedExcursionId: undefined,
+          relatedExcursionName: "Vlastní rozšíření do Káhiry (vyžádejte si u Orákula!)"
+        },
+        {
+          id: 'luxor-waset',
+          name: "Luxor (Karnak a Údolí králů)",
+          ancientName: "Vaset",
+          glyph: "𓉐",
+          coordinates: { x: 308, y: 350 },
+          region: "Horní Egypt",
+          facts: [
+            "Vaset byl mocenským centrem Nové říše, zasvěceným nejvyššímu slunečnímu stvořiteli Amon-Ra.",
+            "Představuje Karnak, největší náboženský chrámový komplex, jaký kdy byl postaven lidskou rukou.",
+            "Nachází se zde Údolí králů, kde byli faraoni zpečetěni v bohatě zdobených hrobkách."
+          ],
+          lore: "Přejít z Východního břehu (východ slunce/živí) na Západní břeh (západ slunce/hrobky) v Luxoru znamená překročit mystický závoj. Královské hrobky jsou vytesány hluboko do vápencové pyramidy Al-Qurn, což napodobuje noční cestu boha Ra do podsvětí.",
+          relatedExcursionId: "history-1",
+          relatedExcursionName: "Faraonská pouť do Vasetu (Luxor)"
+        },
+        {
+          id: 'ras-mohammed',
+          name: "Rezervace Ras Mohammed",
+          ancientName: "Hlubinná pánev boha Nuna",
+          glyph: "𓆛",
+          coordinates: { x: 382, y: 205 },
+          region: "Rudé moře a Sinaj",
+          facts: [
+            "Chráněný mořský národní park nacházející se na samotném cípu Sinajského poloostrova.",
+            "Představuje velkolepé vertikální korálové stěny klesající přes 1000 metrů do hlubokého moře.",
+            "Domov živých ekosystémů pyskounů obrovských, mořských želv a kladivounů."
+          ],
+          lore: "Starověcí mořeplavci a kněží bohyně Hathor považovali teplé proudy u Ras Mohammed za fyzické projevy Nuna – prvotní propasti, z níž vzešel veškerý život. Na pobřeží se nechávaly potopené monumenty pro usmíření mořských duchů.",
+          relatedExcursionId: "diving-1",
+          relatedExcursionName: "Královské potápění u korálů v Ras Mohammed"
+        },
+        {
+          id: 'hurghada-coast',
+          name: "Duny v Hurghadě a Deshret",
+          ancientName: "Setovo pobřeží Deshret",
+          glyph: "𓅓",
+          coordinates: { x: 370, y: 238 },
+          region: "Rudé moře a Východní poušť",
+          facts: [
+            "Majestátní hranice, kde se zlaté hory Východní pouště setkávají s pobřežím Rudého moře.",
+            "Slavné pro pohyblivé pouštní duny, beduínské oázy a drsné horské průsmyky.",
+            "Ideální místo pro rychlé expedice na čtyřkolkách a pomalé vyjížďky na velbloudech při západu slunce."
+          ],
+          lore: "Tato červená pouštní země byla faraony nazývána 'Deshret' (Červená země). Byla obávaná, ale zároveň respektovaná jako chaotická doména Seta, boha bouří. Starověcí horníci křižovali tyto drsné kraje, aby získali zlato a tyrkys jako chrámové dary.",
+          relatedExcursionId: "safari-1",
+          relatedExcursionName: "Setovo zlaté pouštní safari Deshret"
+        },
+        {
+          id: 'giftun-island',
+          name: "Ostrov Giftun (Orange Bay)",
+          ancientName: "Sobekova tyrkysová říše",
+          glyph: "𓍢",
+          coordinates: { x: 388, y: 242 },
+          region: "Ostrovy Rudého moře",
+          facts: [
+            "Chráněná přírodní rezervace slavná svým jemným bílým pískem a průzračnou křišťálovou vodou.",
+            "Obklopen mělkými kruhovými lagunami překypujícími barevnými korály.",
+            "V blízkosti panenských písčin jsou pravidelně pozorovány skupinky hravých delfínů."
+          ],
+          lore: "Ve starověku bylo plavení kolem ostrovů Rudého moře zasvěceno uctívání Sobeka, krokodýlího pána vodních cest. Cedrové výletní lodě zdobené plátkovým zlatem se plavily těmito tyrkysovými vodami k získání božské přízně.",
+          relatedExcursionId: "boat-1",
+          relatedExcursionName: "Sobekova královská plavba královny Nefertari"
+        },
+        {
+          id: 'el-gouna',
+          name: "El Gouna a severní ostrovy",
+          ancientName: "Horova laguna",
+          glyph: "𓅃",
+          coordinates: { x: 362, y: 218 },
+          region: "Laguny Rudého moře",
+          facts: [
+            "Úchvatná síť mělkých tyrkysových kanálů, lagun a písečných ostrovů.",
+            "Obklopen tajnými, nedotčenými mořskými zahradami daleko od přeplněných veřejných míst.",
+            "Nabízí hluboké modré vody ideální pro rychlé plavby luxusními motorovými čluny."
+          ],
+          lore: "Sokolí bůh Horus, symbol rychlosti a božského zraku, prý patroloval nad vodami Rudého moře z nebes. Faraonští zvědové se plavili na rychlých papyrusových člunech těmito lagunami a vysílali zrcadlové signály na ochranu vnitrozemských hranic.",
+          relatedExcursionId: "speedboat-1",
+          relatedExcursionName: "Horova rychlá plavba se sokolím okem"
+        }
+      ];
+    }
+
+    return ANCIENT_SITES;
   }, [language]);
 
   const selectedSite = useMemo(() => {
@@ -273,14 +478,18 @@ export default function AncientSitesMap() {
       <div className="text-center space-y-2 mb-8">
         <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em] flex items-center justify-center gap-1.5">
           <Map className="w-3.5 h-3.5" />
-          {language === 'de' ? '𓉶 Kemet Geographie-Führer 𓋹' : '𓉶 Kemet Geography Guide 𓋹'}
+          {language === 'de' ? '𓉶 Kemet Geographie-Führer 𓋹' : language === 'pl' ? '𓉶 Przewodnik geograficzny Kemet 𓋹' : language === 'cs' ? '𓉶 Geografický průvodce Kemetu 𓋹' : '𓉶 Kemet Geography Guide 𓋹'}
         </span>
         <h2 className="font-serif text-3xl font-extrabold text-[#e6c280] uppercase">
-          {language === 'de' ? 'Interaktive Karte der antiken Stätten' : 'Interactive Ancient Sites Map'}
+          {language === 'de' ? 'Interaktive Karte der antiken Stätten' : language === 'pl' ? 'Interaktywna mapa starożytnych miejsc' : language === 'cs' ? 'Interaktivní mapa starobylých míst' : 'Interactive Ancient Sites Map'}
         </h2>
         <p className="text-stone-400 text-xs max-w-xl mx-auto leading-relaxed">
           {language === 'de' 
             ? 'Durchqueren Sie das Land der Pharaonen. Klicken Sie auf die golden leuchtenden Ruinen oder Korallenriffe, um mythologische Überlieferungen, kurze Fakten und unsere direkten Reiseangebote zu entdecken.'
+            : language === 'pl'
+            ? 'Przemierzaj krainę faraonów. Kliknij złote, świecące ruiny lub rafy koralowe, aby odkryć mitologiczne opowieści, ciekawe fakty i nasze bezpośrednie oferty wycieczek.'
+            : language === 'cs'
+            ? 'Projděte zemi faraonů. Kliknutím na zlatě zářící ruiny nebo korálové útesy objevíte mytologické legendy, zajímavá fakta a naše přímé nabídky výletů.'
             : 'Traverse the land of the Pharaohs. Click on the golden glowing ruins or coral reefs to discover mythological lore, quick facts, and our direct travel excursions.'}
         </p>
       </div>
@@ -300,21 +509,21 @@ export default function AncientSitesMap() {
           <div className="absolute bottom-4 left-4 flex flex-col gap-0.5 font-mono text-[8px] text-stone-600 pointer-events-none select-none">
             <div className="flex items-center gap-1">
               <span className="w-8 h-[1px] bg-stone-700"></span>
-              <span>{language === 'de' ? '100 km' : '100 Km'}</span>
+              <span>{language === 'de' ? '100 km' : language === 'pl' ? '100 km' : language === 'cs' ? '100 km' : '100 Km'}</span>
             </div>
-            <span>{language === 'de' ? 'Maßstab Sinai & Niltal' : 'Sinai & Nile Valley Scale'}</span>
+            <span>{language === 'de' ? 'Maßstab Sinai & Niltal' : language === 'pl' ? 'Skala Synaju i Doliny Nilu' : language === 'cs' ? 'Měřítko Sinaje a údolí Nilu' : 'Sinai & Nile Valley Scale'}</span>
           </div>
 
           {/* Egyptology Legends Overlay */}
           <div className="absolute bottom-4 right-4 bg-[#14100c]/80 border border-[#d4af37]/15 rounded-lg p-2 space-y-1.5 text-[8.5px] font-mono text-stone-400 pointer-events-none select-none backdrop-blur-sm z-10">
-            <div className="text-[#d4af37] uppercase tracking-wider font-bold mb-0.5 border-b border-[#d4af37]/15 pb-0.5">{language === 'de' ? 'Kartenlegende' : 'Map Legend'}</div>
+            <div className="text-[#d4af37] uppercase tracking-wider font-bold mb-0.5 border-b border-[#d4af37]/15 pb-0.5">{language === 'de' ? 'Kartenlegende' : language === 'pl' ? 'Legenda mapy' : language === 'cs' ? 'Legenda mapy' : 'Map Legend'}</div>
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-              <span>{language === 'de' ? 'Antikes Grab / Ruine' : 'Ancient Tomb / Ruin'}</span>
+              <span>{language === 'de' ? 'Antikes Grab / Ruine' : language === 'pl' ? 'Starożytny grobowiec / Ruiny' : language === 'cs' ? 'Starověká hrobka / Ruiny' : 'Ancient Tomb / Ruin'}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></span>
-              <span>{language === 'de' ? 'Rotes Meer Tauchriff' : 'Red Sea Diving Reef'}</span>
+              <span>{language === 'de' ? 'Rotes Meer Tauchriff' : language === 'pl' ? 'Rafa koralowa Morza Czerwonego' : language === 'cs' ? 'Potápěčský útes Rudého moře' : 'Red Sea Diving Reef'}</span>
             </div>
           </div>
 
@@ -325,7 +534,7 @@ export default function AncientSitesMap() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={language === 'de' ? 'Heilige Stätten suchen...' : 'Search sacred sites...'}
+              placeholder={language === 'de' ? 'Heilige Stätten suchen...' : language === 'pl' ? 'Szukaj świętych miejsc...' : language === 'cs' ? 'Hledat posvátná místa...' : 'Search sacred sites...'}
               className="w-full bg-[#14100c]/90 border border-[#d4af37]/30 rounded-lg py-1.5 pl-8 pr-3 text-[11px] text-stone-200 focus:outline-none focus:ring-1 focus:ring-[#d4af37] placeholder:text-stone-600 font-sans"
             />
           </div>
@@ -342,7 +551,7 @@ export default function AncientSitesMap() {
               
               {/* Mediterranean Sea outline */}
               <path d="M 10,50 Q 150,55 300,50 T 590,45" fill="none" stroke="#2563eb" strokeWidth="1.5" className="opacity-15" />
-              <text x="120" y="35" className="fill-stone-600 font-serif text-[10px] tracking-[0.25em] uppercase opacity-40">{language === 'de' ? 'Mittelmeer' : 'Mediterranean Sea'}</text>
+              <text x="120" y="35" className="fill-stone-600 font-serif text-[10px] tracking-[0.25em] uppercase opacity-40">{language === 'de' ? 'Mittelmeer' : language === 'pl' ? 'Morze Śródziemne' : language === 'cs' ? 'Středozemní moře' : 'Mediterranean Sea'}</text>
 
               {/* The Nile Delta & River Path (Life of Egypt) */}
               <path
@@ -382,7 +591,7 @@ export default function AncientSitesMap() {
                 strokeLinecap="round"
                 className="opacity-60"
               />
-              <text x="210" y="300" transform="rotate(-78 210 300)" className="fill-[#0284c7] font-serif text-[9px] tracking-[0.15em] uppercase opacity-50">{language === 'de' ? 'Iteru (Der Nil)' : 'Iteru (The Nile)'}</text>
+              <text x="210" y="300" transform="rotate(-78 210 300)" className="fill-[#0284c7] font-serif text-[9px] tracking-[0.15em] uppercase opacity-50">{language === 'de' ? 'Iteru (Der Nil)' : language === 'pl' ? 'Iteru (Nil)' : language === 'cs' ? 'Iteru (Nil)' : 'Iteru (The Nile)'}</text>
 
               {/* Red Sea & Gulf of Suez & Gulf of Aqaba */}
               {/* Gulf of Suez path */}
@@ -392,14 +601,14 @@ export default function AncientSitesMap() {
               {/* Red Sea Proper */}
               <path d="M 382,205 Q 430,280 495,380 T 580,480" fill="none" stroke="#0f766e" strokeWidth="8" strokeLinecap="round" className="opacity-25" />
               <path d="M 382,205 Q 430,280 495,380 T 580,480" fill="none" stroke="#14b8a6" strokeWidth="2" strokeLinecap="round" className="opacity-45 animate-pulse" />
-              <text x="450" y="330" transform="rotate(50 450 330)" className="fill-teal-700 font-serif text-[9px] tracking-[0.2em] uppercase opacity-55">{language === 'de' ? 'Das Rote Meer' : 'The Red Sea'}</text>
+              <text x="450" y="330" transform="rotate(50 450 330)" className="fill-teal-700 font-serif text-[9px] tracking-[0.2em] uppercase opacity-55">{language === 'de' ? 'Das Rote Meer' : language === 'pl' ? 'Morze Czerwone' : language === 'cs' ? 'Rudé moře' : 'The Red Sea'}</text>
 
               {/* Sinai Peninsula Label */}
-              <text x="365" y="150" className="fill-stone-600 font-serif text-[8.5px] tracking-[0.2em] uppercase opacity-60">{language === 'de' ? 'Sinai-Wüste' : 'Sinai Desert'}</text>
+              <text x="365" y="150" className="fill-stone-600 font-serif text-[8.5px] tracking-[0.2em] uppercase opacity-60">{language === 'de' ? 'Sinai-Wüste' : language === 'pl' ? 'Pustynia Synaj' : language === 'cs' ? 'Sinajská poušť' : 'Sinai Desert'}</text>
 
               {/* Nubian Desert Label */}
-              <text x="140" y="440" className="fill-stone-700 font-serif text-[9px] tracking-[0.3em] uppercase opacity-35">{language === 'de' ? 'Westliche Wüste' : 'Western Desert'}</text>
-              <text x="430" y="450" className="fill-stone-700 font-serif text-[9px] tracking-[0.3em] uppercase opacity-35">{language === 'de' ? 'Östliche Wüste' : 'Eastern Desert'}</text>
+              <text x="140" y="440" className="fill-stone-700 font-serif text-[9px] tracking-[0.3em] uppercase opacity-35">{language === 'de' ? 'Westliche Wüste' : language === 'pl' ? 'Pustynia Zachodnia' : language === 'cs' ? 'Západní poušť' : 'Western Desert'}</text>
+              <text x="430" y="450" className="fill-stone-700 font-serif text-[9px] tracking-[0.3em] uppercase opacity-35">{language === 'de' ? 'Östliche Wüste' : language === 'pl' ? 'Pustynia Wschodnia' : language === 'cs' ? 'Východní poušť' : 'Eastern Desert'}</text>
 
               {/* Map Sites Grid Layers */}
               {filteredSites.map((site) => {
@@ -497,6 +706,10 @@ export default function AncientSitesMap() {
           <div className="text-center md:text-left text-[10px] font-mono text-stone-500 italic pb-1">
             {language === 'de' 
               ? '𓋹 Tipp: Bewegen Sie den Mauszeiger über einen Standort-Marker oben, um die Geographie Ägyptens zu entdecken!' 
+              : language === 'pl'
+              ? '𓋹 Wskazówka: Najedź lub stuknij dowolny znacznik lokalizacji powyżej, aby poznać geografię Egiptu!'
+              : language === 'cs'
+              ? '𓋹 Tip: Najeďte myší nebo klepněte na jakýkoli bod na mapě výše a objevte geografii Egypta!'
               : '𓋹 Tip: Hover or tap any location marker above to discover the geography of Egypt!'}
           </div>
 
@@ -507,7 +720,7 @@ export default function AncientSitesMap() {
           
           {/* List sidebar fallback for accessibility and small screen tap targets */}
           <div className="bg-[#1a1410] border border-[#d4af37]/25 rounded-2xl p-4 space-y-3">
-            <span className="text-[9px] font-mono text-stone-500 uppercase tracking-widest block">{language === 'de' ? 'Wählen Sie eine Stätte aus der Schriftrolle' : 'Choose Site from Scroll-roll'}</span>
+            <span className="text-[9px] font-mono text-stone-500 uppercase tracking-widest block">{language === 'de' ? 'Wählen Sie eine Stätte aus der Schriftrolle' : language === 'pl' ? 'Wybierz miejsce ze zwoju' : language === 'cs' ? 'Vyberte místo ze svitku' : 'Choose Site from Scroll-roll'}</span>
             
             <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-thin scrollbar-thumb-amber-950">
               {filteredSites.map((site) => {
@@ -561,7 +774,7 @@ export default function AncientSitesMap() {
                       {selectedSite.name}
                     </h3>
                     <p className="text-[10px] font-mono text-[#d4af37]/75 italic uppercase tracking-wider">
-                      {language === 'de' ? 'Antiker Titel:' : 'Ancient Title:'} <span className="font-serif text-stone-200">{selectedSite.ancientName}</span>
+                      {language === 'de' ? 'Antiker Titel:' : language === 'pl' ? 'Starożytny tytuł:' : language === 'cs' ? 'Starověký titul:' : 'Ancient Title:'} <span className="font-serif text-stone-200">{selectedSite.ancientName}</span>
                     </p>
                   </div>
                 </div>
@@ -571,7 +784,7 @@ export default function AncientSitesMap() {
                   <span className="absolute top-3.5 right-4 font-serif text-[#d4af37]/10 text-3xl select-none">𓂀</span>
                   <strong className="text-[9.5px] font-mono uppercase text-[#e6c280] tracking-widest block flex items-center gap-1.5">
                     <BookOpen className="w-3.5 h-3.5 text-[#d4af37]" />
-                    {language === 'de' ? 'Pharaonische Legenden & Mythen' : 'Pharaonic Lore & Myth'}
+                    {language === 'de' ? 'Pharaonische Legenden & Mythen' : language === 'pl' ? 'Faraońskie legendy i mity' : language === 'cs' ? 'Faraonské legendy a mýty' : 'Pharaonic Lore & Myth'}
                   </strong>
                   <p className="text-stone-300 text-[11px] leading-relaxed font-sans italic">
                     "{selectedSite.lore}"
@@ -582,7 +795,7 @@ export default function AncientSitesMap() {
                 <div className="space-y-2.5">
                   <strong className="text-[9.5px] font-mono uppercase text-stone-400 tracking-widest block flex items-center gap-1.5">
                     <Info className="w-3.5 h-3.5 text-[#d4af37]" />
-                    {language === 'de' ? 'Historische Fakten & Architektur' : 'Historical Facts & Architecture'}
+                    {language === 'de' ? 'Historische Fakten & Architektur' : language === 'pl' ? 'Fakty historyczne i architektura' : language === 'cs' ? 'Historická fakta a architektura' : 'Historical Facts & Architecture'}
                   </strong>
                   <ul className="space-y-2 text-[11px] text-stone-300 font-sans leading-relaxed">
                     {selectedSite.facts.map((fact, idx) => (
@@ -599,28 +812,28 @@ export default function AncientSitesMap() {
               <div className="pt-4 border-t border-[#d4af37]/15">
                 {selectedSite.relatedExcursionId ? (
                   <div className="space-y-2">
-                    <span className="text-[8.5px] font-mono text-stone-500 uppercase tracking-widest block">{language === 'de' ? 'Verfügbares Ausflugsangebot:' : 'Available Excursion Offering:'}</span>
+                    <span className="text-[8.5px] font-mono text-stone-500 uppercase tracking-widest block">{language === 'de' ? 'Verfügbares Ausflugsangebot:' : language === 'pl' ? 'Dostępna oferta wycieczek:' : language === 'cs' ? 'Dostupná nabídka výletů:' : 'Available Excursion Offering:'}</span>
                     <button
                       onClick={() => handleScrollToExcursion(selectedSite.relatedExcursionId!)}
                       className="w-full bg-gradient-to-r from-amber-950/30 via-[#d4af37]/10 to-amber-950/30 hover:via-[#d4af37]/20 border border-[#d4af37]/45 hover:border-[#d4af37] text-[#e6c280] py-3 px-4 rounded-xl text-xs font-serif font-black uppercase tracking-widest flex items-center justify-between transition-all duration-300 cursor-pointer shadow-md"
                     >
                       <span className="flex items-center gap-2">
                         <Sparkles className="w-4 h-4 text-[#d4af37] animate-pulse" />
-                        {language === 'de' ? 'Buchen: ' : 'Book '}{selectedSite.relatedExcursionName?.split(' (')[0]}
+                        {language === 'de' ? 'Buchen: ' : language === 'pl' ? 'Zarezerwuj: ' : language === 'cs' ? 'Rezervovat: ' : 'Book '}{selectedSite.relatedExcursionName?.split(' (')[0]}
                       </span>
                       <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <span className="text-[8.5px] font-mono text-stone-500 uppercase tracking-widest block">{language === 'de' ? 'Spezielle maßgeschneiderte Expedition:' : 'Special Custom Expedition:'}</span>
+                    <span className="text-[8.5px] font-mono text-stone-500 uppercase tracking-widest block">{language === 'de' ? 'Spezielle maßgeschneiderte Expedition:' : language === 'pl' ? 'Specjalna spersonalizowana ekspedycja:' : language === 'cs' ? 'Speciální expedice na míru:' : 'Special Custom Expedition:'}</span>
                     <button
                       onClick={handleScrollToScribe}
                       className="w-full bg-[#140f0c] hover:bg-[#201812] border border-stone-800 hover:border-stone-700 text-stone-300 py-3 px-4 rounded-xl text-xs font-serif font-bold uppercase tracking-widest flex items-center justify-between transition-all duration-300 cursor-pointer"
                     >
                       <span className="flex items-center gap-2 text-[11px] font-mono">
                         <Anchor className="w-4 h-4 text-[#d4af37]" />
-                        {language === 'de' ? 'Maßgeschneiderten Reiseplan vom KI-Reiseleiter anfordern' : 'Request Custom Itinerary from AI Guide'}
+                        {language === 'de' ? 'Maßgeschneiderten Reiseplan vom KI-Reiseleiter anfordern' : language === 'pl' ? 'Poproś o spersonalizowany plan od przewodnika AI' : language === 'cs' ? 'Vyžádat si plán na míru od AI průvodce' : 'Request Custom Itinerary from AI Guide'}
                       </span>
                       <ExternalLink className="w-3.5 h-3.5 text-stone-500" />
                     </button>

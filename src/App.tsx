@@ -581,6 +581,17 @@ export default function App() {
                   >
                     PL
                   </button>
+                  <button
+                    onClick={() => setLanguage('cs')}
+                    className={`px-2 py-1 rounded text-[9px] font-mono font-bold transition-all cursor-pointer ${
+                      language === 'cs'
+                        ? 'bg-[#d4af37] text-stone-950 shadow-sm font-extrabold'
+                        : 'text-stone-400 hover:text-stone-200'
+                    }`}
+                    title="Čeština"
+                  >
+                    CS
+                  </button>
                 </div>
 
                 {/* Theme Toggle Button */}
@@ -620,7 +631,7 @@ export default function App() {
               <div className="flex items-center gap-2 mb-3 mt-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span className="text-[9px] font-mono text-[#d4af37] uppercase tracking-[0.25em]">
-                  𓂀 {language === 'de' ? 'Echtzeit-Phasenmonitor für aktive Reisende' : language === 'pl' ? 'Monitor fazy aktywnych podróżnych w czasie rzeczywistym' : 'Real-Time Active Traveler Stage Monitor'} 𓋹
+                  𓂀 {language === 'de' ? 'Echtzeit-Phasenmonitor für aktive Reisende' : language === 'pl' ? 'Monitor fazy aktywnych podróżnych w czasie rzeczywistym' : language === 'cs' ? 'Sledování aktivních cestovatelů v reálném čase' : 'Real-Time Active Traveler Stage Monitor'} 𓋹
                 </span>
               </div>
               
@@ -637,9 +648,9 @@ export default function App() {
 
                 {/* Steps */}
                 {[
-                  { id: 'browsing', label: language === 'de' ? 'Touren durchstöbern' : language === 'pl' ? 'Przeglądanie wycieczek' : 'Browsing Tours', glyph: '𓆛', target: 'excursions-section', baseUsers: 4 },
-                  { id: 'itinerary', label: language === 'de' ? 'Reiseplan erstellen' : language === 'pl' ? 'Tworzenie planu podróży' : 'Building Itinerary', glyph: '𓋹', target: 'scribe-section', baseUsers: 2 },
-                  { id: 'finalizing', label: language === 'de' ? 'Buchungen abschließen' : language === 'pl' ? 'Finalizowanie rezerwacji' : 'Finalizing Bookings', glyph: '𓎬', target: 'ledger-section', baseUsers: 1 }
+                  { id: 'browsing', label: language === 'de' ? 'Touren durchstöbern' : language === 'pl' ? 'Przeglądanie wycieczek' : language === 'cs' ? 'Prohlížení výletů' : 'Browsing Tours', glyph: '𓆛', target: 'excursions-section', baseUsers: 4 },
+                  { id: 'itinerary', label: language === 'de' ? 'Reiseplan erstellen' : language === 'pl' ? 'Tworzenie planu podróży' : language === 'cs' ? 'Plánování itineráře' : 'Building Itinerary', glyph: '𓋹', target: 'scribe-section', baseUsers: 2 },
+                  { id: 'finalizing', label: language === 'de' ? 'Buchungen abschließen' : language === 'pl' ? 'Finalizowanie rezerwacji' : language === 'cs' ? 'Dokončení rezervací' : 'Finalizing Bookings', glyph: '𓎬', target: 'ledger-section', baseUsers: 1 }
                 ].map((step, idx) => {
                   const isCompleted = 
                     (activeStage === 'itinerary' && idx === 0) ||
@@ -654,7 +665,7 @@ export default function App() {
                       key={step.id}
                       onClick={() => scrollToSection(step.target)}
                       className="relative z-10 flex flex-col items-center group focus:outline-none cursor-pointer"
-                      title={language === 'de' ? `Gehe zu ${step.label}` : language === 'pl' ? `Idź do ${step.label}` : `Go to ${step.label}`}
+                      title={language === 'de' ? `Gehe zu ${step.label}` : language === 'pl' ? `Idź do ${step.label}` : language === 'cs' ? `Přejít na ${step.label}` : `Go to ${step.label}`}
                     >
                       {/* Step Bubble */}
                       <div 
@@ -688,7 +699,7 @@ export default function App() {
                           ? 'bg-emerald-950/80 text-emerald-400 border-emerald-500/20 shadow-[0_0_8px_rgba(16,185,129,0.1)]'
                           : 'bg-stone-900/40 text-stone-500 border-stone-800/60'
                       }`}>
-                        {currentCount} {language === 'de' ? 'Aktiv' : language === 'pl' ? 'Aktywny(ch)' : 'Active'} {isActive && (language === 'de' ? '• Aktuell' : language === 'pl' ? '• Bieżący' : '• Current')}
+                        {currentCount} {language === 'de' ? 'Aktiv' : language === 'pl' ? 'Aktywny(ch)' : language === 'cs' ? 'Aktivní' : 'Active'} {isActive && (language === 'de' ? '• Aktuell' : language === 'pl' ? '• Bieżący' : language === 'cs' ? '• Aktuální' : '• Current')}
                       </span>
                     </button>
                   );
@@ -720,12 +731,12 @@ export default function App() {
                 </div>
 
                 <div className="space-y-2">
-                  <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.25em] block">{language === 'de' ? 'Sperrbereich' : language === 'pl' ? 'Obszar Zastrzeżony' : 'Restricted Area'}</span>
+                  <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.25em] block">{language === 'de' ? 'Sperrbereich' : language === 'pl' ? 'Obszar Zastrzeżony' : language === 'cs' ? 'Vyhrazená oblast' : 'Restricted Area'}</span>
                   <h3 className="font-serif text-2xl font-black text-[#e6c280] uppercase tracking-wide">
-                    {language === 'de' ? 'Admin-Dashboard-Zugriff' : language === 'pl' ? 'Dostęp do Panelu Administratora' : 'Admin Dashboard Access'}
+                    {language === 'de' ? 'Admin-Dashboard-Zugriff' : language === 'pl' ? 'Dostęp do Panelu Administratora' : language === 'cs' ? 'Přístup k administrátorskému panelu' : 'Admin Dashboard Access'}
                   </h3>
                   <p className="text-stone-400 text-xs leading-relaxed">
-                    {language === 'de' ? 'Der Zugriff ist autorisierten Reiseadministratoren vorbehalten. Bitte geben Sie den Admin-Passcode ein, um das Dashboard anzuzeigen.' : language === 'pl' ? 'Dostęp jest zastrzeżony dla upoważnionych administratorów podróży. Wprowadź hasło administratora, aby wyświetlić panel.' : 'Access is restricted to authorized travel administrators. Please enter the admin passcode to view the dashboard.'}
+                    {language === 'de' ? 'Der Zugriff ist autorisierten Reiseadministratoren vorbehalten. Bitte geben Sie den Admin-Passcode ein, um das Dashboard anzuzeigen.' : language === 'pl' ? 'Dostęp jest zastrzeżony dla upoważnionych administratorów podróży. Wprowadź hasło administratora, aby wyświetlić panel.' : language === 'cs' ? 'Přístup je vyhrazen pro oprávněné administrátory. Pro zobrazení panelu zadejte administrátorské heslo.' : 'Access is restricted to authorized travel administrators. Please enter the admin passcode to view the dashboard.'}
                   </p>
                 </div>
 
@@ -747,16 +758,16 @@ export default function App() {
                         setPasscodeInput('');
                         triggerCelebration(); // Celebrate!
                       } else {
-                        setPasscodeError(data.error || (language === 'de' ? 'Ungültiger Passcode. Bitte versuchen Sie es erneut.' : language === 'pl' ? 'Nieprawidłowe hasło. Spróbuj ponownie.' : 'Incorrect passcode. Please try again.'));
+                        setPasscodeError(data.error || (language === 'de' ? 'Ungültiger Passcode. Bitte versuchen Sie es erneut.' : language === 'pl' ? 'Nieprawidłowe hasło. Spróbuj ponownie.' : language === 'cs' ? 'Nesprávné heslo. Zkuste to prosím znovu.' : 'Incorrect passcode. Please try again.'));
                       }
                     } catch (err) {
-                      setPasscodeError(language === 'de' ? 'Der Server für die göttliche Verifizierung ist offline. Bitte versuchen Sie es erneut.' : language === 'pl' ? 'Serwer weryfikacji jest offline. Spróbuj ponownie.' : 'Divine verification server is offline. Please try again.');
+                      setPasscodeError(language === 'de' ? 'Der Server für die göttliche Verifizierung ist offline. Bitte versuchen Sie es erneut.' : language === 'pl' ? 'Serwer weryfikacji jest offline. Spróbuj ponownie.' : language === 'cs' ? 'Ověřovací server je offline. Zkuste to prosím znovu.' : 'Divine verification server is offline. Please try again.');
                     }
                   }}
                   className="space-y-4 text-left"
                 >
                   <div>
-                    <label className="text-[9px] font-mono text-stone-500 uppercase tracking-widest block mb-1">{language === 'de' ? 'Admin-Passcode eingeben' : language === 'pl' ? 'Wprowadź hasło administratora' : 'Enter Admin Passcode'}</label>
+                    <label className="text-[9px] font-mono text-stone-500 uppercase tracking-widest block mb-1">{language === 'de' ? 'Admin-Passcode eingeben' : language === 'pl' ? 'Wprowadź hasło administratora' : language === 'cs' ? 'Zadejte administrátorské heslo' : 'Enter Admin Passcode'}</label>
                     <input
                       type="password"
                       placeholder="e.g. pharaoh"
@@ -775,19 +786,19 @@ export default function App() {
                       onClick={() => setIsAdminMode(false)}
                       className="flex-1 bg-[#1a1511] hover:bg-stone-900 border border-stone-800 text-stone-400 py-2.5 rounded-xl text-[10px] font-mono uppercase tracking-widest transition-colors cursor-pointer"
                     >
-                      {language === 'de' ? 'Abbrechen' : language === 'pl' ? 'Anuluj' : 'Cancel'}
+                      {language === 'de' ? 'Abbrechen' : language === 'pl' ? 'Anuluj' : language === 'cs' ? 'Zrušit' : 'Cancel'}
                     </button>
                     <button
                       type="submit"
                       className="flex-1 bg-gradient-to-r from-[#d4af37] to-[#b59228] hover:from-[#e3be44] hover:to-[#cfa72d] text-[#140f0a] font-bold py-2.5 rounded-xl text-[10px] font-mono uppercase tracking-widest transition-colors shadow-md cursor-pointer"
                     >
-                      {language === 'de' ? 'Admin verifizieren' : language === 'pl' ? 'Zweryfikuj administratora' : 'Verify Admin'}
+                      {language === 'de' ? 'Admin verifizieren' : language === 'pl' ? 'Zweryfikuj administratora' : language === 'cs' ? 'Ověřit administrátora' : 'Verify Admin'}
                     </button>
                   </div>
                 </form>
 
                 <p className="text-[9px] text-stone-600 font-mono italic">
-                  {language === 'de' ? 'Hinweis: pharaoh' : language === 'pl' ? 'Wskazówka: pharaoh' : 'Hint: pharaoh'}
+                  {language === 'de' ? 'Hinweis: pharaoh' : language === 'pl' ? 'Wskazówka: pharaoh' : language === 'cs' ? 'Nápověda: pharaoh' : 'Hint: pharaoh'}
                 </p>
               </motion.div>
             ) : (
@@ -802,7 +813,7 @@ export default function App() {
                   <div className="flex items-center gap-2">
                     <span className="text-[#d4af37] text-lg">𓀚</span>
                     <span className="text-xs font-mono text-[#e6c280] uppercase tracking-wider">
-                      {language === 'de' ? 'Administrative Freigabestufe: Hohepriester aktiv' : language === 'pl' ? 'Poziom uprawnień administracyjnych: Arcykapłan aktywny' : 'Administrative Clearance Level: High Priest Active'}
+                      {language === 'de' ? 'Administrative Freigabestufe: Hohepriester aktiv' : language === 'pl' ? 'Poziom uprawnień administracyjnych: Arcykapłan aktywny' : language === 'cs' ? 'Úroveň oprávnění: Velekněz aktivní' : 'Administrative Clearance Level: High Priest Active'}
                     </span>
                   </div>
                   <div className="flex gap-2">
@@ -813,15 +824,15 @@ export default function App() {
                         triggerCelebration();
                       }}
                       className="bg-red-950/40 text-red-400 hover:bg-red-900/20 border border-red-500/20 px-3 py-1.5 rounded-xl text-[10px] font-mono uppercase tracking-wider cursor-pointer"
-                      title={language === 'de' ? 'Dashboard-Zugangsdaten sperren' : language === 'pl' ? 'Zablokuj panel administratora' : 'Lock dashboard control credentials'}
+                      title={language === 'de' ? 'Dashboard-Zugangsdaten sperren' : language === 'pl' ? 'Zablokuj panel administratora' : language === 'cs' ? 'Uzamknout administrátorský panel' : 'Lock dashboard control credentials'}
                     >
-                      {language === 'de' ? 'Heiligtum sperren' : language === 'pl' ? 'Zablokuj Sanktuarium' : 'Lock Sanctuary'}
+                      {language === 'de' ? 'Heiligtum sperren' : language === 'pl' ? 'Zablokuj Sanktuarium' : language === 'cs' ? 'Uzamknout svatyni' : 'Lock Sanctuary'}
                     </button>
                     <button
                       onClick={() => setIsAdminMode(false)}
                       className="bg-[#2a2016] text-[#e6c280] hover:bg-[#3d2f21] border border-[#d4af37]/40 px-3 py-1.5 rounded-xl text-[10px] font-mono uppercase tracking-wider cursor-pointer"
                     >
-                      {language === 'de' ? 'Zurück zum Entdecker-Modus' : language === 'pl' ? 'Powrót do trybu odkrywcy' : 'Return to Explorer Mode'}
+                      {language === 'de' ? 'Zurück zum Entdecker-Modus' : language === 'pl' ? 'Powrót do trybu odkrywcy' : language === 'cs' ? 'Návrat do režimu objevitele' : 'Return to Explorer Mode'}
                     </button>
                   </div>
                 </div>
@@ -949,12 +960,12 @@ export default function App() {
                   transition={{ duration: 0.8, ease: "easeOut" }}
                 >
                   <div className="text-center">
-                    <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">{language === 'de' ? 'Künstliche Intelligenz' : language === 'pl' ? 'Sztuczna inteligencja' : 'Artificial Intelligence'}</span>
+                    <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">{language === 'de' ? 'Künstliche Intelligenz' : language === 'pl' ? 'Sztuczna inteligencja' : language === 'cs' ? 'Umělá inteligence' : 'Artificial Intelligence'}</span>
                     <h2 className="font-serif text-3xl font-extrabold text-[#e6c280] uppercase mt-1">
-                      {language === 'de' ? 'KI-Reiseführer & Assistent' : language === 'pl' ? 'Asystent i przewodnik AI' : 'AI Travel Guide & Assistant'}
+                      {language === 'de' ? 'KI-Reiseführer & Assistent' : language === 'pl' ? 'Asystent i przewodnik AI' : language === 'cs' ? 'Průvodce a asistent s AI' : 'AI Travel Guide & Assistant'}
                     </h2>
                     <p className="text-stone-400 text-sm max-w-xl mx-auto mt-2">
-                      {language === 'de' ? 'Stellen Sie unserem KI-Helfer Fragen oder erstellen Sie einen individuellen Tages-Reiseplan.' : language === 'pl' ? 'Zadaj pytania naszemu asystentowi AI lub wygeneruj spersonalizowany plan podróży dzień po dniu.' : 'Ask our AI helper any questions or generate a custom day-by-day travel plan.'}
+                      {language === 'de' ? 'Stellen Sie unserem KI-Helfer Fragen oder erstellen Sie einen individuellen Tages-Reiseplan.' : language === 'pl' ? 'Zadaj pytania naszemu asystentowi AI lub wygeneruj spersonalizowany plan podróży dzień po dniu.' : language === 'cs' ? 'Zeptejte se našeho asistenta s AI na cokoli nebo si nechte vytvořit vlastní denní itinerář.' : 'Ask our AI helper any questions or generate a custom day-by-day travel plan.'}
                     </p>
                   </div>
                   <ScribeOracle onScribeSuccess={triggerCelebration} onAddBooking={handleAddBooking} />
@@ -982,12 +993,12 @@ export default function App() {
                   transition={{ duration: 0.8, ease: "easeOut" }}
                 >
                   <div className="text-center">
-                    <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">{language === 'de' ? 'Ägyptische Kartusche' : language === 'pl' ? 'Egipska kartusza' : 'Egyptian Cartouche'}</span>
+                    <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">{language === 'de' ? 'Ägyptische Kartusche' : language === 'pl' ? 'Egipska kartusza' : language === 'cs' ? 'Egyptská kartuše' : 'Egyptian Cartouche'}</span>
                     <h2 className="font-serif text-3xl font-extrabold text-[#e6c280] uppercase mt-1">
-                      {language === 'de' ? 'Ägyptischer Namensübersetzer' : language === 'pl' ? 'Tłumacz egipskich imion' : 'Egyptian Name Translator'}
+                      {language === 'de' ? 'Ägyptischer Namensübersetzer' : language === 'pl' ? 'Tłumacz egipskich imion' : language === 'cs' ? 'Překladač egyptských jmen' : 'Egyptian Name Translator'}
                     </h2>
                     <p className="text-stone-400 text-sm max-w-xl mx-auto mt-2">
-                      {language === 'de' ? 'Übersetzen Sie Ihren Namen in altägyptische Hieroglyphensymbole in einer wunderschönen schützenden Kartusche.' : language === 'pl' ? 'Przetłumacz swoje imię na starożytne egipskie hieroglify wewnątrz pięknej, ochronnej kartuszy.' : 'Translate your name into ancient Egyptian hieroglyphic symbols inside a beautiful protective cartouche.'}
+                      {language === 'de' ? 'Übersetzen Sie Ihren Namen in altägyptische Hieroglyphensymbole in einer wunderschönen schützenden Kartusche.' : language === 'pl' ? 'Przetłumacz swoje imię na starożytne egipskie hieroglify wewnątrz pięknej, ochronnej kartuszy.' : language === 'cs' ? 'Přeložte své jméno do starověkých egyptských hieroglyfů uvnitř krásné ochranné kartuše.' : 'Translate your name into ancient Egyptian hieroglyphic symbols inside a beautiful protective cartouche.'}
                     </p>
                   </div>
                   <CartoucheGenerator />
@@ -1003,12 +1014,12 @@ export default function App() {
                   transition={{ duration: 0.8, ease: "easeOut" }}
                 >
                   <div className="text-center">
-                    <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">{language === 'de' ? 'Meine Buchungen' : language === 'pl' ? 'Moje rezerwacje' : 'My Bookings'}</span>
+                    <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">{language === 'de' ? 'Meine Buchungen' : language === 'pl' ? 'Moje rezerwacje' : language === 'cs' ? 'Moje rezervace' : 'My Bookings'}</span>
                     <h2 className="font-serif text-3xl font-extrabold text-[#e6c280] uppercase mt-1">
-                      {language === 'de' ? 'Ihre Buchungen & Bewertungen' : language === 'pl' ? 'Twoje rezerwacje i opinie' : 'Your Bookings & Reviews'}
+                      {language === 'de' ? 'Ihre Buchungen & Bewertungen' : language === 'pl' ? 'Twoje rezerwacje i opinie' : language === 'cs' ? 'Vaše rezervace a hodnocení' : 'Your Bookings & Reviews'}
                     </h2>
                     <p className="text-stone-400 text-sm max-w-xl mx-auto mt-2">
-                      {language === 'de' ? 'Sehen Sie sich Ihre ausstehenden oder bestätigten Buchungen an und lesen Sie Bewertungen von anderen Reisenden.' : language === 'pl' ? 'Przeglądaj swoje oczekujące i potwierdzone rezerwacje oraz czytaj opinie innych podróżnych.' : 'View your pending or confirmed bookings, and read reviews from other travelers.'}
+                      {language === 'de' ? 'Sehen Sie sich Ihre ausstehenden oder bestätigten Buchungen an und lesen Sie Bewertungen von anderen Reisenden.' : language === 'pl' ? 'Przeglądaj swoje oczekujące i potwierdzone rezerwacje oraz czytaj opinie innych podróżnych.' : language === 'cs' ? 'Zobrazte své čekající nebo potvrzené rezervace a přečtěte si hodnocení ostatních cestovatelů.' : 'View your pending or confirmed bookings, and read reviews from other travelers.'}
                     </p>
                   </div>
                   <BookingManager bookings={bookings} excursions={excursions} onCancelBooking={handleCancelBooking} onVerifyCheckIn={handleVerifyCheckIn} />
@@ -1037,7 +1048,7 @@ export default function App() {
           </div>
 
           <p className="text-stone-500 text-xs max-w-md mx-auto leading-relaxed">
-            {language === 'de' ? 'Unterstützt von Mas international Agency. Entwickelt für Wüstenentdecker, Tiefseetaucher und Geschichtsliebhaber. Gute Reise und einen fantastischen Urlaub!' : language === 'pl' ? 'Wspierane przez Mas international Agency. Zaprojektowane dla odkrywców pustyni, nurków głębinowych i miłośników historii. Bezpiecznej podróży i niesamowitych wakacji!' : 'Powered by Mas international Agency. Designed for desert explorers, deep-sea divers, and lovers of history. Safe travels and have an amazing trip!'}
+            {language === 'de' ? 'Unterstützt von Mas international Agency. Entwickelt für Wüstenentdecker, Tiefseetaucher und Geschichtsliebhaber. Gute Reise und einen fantastischen Urlaub!' : language === 'pl' ? 'Wspierane przez Mas international Agency. Zaprojektowane dla odkrywców pustyni, nurków głębinowych i miłośników historii. Bezpiecznej podróży i niesamowitych wakacji!' : language === 'cs' ? 'S podporou Mas international Agency. Navrženo pro objevitele pouští, hlubinné potápěče a milovníky historie. Šťastnou cestu a skvělou dovolenou!' : 'Powered by Mas international Agency. Designed for desert explorers, deep-sea divers, and lovers of history. Safe travels and have an amazing trip!'}
           </p>
 
           {/* Ancient seals icons */}
@@ -1050,7 +1061,7 @@ export default function App() {
           </div>
 
           <div className="pt-4 border-t border-stone-900/60 text-stone-600 text-[10px] font-mono uppercase tracking-widest">
-            © 2026 Kemet Tours - Powered by Mas international Agency • {language === 'de' ? 'Alle Rechte vorbehalten.' : language === 'pl' ? 'Wszelkie prawa zastrzeżone.' : 'All Rights Reserved.'}
+            © 2026 Kemet Tours - Powered by Mas international Agency • {language === 'de' ? 'Alle Rechte vorbehalten.' : language === 'pl' ? 'Wszelkie prawa zastrzeżone.' : language === 'cs' ? 'Všechna práva vyhrazena.' : 'All Rights Reserved.'}
           </div>
         </footer>
 
@@ -1074,12 +1085,14 @@ export default function App() {
                 ? "𓂀 Kemet Tours - Unterstützt von Mas international Agency 𓂀\n\nSeid gegrüßt, Schreiber! Ich besuche Ihr Tempel-Dashboard und möchte mich über maßgeschneiderte Reiserouten, Buchungsverfügbarkeit oder spezielle pharaonische Ausflüge erkundigen!"
                 : language === 'pl'
                 ? "𓂀 Kemet Tours - Wspierane przez Mas international Agency 𓂀\n\nWitaj Pisarzu! Odwiedzam Twój panel świątynny i chciałbym zapytać o spersonalizowane plany podróży, dostępność rezerwacji lub specjalne wycieczki faraońskie!"
+                : language === 'cs'
+                ? "𓂀 Kemet Tours - S podporou Mas international Agency 𓂀\n\nZdravím Vás, písaři! Navštěvuji Váš chrámový panel a rád bych se zeptal na individuální itineráře, dostupnost rezervací nebo speciální faraonské výlety!"
                 : "𓂀 Kemet Tours - Powered by Mas international Agency 𓂀\n\nGreetings Scribe! I am visiting your temple dashboard and would like to inquire about customized itineraries, booking availability, or special Pharaonic excursions!";
               const url = `https://wa.me/201202181834?text=${encodeURIComponent(msg)}`;
               window.open(url, '_blank') || (window.location.href = url);
             }}
             className="bg-gradient-to-tr from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white p-3.5 rounded-full shadow-[0_4px_20px_rgba(16,185,129,0.4)] border-2 border-[#d4af37] relative group cursor-pointer"
-            title={language === 'de' ? "Sofortige WhatsApp-Beratung" : language === 'pl' ? "Natychmiastowa konsultacja WhatsApp" : "Instant WhatsApp Consultation"}
+            title={language === 'de' ? "Sofortige WhatsApp-Beratung" : language === 'pl' ? "Natychmiastowa konsultacja WhatsApp" : language === 'cs' ? "Okamžitá konzultace na WhatsApp" : "Instant WhatsApp Consultation"}
           >
             {/* Pulsing indicator */}
             <span className="absolute -top-1 -right-1 flex h-3 w-3">
@@ -1094,7 +1107,7 @@ export default function App() {
 
             {/* Tooltip */}
             <span className="absolute bottom-full right-0 mb-3 scale-0 transition-all rounded bg-stone-900 border border-[#d4af37] px-3 py-1.5 text-[10px] font-mono text-[#e6c280] uppercase tracking-wider whitespace-nowrap group-hover:scale-100 z-50 shadow-2xl">
-              {language === 'de' ? '𓂀 Chatte mit dem Hohenpriester (+201202181834)' : language === 'pl' ? '𓂀 Porozmawiaj z Arcykapłanem (+201202181834)' : '𓂀 Chat with High Priest (+201202181834)'}
+              {language === 'de' ? '𓂀 Chatte mit dem Hohenpriester (+201202181834)' : language === 'pl' ? '𓂀 Porozmawiaj z Arcykapłanem (+201202181834)' : language === 'cs' ? '𓂀 Promluvte si s veleknězem (+201202181834)' : '𓂀 Chat with High Priest (+201202181834)'}
             </span>
           </motion.button>
         </div>
@@ -1133,10 +1146,10 @@ export default function App() {
                 </div>
 
                 <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.25em] block mb-1">
-                  {language === 'de' ? 'Heilige Abreisewarnung' : language === 'pl' ? 'Święte ostrzeżenie przed wyjazdem' : 'Sacred Departure Warning'}
+                  {language === 'de' ? 'Heilige Abreisewarnung' : language === 'pl' ? 'Święte ostrzeżenie przed wyjazdem' : language === 'cs' ? 'Posvátné varování před odjezdem' : 'Sacred Departure Warning'}
                 </span>
                 <h3 className="font-serif text-xl font-bold text-[#e6c280] uppercase tracking-wide">
-                  {language === 'de' ? 'Expedition bricht morgen auf' : language === 'pl' ? 'Ekspedycja wyrusza jutro' : 'Expedition Departing Tomorrow'}
+                  {language === 'de' ? 'Expedition bricht morgen auf' : language === 'pl' ? 'Ekspedycja wyrusza jutro' : language === 'cs' ? 'Expedice odjíždí zítra' : 'Expedition Departing Tomorrow'}
                 </h3>
 
                 <div className="my-5 border-y border-[#d4af37]/10 py-4 text-left space-y-3 max-h-[40vh] overflow-y-auto">
@@ -1156,6 +1169,8 @@ export default function App() {
                           <>Seid gegrüßt, edler Reisender <span className="text-[#e6c280] font-semibold">{booking.travelerName}</span>. Ihre Karawane soll am <span className="text-[#d4af37] font-semibold font-mono">{booking.date}</span> aufbrechen (in weniger als 24 Stunden).</>
                         ) : language === 'pl' ? (
                           <>Witaj, szlachetny podróżniku <span className="text-[#e6c280] font-semibold">{booking.travelerName}</span>. Twoja karawana wyrusza w dniu <span className="text-[#d4af37] font-semibold font-mono">{booking.date}</span> (za mniej niż 24 godziny).</>
+                        ) : language === 'cs' ? (
+                          <>Zdravíme Vás, vznešený cestovateli <span className="text-[#e6c280] font-semibold">{booking.travelerName}</span>. Vaše karavana má odjet <span className="text-[#d4af37] font-semibold font-mono">{booking.date}</span> (za méně než 24 hodin).</>
                         ) : (
                           <>Greetings, noble traveler <span className="text-[#e6c280] font-semibold">{booking.travelerName}</span>. Your caravan is scheduled to depart on <span className="text-[#d4af37] font-semibold font-mono">{booking.date}</span> (less than 24 hours from now).</>
                         )}
@@ -1163,7 +1178,7 @@ export default function App() {
 
                       <div className="flex items-center gap-2 text-[10px] text-stone-400 pt-1">
                         <span className="text-[#d4af37]">𓀚</span>
-                        <span>{language === 'de' ? `Gäste: ${booking.numberOfGuests} • Kosten: $${booking.totalCost}` : language === 'pl' ? `Goście: ${booking.numberOfGuests} • Koszt: $${booking.totalCost}` : `Guests: ${booking.numberOfGuests} • Cost: $${booking.totalCost}`}</span>
+                        <span>{language === 'de' ? `Gäste: ${booking.numberOfGuests} • Kosten: $${booking.totalCost}` : language === 'pl' ? `Goście: ${booking.numberOfGuests} • Koszt: $${booking.totalCost}` : language === 'cs' ? `Hosté: ${booking.numberOfGuests} • Náklady: $${booking.totalCost}` : `Guests: ${booking.numberOfGuests} • Cost: $${booking.totalCost}`}</span>
                       </div>
                     </div>
                   ))}
@@ -1174,6 +1189,8 @@ export default function App() {
                     ? '"Stellt sicher, dass eure Schläuche voll und eure Sonnenschilde bereit sind, denn Ra scheint heiß auf das Tal."'
                     : language === 'pl'
                     ? '"Upewnij się, że Twoje bukłaki na wodę są pełne, a osłony przeciwsłoneczne gotowe, ponieważ Ra mocno świeci nad doliną."'
+                    : language === 'cs'
+                    ? '"Ujistěte se, že jsou vaše měchy na vodu plné a sluneční štíty připravené, neboť Re pálí nad údolím."'
                     : '"Ensure your water skins are full and your sun shields are ready, for Ra shines hot upon the valley."'}
                 </p>
 
@@ -1184,7 +1201,7 @@ export default function App() {
                   }}
                   className="w-full bg-gradient-to-r from-[#d4af37] to-[#b08e23] hover:from-[#e6c280] hover:to-[#d4af37] text-[#140f0a] font-serif font-black text-xs uppercase tracking-widest py-3.5 rounded-xl shadow-md transition-all cursor-pointer active:scale-95"
                 >
-                  {language === 'de' ? 'Ich bin bereit (Warnung schließen)' : language === 'pl' ? 'Jestem gotów (Zamknij ostrzeżenie)' : 'I am Prepared (Dismiss Alert)'}
+                  {language === 'de' ? 'Ich bin bereit (Warnung schließen)' : language === 'pl' ? 'Jestem gotów (Zamknij ostrzeżenie)' : language === 'cs' ? 'Jsem připraven (Zavřít varování)' : 'I am Prepared (Dismiss Alert)'}
                 </button>
               </motion.div>
             </div>
