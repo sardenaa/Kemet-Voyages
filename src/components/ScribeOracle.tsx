@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, Calendar, Compass, User, Zap, Send, MessageCircle, HelpCircle, Loader2, BookOpen, Printer, X } from 'lucide-react';
-import { Booking, CustomItinerary, ScribeMessage } from '../types';
+import { Sparkles, Calendar, Compass, User, Zap, Send, MessageCircle, HelpCircle, Loader2, BookOpen, Printer, X, CheckSquare, Square, Copy, Check } from 'lucide-react';
+import { Booking, CustomItinerary, ScribeMessage, Excursion } from '../types';
 import { useLanguage } from './LanguageContext';
 
 interface ScribeOracleProps {
   onScribeSuccess?: () => void;
   onAddBooking?: (newBooking: Booking) => Promise<void>;
+  bookings?: Booking[];
+  excursions?: Excursion[];
 }
 
-export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOracleProps) {
+export default function ScribeOracle({ onScribeSuccess, onAddBooking, bookings = [], excursions = [] }: ScribeOracleProps) {
   const { language } = useLanguage();
   // Tabs: 'planner' or 'chat'
   const [activeTab, setActiveTab] = useState<'planner' | 'chat'>('planner');
@@ -35,6 +37,402 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
   const [isExportingBooking, setIsExportingBooking] = useState<boolean>(false);
   const [exportBookingError, setExportBookingError] = useState<string | null>(null);
   const [exportBookingSuccess, setExportBookingSuccess] = useState<boolean>(false);
+
+  // Packing Essentials States
+  const [selectedExcursionsForPacking, setSelectedExcursionsForPacking] = useState<string[]>(() => {
+    const bookedIds = bookings.map(b => b.excursionId).filter(Boolean);
+    if (bookedIds.length > 0) return bookedIds;
+    return excursions.slice(0, 2).map(e => e.id);
+  });
+  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
+  const [copySuccess, setCopySuccess] = useState<boolean>(false);
+
+  const bookingsLength = bookings.length;
+  React.useEffect(() => {
+    const bookedIds = bookings.map(b => b.excursionId).filter(Boolean);
+    if (bookedIds.length > 0) {
+      setSelectedExcursionsForPacking(prev => {
+        const combined = Array.from(new Set([...prev, ...bookedIds]));
+        return combined;
+      });
+    }
+  }, [bookingsLength]);
+
+  const toggleExcursionForPacking = (exId: string) => {
+    setSelectedExcursionsForPacking(prev => {
+      if (prev.includes(exId)) {
+        return prev.filter(id => id !== exId);
+      } else {
+        return [...prev, exId];
+      }
+    });
+  };
+
+  const toggleItem = (itemId: string) => {
+    setCheckedItems(prev => ({
+      ...prev,
+      [itemId]: !prev[itemId]
+    }));
+  };
+
+  // Generate dynamic customized packing list
+  const generatedChecklist = React.useMemo(() => {
+    const selectedExcs = excursions.filter(e => selectedExcursionsForPacking.includes(e.id));
+    const selectedCategories = new Set(selectedExcs.map(e => e.category));
+
+    const categories: {
+      id: string;
+      title: { en: string; de: string; pl: string; cs: string };
+      icon: string;
+      items: { id: string; name: { en: string; de: string; pl: string; cs: string }; desc: { en: string; de: string; pl: string; cs: string } }[];
+    }[] = [];
+
+    // 1. General Essentials (Always included)
+    categories.push({
+      id: 'general',
+      title: {
+        en: "General Egyptian Travel Essentials",
+        de: "Allgemeine Ägypten-Reiseutensilien",
+        pl: "Ogólny niezbędnik podróży do Egiptu",
+        cs: "Obecné cestovní potřeby pro Egypt"
+      },
+      icon: "𓂀",
+      items: [
+        {
+          id: 'gen_passport',
+          name: {
+            en: "Passport & Entry Visa",
+            de: "Reisepass & Einreisevisum",
+            pl: "Paszport i wiza wjazdowa",
+            cs: "Cestovní pas a vstupní vízum"
+          },
+          desc: {
+            en: "Ensure passport is valid for at least 6 months. Carry printed copy of e-Visa or cash for visa-on-arrival.",
+            de: "Stellen Sie sicher, dass Ihr Pass noch mindestens 6 Monate gültig ist. Nehmen Sie eine gedruckte E-Visum-Kopie oder Bargeld mit.",
+            pl: "Upewnij się, że paszport jest ważny przez co najmniej 6 miesięcy. Przygotuj wydruk e-wizy lub gotówkę na wizę na lotnisku.",
+            cs: "Ujistěte se, že platnost pasu je alespoň 6 měsíců. Připravte si vytištěné e-vízum nebo hotovost na vízum po příletu."
+          }
+        },
+        {
+          id: 'gen_adapter',
+          name: {
+            en: "Universal Power Adapter",
+            de: "Universal-Netzadapter",
+            pl: "Uniwersalny adapter zasilania",
+            cs: "Univerzální napájecí adaptér"
+          },
+          desc: {
+            en: "Egypt uses Type C and F plugs (standard European round pins, 220V).",
+            de: "In Ägypten werden Steckdosen des Typs C und F verwendet (europäische Rundstifte, 220 V).",
+            pl: "W Egipcie używane są gniazdka typu C i F (standardowe okrągłe wtyczki europejskie, 220V).",
+            cs: "Egypt používá zásuvky typu C a F (standardní evropské kulaté kolíky, 220 V)."
+          }
+        },
+        {
+          id: 'gen_meds',
+          name: {
+            en: "Travel First-Aid & Stomach Care",
+            de: "Reiseapotheke & Magenmedikamente",
+            pl: "Apteczka podróżna i leki na żołądek",
+            cs: "Cestovní lékárnička a léky na žaludek"
+          },
+          desc: {
+            en: "Pack rehydration salts and basic digestive remedies to ward off Pharaoh's Revenge.",
+            de: "Packen Sie Elektrolyte und bewährte Magen-Darm-Mittel ein, um Rache des Pharaos vorzubeugen.",
+            pl: "Zapakuj elektrolity i podstawowe leki żołądkowe, aby zapobiec tzw. Zemście Faraona.",
+            cs: "Zabalte si rehydratační soli a základní žaludeční léky k prevenci faraonovy pomsty."
+          }
+        }
+      ]
+    });
+
+    // 2. Diving & Speedboat / Watersport
+    if (selectedCategories.has('diving') || selectedCategories.has('boat') || selectedCategories.has('speedboat')) {
+      const isDiving = selectedCategories.has('diving');
+      categories.push({
+        id: 'water',
+        title: {
+          en: "Diving & Red Sea Explorations",
+          de: "Tauchen & Rotes Meer Erkundungen",
+          pl: "Nurkowanie i eksploracja Morza Czerwonego",
+          cs: "Potápění a průzkum Rudého moře"
+        },
+        icon: "𓆟",
+        items: [
+          {
+            id: 'water_sunscreen',
+            name: {
+              en: "Reef-Safe Biodegradable Sunscreen",
+              de: "Riffsichere biologisch abbaubare Sonnencreme",
+              pl: "Koralowo-bezpieczny filtr biodegradowalny",
+              cs: "Opalovací krém šetrný ke korálům"
+            },
+            desc: {
+              en: "Strictly required to protect the delicate corals of Sobek and diverse marine life of the Red Sea.",
+              de: "Dringend erforderlich, um die empfindlichen Korallen von Sobek und die Tierwelt des Roten Meeres zu schützen.",
+              pl: "Absolutnie wymagany do ochrony delikatnych koralowców Sobka i życia morskiego w Morzu Czerwonym.",
+              cs: "Nezbytně nutné pro ochranu křehkých korálů boha Sobka a rozmanitého mořskiego života v Rudém moři."
+            }
+          },
+          {
+            id: 'water_drybag',
+            name: {
+              en: "Waterproof Dry-Bag",
+              de: "Wasserdichter Packsack (Dry-Bag)",
+              pl: "Wodoszczelny worek (Dry-bag)",
+              cs: "Vodotěsný vak (Dry-Bag)"
+            },
+            desc: {
+              en: "Keeps your electronic 'scarabs' (smartphones) and dry clothes secure from sea spray on boats.",
+              de: "Schützt Ihre elektronischen 'Skarabäen' (Smartphones) und trockene Kleidung vor Gischt.",
+              pl: "Zabezpiecza Twoje elektroniczne 'skarabeusze' (smartfony) i suche ubrania przed morską bryzą.",
+              cs: "Udrží vaše elektronické 'skarabee' (smartphony) a suché oblečení v bezpečí před stříkající mořskou vodou."
+            }
+          },
+          ...(isDiving ? [{
+            id: 'water_card',
+            name: {
+              en: "Diver Certification Card & Logbook",
+              de: "Tauchschein (Brevet) & Logbuch",
+              pl: "Certyfikat nurkowy i logbook",
+              cs: "Potápěčská karta (certifikace) a logbook"
+            },
+            desc: {
+              en: "Essential verification for certified dive excursions. Digital copies are accepted but physical is safer.",
+              de: "Nachweis für zertifizierte Tauchgänge erforderlich. Digitale Versionen sind okay, physische sicherer.",
+              pl: "Niezbędny dokument dla certyfikowanych wycieczek nurkowych. Cyfrowe są akceptowane, ale fizyczne pewniejsze.",
+              cs: "Nezbytné ověření pro certifikované potápěčské ponory. Digitální kopie jsou akceptovány, ale fyzické jsou jistější."
+            }
+          }] : []),
+          {
+            id: 'water_swim',
+            name: {
+              en: "Quick-Dry Swimwear & Rash Guard",
+              de: "Schnelltrocknende Badebekleidung & Rashguard",
+              pl: "Szybkoschnący strój kąpielowy i rashguard",
+              cs: "Rychleschnoucí plavky a rash guard"
+            },
+            desc: {
+              en: "UV-protection apparel is highly recommended for hours spent snorkeling in the shallow lagoons.",
+              de: "UV-Schutzkleidung wird dringend empfohlen für stundenlanges Schnorcheln im seichten Wasser.",
+              pl: "Odzież z ochroną UV jest zalecana podczas wielogodzinnego snurkowania w płytkich lagunach.",
+              cs: "Oblečení s UV ochranou se velmi doporučuje při dlouhých hodinách šnorchlování v mělkých lagunách."
+            }
+          }
+        ]
+      });
+    }
+
+    // 3. Desert Safari
+    if (selectedCategories.has('safari')) {
+      categories.push({
+        id: 'safari',
+        title: {
+          en: "Desert Safari & Bedouin Expeditions",
+          de: "Wüstensafari & Beduinen-Expeditionen",
+          pl: "Pustynne safari i ekspedycje beduińskie",
+          cs: "Pouštní safari a expedice do beduínských táborů"
+        },
+        icon: "𓃘",
+        items: [
+          {
+            id: 'safari_scarf',
+            name: {
+              en: "Head Scarf / Shemagh",
+              de: "Kopftuch / Shemagh-Schal",
+              pl: "Arafatka / Chusta Shemagh",
+              cs: "Šátek na hlavu / Šemag"
+            },
+            desc: {
+              en: "Protects your face and hair from fine blowing sand during high-speed quad bike rides in Deshret.",
+              de: "Schützt Gesicht und Haare vor feinem, wirbelndem Wüstensand bei rasanten Quad-Fahrten.",
+              pl: "Chroni twarz i włosy przed drobnym, nawiewanym piaskem podczas szybkiej jazdy na quadach.",
+              cs: "Chrání váš obličej a vlasy před jemným poletujícím pískem při rychlé jízdě na čtyřkolkách v poušti."
+            }
+          },
+          {
+            id: 'safari_shoes',
+            name: {
+              en: "Sturdy Closed-Toe Shoes",
+              de: "Feste, geschlossene Schuhe",
+              pl: "Wytrzymałe buty z zakrytymi palcami",
+              cs: "Pevná uzavřená obuv"
+            },
+            desc: {
+              en: "Protects from scorching sand, sharp desert rocks, and heat rising from the quad engine.",
+              de: "Schützt vor kochend heißem Sand, scharfen Wüstenfelsen und der Motorhitze des Quads.",
+              pl: "Chroni przed parzącym piaskiem, ostrymi skałami pustynnymi i ciepłem bijącym z silnika quada.",
+              cs: "Chrání před rozpáleným pískem, ostrými pouštními kameny a horkem stoupajícím z motoru čtyřkolky."
+            }
+          },
+          {
+            id: 'safari_layers',
+            name: {
+              en: "Windbreaker or Fleece Layers",
+              de: "Windjacke oder Fleece-Schichten",
+              pl: "Wiatrówka lub ciepła warstwa polarowa",
+              cs: "Větrovka nebo fleecová mikina"
+            },
+            desc: {
+              en: "Desert temperatures drop rapidly after sunset. Crucial for evening camel treks or Bedouin stargazing.",
+              de: "Die Temperaturen in der Wüste sinken nach Sonnenuntergang rasant. Wichtig für abendliche Ritte.",
+              pl: "Temperatury na pustyni spadają gwałtownie po zachodzie słońca. Niezbędne na wieczorne przejażdżki.",
+              cs: "Teploty v poušti po západu slunce rychle klesají. Zásadní pro večerní jízdy na velbloudech či beduínské pozorování hvězd."
+            }
+          }
+        ]
+      });
+    }
+
+    // 4. Historical Sites
+    if (selectedCategories.has('history')) {
+      categories.push({
+        id: 'history',
+        title: {
+          en: "Sacred Temples & Ancient Shrines",
+          de: "Heilige Tempel & Antike Schreine",
+          pl: "Święte świątynie i starożytne grobowce",
+          cs: "Posvátné chrámy a starověké památky"
+        },
+        icon: "𓉶",
+        items: [
+          {
+            id: 'history_modest',
+            name: {
+              en: "Modest & Light Clothing",
+              de: "Züchtige & leichte Kleidung",
+              pl: "Skromne i przewiewne ubrania",
+              cs: "Zdrženlivé a lehké oblečení"
+            },
+            desc: {
+              en: "Cover shoulders and knees when exploring sacred temples and religious sites to show respect to local customs.",
+              de: "Bedecken Sie Schultern und Knie beim Besuch antiker Tempel und heiliger Stätten als Zeichen des Repräsentanten.",
+              pl: "Zakryj ramiona i kolana podczas zwiedzania świętych świątyń, aby okazać szacunek lokalnym tradycjom.",
+              cs: "Zakryjte si ramena a kolena při prohlídce posvátných chrámů a historických míst na znamení úcty k místním zvyklostem."
+            }
+          },
+          {
+            id: 'history_shoes',
+            name: {
+              en: "Supportive Walking Shoes",
+              de: "Bequeme Laufschuhe",
+              pl: "Wygodne buty do chodzenia",
+              cs: "Pohodlná obuv na chůzi"
+            },
+            desc: {
+              en: "Perfect for long walks over uneven stone carvings, tomb gravels, and expansive temple corridors.",
+              de: "Ideal für lange Gänge über unebene Steinböden, Grabpfade und weitläufige Tempelkorridore.",
+              pl: "Doskonałe na długie spacery po nierównych kamiennych posadzkach, żwirze w grobowcach i korytarzach świątyń.",
+              cs: "Ideální pro dlouhé procházky po nerovném kamenném dláždění, štěrku v hrobkách a rozlehlých chodbách chrámů."
+            }
+          },
+          {
+            id: 'history_flashlight',
+            name: {
+              en: "Compact LED Flashlight / Mobile Torch",
+              de: "Kompakte LED-Taschenlampe",
+              pl: "Mała latarka LED",
+              cs: "Kompaktní LED svítilna"
+            },
+            desc: {
+              en: "Allows you to illuminate and appreciate ancient hieroglyphs inside darker chambers and tomb shafts.",
+              de: "Hilft Ihnen, altägyptische Hieroglyphen in dunkleren Grabkammern und Gängen wunderbar zu beleuchten.",
+              pl: "Ułatwia oświetlenie i podziwianie starożytnych hieroglifów w ciemniejszych komorach i korytarzach grobowców.",
+              cs: "Umožní vám posvítit si na starověké hieroglyfy v temnějších zákoutích chrámových komnat a hrobek."
+            }
+          }
+        ]
+      });
+    }
+
+    // 5. Excursion Specific Items
+    if (selectedExcs.length > 0) {
+      const excursionSpecificItems = selectedExcs.map(exc => {
+        let nameEn = `Special gear for: ${exc.title}`;
+        let nameDe = `Spezialausrüstung für: ${exc.title}`;
+        let namePl = `Specjalny sprzęt na: ${exc.title}`;
+        let nameCs = `Speciální výbava pro: ${exc.title}`;
+
+        let descEn = `Refer to highlights: ${exc.tagline}. Carry loose clothes and cash for local guides and small souvenirs.`;
+        let descDe = `Siehe Highlights: ${exc.tagline}. Denken Sie an bequeme Kleidung und Bargeld für Souvenirs und Führer.`;
+        let descPl = `Zobacz atrakcje: ${exc.tagline}. Zabierz wygodne ubrania i gotówkę na pamiątki oraz lokalnych przewodników.`;
+        let descCs = `Viz hlavní body: ${exc.tagline}. Nezapomeňte na pohodlné oblečení a hotovost na suvenýry a místní průvodce.`;
+
+        if (exc.category === 'diving') {
+          descEn = `Certified divers should bring their certification card. Snorkelers should pack an underwater strap for cameras to safely film the reefs in: ${exc.title}.`;
+          descDe = `Zertifizierte Taucher sollten ihre Brevet-Karte mitbringen. Schnorchler sollten eine Unterwasserhalterung einpacken, um die Riffe bei '${exc.title}' sicher zu filmen.`;
+          descPl = `Certyfikowani nurkowie powinni wziąć kartę certyfikacyjną. Snurkujący powinni spakować uchwyt wodoodporny na kamerę, aby bezpiecznie nagrać rafy w '${exc.title}'.`;
+          descCs = `Certifikovaní potápěči by si měli vzít certifikační kartu. Šnorchlaři by si měli přibalit podvodní popruh na fotoaparát pro bezpečné focení útesů u '${exc.title}'.`;
+        } else if (exc.category === 'safari') {
+          descEn = `Pack secure goggles or dust-proof sunglasses for the wind-blown desert sand on: ${exc.title}. Bring some cash in Egyptian Pounds for local Bedouin tips.`;
+          descDe = `Bringen Sie staubdichte Brillen mit für den Sandwind bei '${exc.title}'. Denken Sie an etwas Bargeld in Ägyptischen Pfund für Beduinen-Trinkgelder.`;
+          descPl = `Zapakuj okulary ochronne chroniące przed pyłem na '${exc.title}'. Weź ze sobą gotówkę w funtach egipskich na drobne napiwki dla Beduinów.`;
+          descCs = `Přibalte si ochranné brýle proti písku při '${exc.title}'. Vezměte si hotovost v egyptských librách na spropitné pro místní beduíny.`;
+        } else if (exc.category === 'history') {
+          descEn = `Tomb frescoes are light-sensitive; photography is allowed without flash. Bring comfortable breathable clothes for the heat in: ${exc.title}.`;
+          descDe = `Wandbilder in Gräbern sind lichtempfindlich; Fotos nur ohne Blitz erlaubt. Bringen Sie luftige Kleidung mit für die Hitze bei '${exc.title}'.`;
+          descPl = `Malowidła grobowe są wrażliwe na światło, fotografowanie dozwolone tylko bez lampy. Zabierz przewiewne ubrania na upał podczas '${exc.title}'.`;
+          descCs = `Nástěnné malby v hrobkách jsou citlivé na světlo; fotografování je povoleno bez blesku. Přibalte si lehké vzdušné oblečení pro horko u '${exc.title}'.`;
+        }
+
+        return {
+          id: `exc_spec_${exc.id}`,
+          name: { en: nameEn, de: nameDe, pl: namePl, cs: nameCs },
+          desc: { en: descEn, de: descDe, pl: descPl, cs: descCs }
+        };
+      });
+
+      categories.push({
+        id: 'excursions',
+        title: {
+          en: "Selected Excursion Specifics",
+          de: "Besonderheiten für ausgewählte Ausflüge",
+          pl: "Specyfika wybranych wycieczek",
+          cs: "Specifické potřeby pro vybrané výlety"
+        },
+        icon: "𓎬",
+        items: excursionSpecificItems
+      });
+    }
+
+    return categories;
+  }, [selectedExcursionsForPacking, excursions]);
+
+  const copyChecklistToClipboard = () => {
+    let text = `𓂀 Kemet Tours - ${language === 'de' ? 'Ihre pharaonische Packliste' : language === 'pl' ? 'Twój faraoński niezbędnik pakowania' : 'Your Pharaonic Packing Essentials'} 𓂀\n\n`;
+    
+    generatedChecklist.forEach(cat => {
+      const catTitle = cat.title[language as 'en' | 'de' | 'pl' | 'cs'] || cat.title.en;
+      text += `--- ${cat.icon} ${catTitle.toUpperCase()} ---\n`;
+      cat.items.forEach(item => {
+        const isChecked = !!checkedItems[item.id];
+        const itemName = item.name[language as 'en' | 'de' | 'pl' | 'cs'] || item.name.en;
+        const itemDesc = item.desc[language as 'en' | 'de' | 'pl' | 'cs'] || item.desc.en;
+        text += `${isChecked ? '[✓]' : '[ ]'} ${itemName}\n    ${itemDesc}\n\n`;
+      });
+    });
+
+    navigator.clipboard.writeText(text).then(() => {
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    });
+  };
+
+  const computedTotalItems = React.useMemo(() => {
+    return generatedChecklist.reduce((sum, cat) => sum + cat.items.length, 0);
+  }, [generatedChecklist]);
+
+  const computedCheckedCount = React.useMemo(() => {
+    let count = 0;
+    generatedChecklist.forEach(cat => {
+      cat.items.forEach(item => {
+        if (checkedItems[item.id]) count++;
+      });
+    });
+    return count;
+  }, [generatedChecklist, checkedItems]);
+
+  const computedProgressPercent = computedTotalItems > 0 ? Math.round((computedCheckedCount / computedTotalItems) * 100) : 0;
 
   const computedCost = duration * 125 * bookingGuestsCount;
 
@@ -345,7 +743,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
 
       {/* Tabs Menu */}
       <div className="flex justify-center mb-8">
-        <div className="bg-[#241c14] p-1.5 rounded-xl border border-[#d4af37]/25 flex gap-2">
+        <div className="bg-[#241c14] p-1.5 rounded-xl border border-[#d4af37]/25 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => setActiveTab('planner')}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-serif font-semibold tracking-wider uppercase transition-all duration-300 cursor-pointer ${
@@ -367,6 +765,17 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
           >
             <MessageCircle className="w-4 h-4" />
             {language === 'de' ? 'Mit KI-Assistent chatten' : language === 'pl' ? 'Czatuj z asystentem AI' : 'Chat with AI Assistant'}
+          </button>
+          <button
+            onClick={() => setActiveTab('packing' as any)}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-serif font-semibold tracking-wider uppercase transition-all duration-300 cursor-pointer ${
+              activeTab === ('packing' as any)
+                ? 'bg-[#d4af37] text-[#140f0a] shadow-lg shadow-[#d4af37]/20'
+                : 'text-[#e6c280]/70 hover:text-[#f3e5c8] hover:bg-[#2e241b]'
+            }`}
+          >
+            <BookOpen className="w-4 h-4" />
+            {language === 'de' ? 'Packliste' : language === 'pl' ? 'Niezbędnik pakowania' : 'Packing Essentials'}
           </button>
         </div>
       </div>
@@ -842,6 +1251,242 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
               })() : null}
             </AnimatePresence>
           </motion.div>
+        ) : (activeTab as any) === 'packing' ? (
+          <motion.div
+            key="packing"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-6"
+          >
+            <div className="text-center mb-6">
+              <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">
+                {language === 'de' ? 'Ausrüstung & Schutz' : language === 'pl' ? 'Niezbędnik pakowania' : 'Gear & Protections'}
+              </span>
+              <h2 className="font-serif text-3xl font-extrabold text-[#e6c280] mt-1 uppercase">
+                {language === 'de' ? 'Pharaonische Packliste' : language === 'pl' ? 'Królewska lista rzeczy' : 'Scribe\'s Packing Essentials'}
+              </h2>
+              <p className="text-stone-400 text-sm max-w-xl mx-auto mt-2">
+                {language === 'de' 
+                  ? 'Der Sand ist heiß, die Gräber sind dunkel und das Rote Meer ist tief. Lassen Sie unseren Schreiber eine maßgeschneiderte Packliste basierend auf Ihren ausgewählten Ausflügen erstellen.'
+                  : language === 'pl'
+                  ? 'Piasek jest gorący, grobowce ciemne, a Morze Czerwone głębokie. Pozwól pisaćowi przygotować spersonalizowaną listę rzeczy do spakowania na podstawie wybranych wycieczek.'
+                  : 'The sands are scorching, the tombs dark, and the Red Sea is deep. Let the Royal Scribe construct a customized packing checklist tailored directly to your chosen excursions.'}
+              </p>
+            </div>
+
+            {/* Scribe Wisdom Banner */}
+            <div className="bg-[#241c14] border border-[#d4af37]/25 rounded-2xl p-4 md:p-5 flex items-start gap-4 shadow-lg relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-2 opacity-[0.02] text-7xl font-serif select-none pointer-events-none">
+                𓆟
+              </div>
+              <div className="bg-[#140f0c] p-3 rounded-xl border border-[#d4af37]/20 text-2xl text-[#d4af37] select-none">
+                𓀚
+              </div>
+              <div className="space-y-1">
+                <h4 className="font-serif text-sm font-bold text-[#e6c280] uppercase tracking-wide">
+                  {language === 'de' ? 'Schreiber Sennedjems Rat' : language === 'pl' ? 'Rada Pisarza Sennedjema' : 'Counsel of Scribe Sennedjem'}
+                </h4>
+                <p className="text-stone-300 text-xs leading-relaxed italic">
+                  {language === 'de'
+                    ? '"Gute Vorbereitung schützt den Reisenden unter dem Auge von Ra. Wer das Rote Meer befahren will, muss die Riffe von Sobek ehren. Wer das rote Land (Deshret) durchqueren möchte, muss seine Füße vor der Wüstenglut schützen. Packt weise, und eure Reise wird gesegnet sein."'
+                    : language === 'pl'
+                    ? '"Dobre przygotowanie chroni podróżnika pod okiem Ra. Kto pragnie żeglować po Morzu Czerwonym, musi szanować rafy Sobka. Kto pragnie przemierzyć czerwoną ziemię (Deshret), musi chronić stopy przed żarem. Pakujcie się mądrze, a wasza podróż będzie błogosławiona."'
+                    : '"Good preparation shields the traveler under the hot eye of Ra. He who wishes to sail the Red Sea must honor the living reef of Sobek. He who wishes to cross the red land of Deshret must guard his feet from the sands. Pack wisely, and your voyage will be favored."'}
+                </p>
+              </div>
+            </div>
+
+            {/* Interactive Excursions Toggle Deck */}
+            <div className="bg-[#1b140f] border border-[#d4af37]/15 rounded-2xl p-5 space-y-4">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 pb-3 border-b border-[#d4af37]/10">
+                <div>
+                  <h3 className="font-serif text-sm font-bold text-[#e6c280] uppercase tracking-wider">
+                    {language === 'de' ? '1. Wählen Sie Ihre geplanten Ausflüge' : language === 'pl' ? '1. Wybierz planowane wycieczki' : '1. Select Your Scheduled Excursions'}
+                  </h3>
+                  <p className="text-[11px] text-stone-400 mt-0.5">
+                    {language === 'de'
+                      ? 'Aktivieren Sie Ausflüge, um die Liste sofort anzupassen.'
+                      : language === 'pl'
+                      ? 'Zaznacz wycieczki, aby natychmiast dostosować listę.'
+                      : 'Toggle excursions on and off to dynamically inject customized equipment requirements.'}
+                  </p>
+                </div>
+                {bookings.length > 0 && (
+                  <span className="text-[10px] font-mono text-[#d4af37] bg-[#241c14] border border-[#d4af37]/30 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                    {language === 'de' ? 'Aus Buchungen geladen' : language === 'pl' ? 'Wczytano z rezerwacji' : 'Syncing Live Bookings'}
+                  </span>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 max-h-[160px] overflow-y-auto pr-1">
+                {excursions.map(exc => {
+                  const isSelected = selectedExcursionsForPacking.includes(exc.id);
+                  const isBooked = bookings.some(b => b.excursionId === exc.id);
+                  return (
+                    <button
+                      key={exc.id}
+                      onClick={() => toggleExcursionForPacking(exc.id)}
+                      className={`flex items-center gap-3 p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#2a2015] border-[#d4af37] shadow-md shadow-[#d4af37]/5 text-stone-100'
+                          : 'bg-[#120e0a]/60 border-stone-800 hover:border-stone-700 text-stone-400'
+                      }`}
+                    >
+                      <div className={`flex-shrink-0 w-5 h-5 rounded flex items-center justify-center border text-xs transition-colors ${
+                        isSelected 
+                          ? 'bg-[#d4af37] border-[#d4af37] text-[#140f0a]' 
+                          : 'border-stone-600 bg-stone-900/40 text-transparent'
+                      }`}>
+                        ✓
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs font-serif font-bold truncate leading-tight flex items-center gap-1">
+                          {exc.title}
+                          {isBooked && <span className="text-[9px] font-mono text-amber-400 uppercase tracking-tighter" title="Booked!">(Booked)</span>}
+                        </div>
+                        <span className="text-[9px] font-mono uppercase text-stone-500 tracking-wider">
+                          {exc.category}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Checklist Header Actions & Progress */}
+            <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 bg-[#211811] border border-[#d4af37]/15 p-4 rounded-2xl">
+              {/* Progress Tracker with sliding Eye of Horus or Ankh */}
+              <div className="flex-1 space-y-2">
+                <div className="flex justify-between text-xs font-serif font-bold text-[#e6c280] uppercase tracking-wide">
+                  <span>{language === 'de' ? 'Sicherungsverlauf' : language === 'pl' ? 'Postęp pakowania' : 'Items Secured & Packed'}</span>
+                  <span className="font-mono text-[#d4af37]">
+                    {computedCheckedCount} / {computedTotalItems} ({computedProgressPercent}%)
+                  </span>
+                </div>
+                {/* Progress bar container */}
+                <div className="relative h-3.5 bg-stone-950 rounded-full overflow-visible border border-[#d4af37]/25 p-[2px]">
+                  <motion.div
+                    className="h-full bg-gradient-to-r from-[#d4af37]/70 to-[#d4af37] rounded-full relative shadow-[0_0_8px_rgba(212,175,55,0.35)]"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${computedProgressPercent}%` }}
+                    transition={{ type: "spring", stiffness: 80, damping: 15 }}
+                  />
+                  {/* Floating Eye of Horus symbol walking along the progress bar */}
+                  <motion.div
+                    className="absolute top-1/2 -translate-y-1/2 -ml-2 text-sm select-none pointer-events-none text-[#d4af37]"
+                    animate={{ left: `${computedProgressPercent}%` }}
+                    transition={{ type: "spring", stiffness: 80, damping: 15 }}
+                  >
+                    𓂀
+                  </motion.div>
+                </div>
+              </div>
+
+              {/* Clipboard & Print Actions */}
+              <div className="flex gap-2.5">
+                <button
+                  onClick={copyChecklistToClipboard}
+                  className="flex-1 md:flex-none bg-[#241c14] hover:bg-[#2f241a] text-[#e6c280] border border-[#d4af37]/35 py-2.5 px-4 rounded-xl text-xs font-serif font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {copySuccess ? (
+                    <>
+                      <Check className="w-4 h-4 text-emerald-400" />
+                      <span>{language === 'de' ? 'Kopiert!' : language === 'pl' ? 'Skopiowano!' : 'Copied!'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4 text-[#d4af37]" />
+                      <span>{language === 'de' ? 'Liste kopieren' : language === 'pl' ? 'Kopiuj listę' : 'Copy Text'}</span>
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={() => window.print()}
+                  className="flex-1 md:flex-none bg-gradient-to-r from-[#d4af37] to-[#b08e23] hover:from-[#e6c280] hover:to-[#d4af37] text-[#140f0a] py-2.5 px-4 rounded-xl text-xs font-serif font-black transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Printer className="w-4 h-4 text-[#140f0a]" />
+                  <span>{language === 'de' ? 'Drucken / PDF' : language === 'pl' ? 'Drukuj / PDF' : 'Print Checklist'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Checklist Category Groups */}
+            <div className="space-y-4">
+              {generatedChecklist.length === 0 ? (
+                <div className="bg-[#241c14]/40 border border-[#d4af37]/15 rounded-2xl p-10 text-center space-y-2">
+                  <span className="text-4xl text-[#d4af37]/40 block">𓎬</span>
+                  <p className="text-stone-400 text-sm">
+                    {language === 'de' 
+                      ? 'Wählen Sie oben mindestens einen Ausflug aus, um Ihre Packliste zu generieren.'
+                      : language === 'pl' 
+                      ? 'Wybierz co najmniej jedną wycieczkę powyżej, aby wygenerować niezbędnik.'
+                      : 'Please select at least one excursion above to compile your personalized packing checklist.'}
+                  </p>
+                </div>
+              ) : (
+                generatedChecklist.map(cat => {
+                  const catTitle = cat.title[language as 'en' | 'de' | 'pl' | 'cs'] || cat.title.en;
+                  return (
+                    <div
+                      key={cat.id}
+                      className="bg-[#1c1611] border border-[#d4af37]/20 rounded-2xl p-5 space-y-4 shadow-lg hover:border-[#d4af37]/35 transition-colors"
+                    >
+                      {/* Category Header */}
+                      <div className="flex items-center gap-3 pb-2 border-b border-stone-800">
+                        <span className="text-xl text-[#d4af37] select-none">{cat.icon}</span>
+                        <h3 className="font-serif text-base font-bold text-[#e6c280] uppercase tracking-wider">
+                          {catTitle}
+                        </h3>
+                      </div>
+
+                      {/* Category Items */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {cat.items.map(item => {
+                          const isChecked = !!checkedItems[item.id];
+                          const name = item.name[language as 'en' | 'de' | 'pl' | 'cs'] || item.name.en;
+                          const desc = item.desc[language as 'en' | 'de' | 'pl' | 'cs'] || item.desc.en;
+
+                          return (
+                            <button
+                              key={item.id}
+                              onClick={() => toggleItem(item.id)}
+                              className={`flex items-start gap-3.5 p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+                                isChecked
+                                  ? 'bg-[#14100c]/40 border-stone-800/40 text-stone-500'
+                                  : 'bg-[#201812]/50 border-[#d4af37]/10 hover:border-[#d4af37]/30 text-stone-200'
+                              }`}
+                            >
+                              <div className="mt-0.5 flex-shrink-0">
+                                {isChecked ? (
+                                  <CheckSquare className="w-5 h-5 text-emerald-500" />
+                                ) : (
+                                  <Square className="w-5 h-5 text-[#d4af37]/65 hover:text-[#d4af37]" />
+                                )}
+                              </div>
+                              <div className="space-y-0.5">
+                                <span className={`text-xs font-serif font-bold tracking-wide block ${
+                                  isChecked ? 'line-through text-stone-500' : 'text-[#e6c280]'
+                                }`}>
+                                  {name}
+                                </span>
+                                <p className={`text-[11px] leading-relaxed ${
+                                  isChecked ? 'text-stone-600' : 'text-stone-400'
+                                }`}>
+                                  {desc}
+                                </p>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </motion.div>
         ) : (
           <motion.div
             key="chat"
@@ -1247,63 +1892,142 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking }: ScribeOr
       </AnimatePresence>
 
       {/* Hidden high-fidelity printing template */}
-      {itinerary && (
-        <div id="papyrus-print-area" className="hidden">
-          <div className="text-center border-b-4 border-double border-[#8b6508] pb-6 mb-8">
-            <span className="text-xs font-mono uppercase tracking-[0.4em] text-[#8b6508] font-bold block mb-2">
-              {language === 'de' 
-                ? '𓋹 Heilige Reisedepesche von Sennedjem, königlicher Schreiber 𓋹' 
+      <div id="papyrus-print-area" className="hidden">
+        {(activeTab as any) === 'packing' ? (
+          <div>
+            <div className="text-center border-b-4 border-double border-[#8b6508] pb-6 mb-8">
+              <span className="text-xs font-mono uppercase tracking-[0.4em] text-[#8b6508] font-bold block mb-2">
+                {language === 'de' 
+                  ? '𓋹 Pharaonische Ausrüstungsdepesche von Sennedjem 𓋹' 
+                  : language === 'pl'
+                  ? '𓋹 Faraoński Spis Rzeczy Sennedjema, Królewskiego Pisarza 𓋹' 
+                  : language === 'cs'
+                  ? '𓋹 Faraonský seznam věcí písaře Sennedjema 𓋹'
+                  : '𓋹 Pharaonic Packing Dispatch of Scribe Sennedjem 𓋹'}
+              </span>
+              <h1 className="font-serif text-4xl font-black text-[#5c4001] tracking-wide uppercase">
+                {language === 'de' ? 'Ihre königliche Packliste' : language === 'pl' ? 'Twój niezbędnik pakowania' : 'Your Royal Packing Checklist'}
+              </h1>
+              <p className="text-xs text-stone-500 italic mt-2 font-serif">
+                {language === 'de' ? 'Sorgfältig zusammengestellt am' : language === 'pl' ? 'Sporządzono starannie dnia' : language === 'cs' ? 'Pečlivě sestaveno dne' : 'Compiled with care on,'} {new Date().toLocaleDateString(undefined, { dateStyle: 'full' })}
+              </p>
+            </div>
+
+            <div className="bg-[#f0e4c6]/60 border-l-4 border-[#8b6508] p-5 rounded-r-lg mb-8 italic text-stone-800 text-sm leading-relaxed">
+              {language === 'de'
+                ? '"Möge Ra eure Schritte auf dem heißen Wüstensand erwärmen und Sobek eure Gewässer besänftigen. Jedes Ausrüstungsteil in dieser Liste dient eurem Schutz auf den heiligen Pfaden der Götter."'
                 : language === 'pl'
-                ? '𓋹 Święta Karta Podróży Sennedjema, Królewskiego Pisarza 𓋹' 
-                : language === 'cs'
-                ? '𓋹 Posvátná cestovní listina písaře Sennedjema, královského písaře 𓋹'
-                : '𓋹 Sacred Travel Charter of Sennedjem, Royal Scribe 𓋹'}
-            </span>
-            <h1 className="font-serif text-4xl font-black text-[#5c4001] tracking-wide uppercase">
-              {itinerary.title}
-            </h1>
-            <p className="text-xs text-stone-500 italic mt-2 font-serif">
-              {language === 'de' ? 'Eingetragen im Nil-Kalender,' : language === 'pl' ? 'Zapisano w kalendarzu nilowym,' : language === 'cs' ? 'Zapsáno v nilském kalendáři,' : 'Inscribed on the Nile Calendar,'} {new Date().toLocaleDateString(undefined, { dateStyle: 'full' })}
-            </p>
-          </div>
+                ? '"Niech Ra ogrzewa wasze kroki na gorącym piasku, a Sobek ukoi wasze wody. Każdy element tego spisu służy waszemu bezpieczeństwu na świętych ścieżkach bogów."'
+                : '"May Ra warm your footsteps upon the scorching sands, and may Sobek soothe your waters. Every instrument in this inventory serves your protection along the sacred pathways of the gods."'}
+            </div>
 
-          <div className="bg-[#f0e4c6]/60 border-l-4 border-[#8b6508] p-5 rounded-r-lg mb-8 italic text-stone-800 text-sm leading-relaxed">
-            "{itinerary.royalGreeting}"
-          </div>
+            <div className="space-y-8">
+              {generatedChecklist.map(cat => {
+                const catTitle = cat.title[language as 'en' | 'de' | 'pl' | 'cs'] || cat.title.en;
+                return (
+                  <div key={cat.id} className="print-avoid-break border-b border-[#8b6508]/20 pb-6 last:border-0">
+                    <h3 className="font-serif text-xl font-bold text-[#5c4001] uppercase flex items-center gap-2 mb-4">
+                      <span className="text-[#8b6508]">{cat.icon}</span> {catTitle}
+                    </h3>
+                    
+                    <div className="space-y-3.5 pl-2">
+                      {cat.items.map(item => {
+                        const isChecked = !!checkedItems[item.id];
+                        const name = item.name[language as 'en' | 'de' | 'pl' | 'cs'] || item.name.en;
+                        const desc = item.desc[language as 'en' | 'de' | 'pl' | 'cs'] || item.desc.en;
+                        return (
+                          <div key={item.id} className="flex items-start gap-3">
+                            <div className="w-5 h-5 rounded border-2 border-[#8b6508] flex items-center justify-center text-xs text-[#5c4001] font-bold font-mono mt-0.5 flex-shrink-0">
+                              {isChecked ? '✓' : ' '}
+                            </div>
+                            <div>
+                              <span className={`text-sm font-serif font-bold ${isChecked ? 'line-through text-stone-500' : 'text-[#5c4001]'}`}>
+                                {name}
+                              </span>
+                              <p className="text-xs text-stone-600 leading-relaxed mt-0.5">
+                                {desc}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
 
-          <div className="space-y-8">
-            {itinerary.days.map((day) => (
-              <div key={day.dayNumber} className="print-avoid-break border-b border-[#8b6508]/20 pb-6 last:border-0">
-                <h3 className="font-serif text-xl font-bold text-[#5c4001] uppercase flex items-center gap-2 mb-3">
-                  <span className="text-[#8b6508]">{language === 'de' ? 'Tag' : language === 'pl' ? 'Dzień' : language === 'cs' ? 'Den' : 'Day'} {day.dayNumber}:</span> {day.theme}
-                </h3>
-                
-                <ul className="space-y-2 text-stone-800 text-sm pl-4 list-disc mb-4">
-                  {day.activities.map((act, i) => (
-                    <li key={i} className="leading-relaxed pl-1">{act}</li>
-                  ))}
-                </ul>
-
-                <div className="bg-[#f2e7c9] border border-[#8b6508]/20 rounded-lg p-4 text-xs text-stone-700 italic">
-                  <span className="font-serif font-bold text-[#8b6508] block not-italic mb-1 uppercase tracking-wider">
-                    {language === 'de' ? '𓋹 Alte Weisheit des Schreibers:' : language === 'pl' ? '𓋹 Starożytna mądrość pisarza:' : language === 'cs' ? '𓋹 Starožitná mądrość písaře:' : "𓋹 Scribe's Ancient Wisdom:"}
-                  </span>
-                  {day.scribeWisdom}
-                </div>
+            <div className="mt-12 pt-8 border-t-4 border-double border-[#8b6508] text-center">
+              <p className="text-base font-serif italic text-stone-800 leading-relaxed max-w-xl mx-auto">
+                {language === 'de'
+                  ? 'Geht unbesorgt, edler Entdecker. Die Götter Ägyptens wachen über eure Pfade.'
+                  : language === 'pl'
+                  ? 'Idźcie bez lęku, szlachetni odkrywcy. Bogowie Egiptu czuwają nad waszymi ścieżkami.'
+                  : 'Go without fear, noble explorers. The gods of Egypt watch over your pathways.'}
+              </p>
+              <div className="mt-6 text-[#8b6508] text-4xl select-none tracking-widest">
+                𓋹 𓎬 𓅃 𓊟 𓂀
               </div>
-            ))}
-          </div>
-
-          <div className="mt-12 pt-8 border-t-4 border-double border-[#8b6508] text-center">
-            <p className="text-base font-serif italic text-stone-800 leading-relaxed max-w-xl mx-auto">
-              "{itinerary.blessing}"
-            </p>
-            <div className="mt-6 text-[#8b6508] text-4xl select-none tracking-widest">
-              𓋹 𓎬 𓅃 𓊟 𓂀
             </div>
           </div>
-        </div>
-      )}
+        ) : itinerary ? (
+          <div>
+            <div className="text-center border-b-4 border-double border-[#8b6508] pb-6 mb-8">
+              <span className="text-xs font-mono uppercase tracking-[0.4em] text-[#8b6508] font-bold block mb-2">
+                {language === 'de' 
+                  ? '𓋹 Heilige Reisedepesche von Sennedjem, königlicher Schreiber 𓋹' 
+                  : language === 'pl'
+                  ? '𓋹 Święta Karta Podróży Sennedjema, Królewskiego Pisarza 𓋹' 
+                  : language === 'cs'
+                  ? '𓋹 Posvátná cestovní listina písaře Sennedjema, královského písaře 𓋹'
+                  : '𓋹 Sacred Travel Charter of Sennedjem, Royal Scribe 𓋹'}
+              </span>
+              <h1 className="font-serif text-4xl font-black text-[#5c4001] tracking-wide uppercase">
+                {itinerary.title}
+              </h1>
+              <p className="text-xs text-stone-500 italic mt-2 font-serif">
+                {language === 'de' ? 'Eingetragen im Nil-Kalender,' : language === 'pl' ? 'Zapisano w kalendarzu nilowym,' : language === 'cs' ? 'Zapsáno v nilském kalendáři,' : 'Inscribed on the Nile Calendar,'} {new Date().toLocaleDateString(undefined, { dateStyle: 'full' })}
+              </p>
+            </div>
+
+            <div className="bg-[#f0e4c6]/60 border-l-4 border-[#8b6508] p-5 rounded-r-lg mb-8 italic text-stone-800 text-sm leading-relaxed">
+              "{itinerary.royalGreeting}"
+            </div>
+
+            <div className="space-y-8">
+              {itinerary.days.map((day) => (
+                <div key={day.dayNumber} className="print-avoid-break border-b border-[#8b6508]/20 pb-6 last:border-0">
+                  <h3 className="font-serif text-xl font-bold text-[#5c4001] uppercase flex items-center gap-2 mb-3">
+                    <span className="text-[#8b6508]">{language === 'de' ? 'Tag' : language === 'pl' ? 'Dzień' : language === 'cs' ? 'Den' : 'Day'} {day.dayNumber}:</span> {day.theme}
+                  </h3>
+                  
+                  <ul className="space-y-2 text-stone-800 text-sm pl-4 list-disc mb-4">
+                    {day.activities.map((act, i) => (
+                      <li key={i} className="leading-relaxed pl-1">{act}</li>
+                    ))}
+                  </ul>
+
+                  <div className="bg-[#f2e7c9] border border-[#8b6508]/20 rounded-lg p-4 text-xs text-stone-700 italic">
+                    <span className="font-serif font-bold text-[#8b6508] block not-italic mb-1 uppercase tracking-wider">
+                      {language === 'de' ? '𓋹 Alte Weisheit des Schreibers:' : language === 'pl' ? '𓋹 Starożytna mądrość pisarza:' : language === 'cs' ? '𓋹 Starožitná mądrość písaře:' : "𓋹 Scribe's Ancient Wisdom:"}
+                    </span>
+                    {day.scribeWisdom}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-12 pt-8 border-t-4 border-double border-[#8b6508] text-center">
+              <p className="text-base font-serif italic text-stone-800 leading-relaxed max-w-xl mx-auto">
+                "{itinerary.blessing}"
+              </p>
+              <div className="mt-6 text-[#8b6508] text-4xl select-none tracking-widest">
+                𓋹 𓎬 𓅃 𓊟 𓂀
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }

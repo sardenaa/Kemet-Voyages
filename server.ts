@@ -170,7 +170,106 @@ interface DatabaseSchema {
   newsletter_signups: any[];
   oracle_logs: any[];
   community_photos?: any[];
+  ancient_sites?: any[];
 }
+
+const ANCIENT_SITES_SEED = [
+  {
+    id: 'giza-pyramids',
+    name: "Giza Plateau",
+    ancientName: "Akhet Khufu",
+    glyph: "𓉴",
+    coordinates: { x: 265, y: 140 },
+    region: "Lower Egypt",
+    facts: [
+      "Home to the Great Pyramid of Giza, the oldest of the Seven Wonders of the Ancient World.",
+      "Guarded by the colossal Great Sphinx of Giza, carved from a single ridge of limestone.",
+      "The pyramids were astronomically aligned with absolute precision to Orion's Belt."
+    ],
+    lore: "Known to the ancients as 'Akhet Khufu' (The Horizon of Khufu), this plateau was believed to be a cosmic launching pad. It allowed the soul of the Pharaoh to ascend into the northern circumpolar stars, joining the undying gods in the afterlife.",
+    relatedExcursionName: "Custom Cairo Extension (Request via Scribe Oracle!)"
+  },
+  {
+    id: 'luxor-waset',
+    name: "Luxor (Karnak & Valley of Kings)",
+    ancientName: "Waset",
+    glyph: "𓉐",
+    coordinates: { x: 308, y: 350 },
+    region: "Upper Egypt",
+    facts: [
+      "Waset was the powerhouse of the New Kingdom, dedicated to the supreme sun creator Amun-Ra.",
+      "Features Karnak, the largest religious temple complex ever constructed by human hands.",
+      "Houses the Valley of the Kings, where pharaohs lay sealed in decorated hypogeum vaults."
+    ],
+    lore: "To cross from the East Bank (sunrise/living) to the West Bank (sunset/tomb) of Luxor is to traverse the mystical veil. The royal tombs are carved deep into the limestone pyramid of Al-Qurn, mimicking Ra's nightly journey into the underworld.",
+    relatedExcursionId: "history-1",
+    relatedExcursionName: "Pharaoh's Pilgrimage to Waset (Luxor)"
+  },
+  {
+    id: 'ras-mohammed',
+    name: "Ras Mohammed Sanctuary",
+    ancientName: "Nun's Deep Sea Basin",
+    glyph: "𓆛",
+    coordinates: { x: 382, y: 205 },
+    region: "Red Sea & Sinai",
+    facts: [
+      "A protected marine national park situated at the extreme tip of the Sinai Peninsula.",
+      "Features spectacular vertical coral walls plunging over 1,000 meters into the deep sea.",
+      "Home to vibrant ecosystems of Napoleon wrasse, sea turtles, and hammerhead sharks."
+    ],
+    lore: "Ancient mariners and priests of Hathor regarded the warm currents of Ras Mohammed as the physical manifestations of Nun—the primeval abyss from which all life emerged. Submerged monuments were left on shorelines to placate the sea spirits.",
+    relatedExcursionId: "diving-1",
+    relatedExcursionName: "Ras Mohammed Royal Coral Diving"
+  },
+  {
+    id: 'hurghada-coast',
+    name: "Hurghada Dunes & Deshret",
+    ancientName: "Set's Deshret Coast",
+    glyph: "𓅓",
+    coordinates: { x: 370, y: 238 },
+    region: "Red Sea & Eastern Desert",
+    facts: [
+      "A majestic frontier where the golden mountains of the Eastern Desert meet the Red Sea shore.",
+      "Famous for rolling desert dunes, bedouin oases, and rugged mountain trail passes.",
+      "Ideal location for fast quad expeditions and slow, stargazing sunset camel rides."
+    ],
+    lore: "This red desert land was called 'Deshret' (The Red Land) by pharaohs, feared yet respected as the chaotic domain of Set, god of storms. Ancient miners crossed these harsh lands to gather gold and turquoise for temple offerings.",
+    relatedExcursionId: "safari-1",
+    relatedExcursionName: "Set's Golden Deshret Safari"
+  },
+  {
+    id: 'giftun-island',
+    name: "Giftun Island (Orange Bay)",
+    ancientName: "Sobek's Turquoise Realm",
+    glyph: "𓍢",
+    coordinates: { x: 388, y: 242 },
+    region: "Red Sea Islands",
+    facts: [
+      "A protected natural reserve island famous for soft white sands and transparent crystal water.",
+      "Surrounded by shallow, circular lagoons teeming with colorful corals.",
+      "Dolphin pods are regularly spotted playing near its pristine shallow sandbars."
+    ],
+    lore: "In ancient times, sailing around the islands of the Red Sea was dedicated to honoring Sobek, the crocodile lord of waterways. Cedarwood pleasure ships decorated in gold leaf were rowed across these turquoise waters to earn divine favor.",
+    relatedExcursionId: "boat-1",
+    relatedExcursionName: "Sobek's Royal Queen Nefertari Cruise"
+  },
+  {
+    id: 'el-gouna',
+    name: "El Gouna & Northern Islands",
+    ancientName: "Horus's Lagoon",
+    glyph: "𓅃",
+    coordinates: { x: 362, y: 218 },
+    region: "Red Sea Lagoons",
+    facts: [
+      "A breathtaking network of shallow turquoise canals, lagoons, and sandy islands.",
+      "Surrounded by secret, untouched offshore coral gardens away from the crowded public spots.",
+      "Offers prime deep blue waters for fast-paced luxury speedboat explorations."
+    ],
+    lore: "The falcon god Horus, symbol of speed and divine sight, was said to patrol the Red Sea waters from the skies. Pharaonic scouts sailed swift papyrus skiffs through these lagoons, flashing mirror signals to protect inland borders.",
+    relatedExcursionId: "speedboat-1",
+    relatedExcursionName: "Horus's Falcon Eye Speedboat Cruise"
+  }
+];
 
 const SEED_COMMUNITY_PHOTOS = [
   {
@@ -219,15 +318,24 @@ function loadDb(): DatabaseSchema {
         reviews: INITIAL_REVIEWS_SEED,
         newsletter_signups: [],
         oracle_logs: [],
-        community_photos: SEED_COMMUNITY_PHOTOS
+        community_photos: SEED_COMMUNITY_PHOTOS,
+        ancient_sites: ANCIENT_SITES_SEED
       };
       fs.writeFileSync(activeDbPath, JSON.stringify(defaultDb, null, 2), 'utf8');
       return defaultDb;
     }
     const raw = fs.readFileSync(activeDbPath, 'utf8');
     const parsed = JSON.parse(raw);
+    let updated = false;
     if (!parsed.community_photos || parsed.community_photos.length === 0) {
       parsed.community_photos = SEED_COMMUNITY_PHOTOS;
+      updated = true;
+    }
+    if (!parsed.ancient_sites || parsed.ancient_sites.length === 0) {
+      parsed.ancient_sites = ANCIENT_SITES_SEED;
+      updated = true;
+    }
+    if (updated) {
       fs.writeFileSync(activeDbPath, JSON.stringify(parsed, null, 2), 'utf8');
     }
     return parsed;
@@ -239,7 +347,8 @@ function loadDb(): DatabaseSchema {
       reviews: INITIAL_REVIEWS_SEED,
       newsletter_signups: [],
       oracle_logs: [],
-      community_photos: SEED_COMMUNITY_PHOTOS
+      community_photos: SEED_COMMUNITY_PHOTOS,
+      ancient_sites: ANCIENT_SITES_SEED
     };
   }
 }
@@ -583,6 +692,14 @@ async function startServer() {
     } catch (e: any) {
       res.status(500).json({ error: e.message });
     }
+  });
+
+  // ==========================================
+  // ANCIENT SITES ENDPOINTS
+  // ==========================================
+  app.get("/api/ancient-sites", (req, res) => {
+    const db = loadDb();
+    res.json(db.ancient_sites || []);
   });
 
   // ==========================================

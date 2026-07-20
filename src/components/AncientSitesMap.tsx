@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Map, MapPin, Compass, BookOpen, Info, Sparkles, ExternalLink, Anchor, ChevronRight, Search, X } from 'lucide-react';
 import { useLanguage } from './LanguageContext';
@@ -16,110 +16,28 @@ interface SiteData {
   relatedExcursionName?: string;
 }
 
-const ANCIENT_SITES: SiteData[] = [
-  {
-    id: 'giza-pyramids',
-    name: "Giza Plateau",
-    ancientName: "Akhet Khufu",
-    glyph: "𓉴",
-    coordinates: { x: 265, y: 140 },
-    region: "Lower Egypt",
-    facts: [
-      "Home to the Great Pyramid of Giza, the oldest of the Seven Wonders of the Ancient World.",
-      "Guarded by the colossal Great Sphinx of Giza, carved from a single ridge of limestone.",
-      "The pyramids were astronomically aligned with absolute precision to Orion's Belt."
-    ],
-    lore: "Known to the ancients as 'Akhet Khufu' (The Horizon of Khufu), this plateau was believed to be a cosmic launching pad. It allowed the soul of the Pharaoh to ascend into the northern circumpolar stars, joining the undying gods in the afterlife.",
-    relatedExcursionId: undefined, // Mention custom extension
-    relatedExcursionName: "Custom Cairo Extension (Request via Scribe Oracle!)"
-  },
-  {
-    id: 'luxor-waset',
-    name: "Luxor (Karnak & Valley of Kings)",
-    ancientName: "Waset",
-    glyph: "𓉐",
-    coordinates: { x: 308, y: 350 },
-    region: "Upper Egypt",
-    facts: [
-      "Waset was the powerhouse of the New Kingdom, dedicated to the supreme sun creator Amun-Ra.",
-      "Features Karnak, the largest religious temple complex ever constructed by human hands.",
-      "Houses the Valley of the Kings, where pharaohs lay sealed in decorated hypogeum vaults."
-    ],
-    lore: "To cross from the East Bank (sunrise/living) to the West Bank (sunset/tomb) of Luxor is to traverse the mystical veil. The royal tombs are carved deep into the limestone pyramid of Al-Qurn, mimicking Ra's nightly journey into the underworld.",
-    relatedExcursionId: "history-1",
-    relatedExcursionName: "Pharaoh's Pilgrimage to Waset (Luxor)"
-  },
-  {
-    id: 'ras-mohammed',
-    name: "Ras Mohammed Sanctuary",
-    ancientName: "Nun's Deep Sea Basin",
-    glyph: "𓆛",
-    coordinates: { x: 382, y: 205 },
-    region: "Red Sea & Sinai",
-    facts: [
-      "A protected marine national park situated at the extreme tip of the Sinai Peninsula.",
-      "Features spectacular vertical coral walls plunging over 1,000 meters into the deep sea.",
-      "Home to vibrant ecosystems of Napoleon wrasse, sea turtles, and hammerhead sharks."
-    ],
-    lore: "Ancient mariners and priests of Hathor regarded the warm currents of Ras Mohammed as the physical manifestations of Nun—the primeval abyss from which all life emerged. Submerged monuments were left on shorelines to placate the sea spirits.",
-    relatedExcursionId: "diving-1",
-    relatedExcursionName: "Ras Mohammed Royal Coral Diving"
-  },
-  {
-    id: 'hurghada-coast',
-    name: "Hurghada Dunes & Deshret",
-    ancientName: "Set's Deshret Coast",
-    glyph: "𓅓",
-    coordinates: { x: 370, y: 238 },
-    region: "Red Sea & Eastern Desert",
-    facts: [
-      "A majestic frontier where the golden mountains of the Eastern Desert meet the Red Sea shore.",
-      "Famous for rolling desert dunes, bedouin oases, and rugged mountain trail passes.",
-      "Ideal location for fast quad expeditions and slow, stargazing sunset camel rides."
-    ],
-    lore: "This red desert land was called 'Deshret' (The Red Land) by pharaohs, feared yet respected as the chaotic domain of Set, god of storms. Ancient miners crossed these harsh lands to gather gold and turquoise for temple offerings.",
-    relatedExcursionId: "safari-1",
-    relatedExcursionName: "Set's Golden Deshret Safari"
-  },
-  {
-    id: 'giftun-island',
-    name: "Giftun Island (Orange Bay)",
-    ancientName: "Sobek's Turquoise Realm",
-    glyph: "𓍢",
-    coordinates: { x: 388, y: 242 },
-    region: "Red Sea Islands",
-    facts: [
-      "A protected natural reserve island famous for soft white sands and transparent crystal water.",
-      "Surrounded by shallow, circular lagoons teeming with colorful corals.",
-      "Dolphin pods are regularly spotted playing near its pristine shallow sandbars."
-    ],
-    lore: "In ancient times, sailing around the islands of the Red Sea was dedicated to honoring Sobek, the crocodile lord of waterways. Cedarwood pleasure ships decorated in gold leaf were rowed across these turquoise waters to earn divine favor.",
-    relatedExcursionId: "boat-1",
-    relatedExcursionName: "Sobek's Royal Queen Nefertari Cruise"
-  },
-  {
-    id: 'el-gouna',
-    name: "El Gouna & Northern Islands",
-    ancientName: "Horus's Lagoon",
-    glyph: "𓅃",
-    coordinates: { x: 362, y: 218 },
-    region: "Red Sea Lagoons",
-    facts: [
-      "A breathtaking network of shallow turquoise canals, lagoons, and sandy islands.",
-      "Surrounded by secret, untouched offshore coral gardens away from the crowded public spots.",
-      "Offers prime deep blue waters for fast-paced luxury speedboat explorations."
-    ],
-    lore: "The falcon god Horus, symbol of speed and divine sight, was said to patrol the Red Sea waters from the skies. Pharaonic scouts sailed swift papyrus skiffs through these lagoons, flashing mirror signals to protect inland borders.",
-    relatedExcursionId: "speedboat-1",
-    relatedExcursionName: "Horus's Falcon Eye Speedboat Cruise"
-  }
-];
-
 export default function AncientSitesMap() {
   const { language } = useLanguage();
   const [selectedSiteId, setSelectedSiteId] = useState<string>('luxor-waset');
   const [searchQuery, setSearchQuery] = useState('');
   const [hoveredSite, setHoveredSite] = useState<string | null>(null);
+  const [ancientSites, setAncientSites] = useState<SiteData[]>([]);
+
+  // Fetch ancient sites dynamically from the backend JSON database on mount
+  useEffect(() => {
+    const fetchSites = async () => {
+      try {
+        const response = await fetch('/api/ancient-sites');
+        if (response.ok) {
+          const data = await response.json();
+          setAncientSites(data);
+        }
+      } catch (err) {
+        console.error("Failed to load ancient sites from database server:", err);
+      }
+    };
+    fetchSites();
+  }, []);
 
   // Translate sites dynamically
   const localizedSites = useMemo(() => {
@@ -426,11 +344,20 @@ export default function AncientSitesMap() {
       ];
     }
 
-    return ANCIENT_SITES;
-  }, [language]);
+    return ancientSites;
+  }, [language, ancientSites]);
 
   const selectedSite = useMemo(() => {
-    return localizedSites.find(site => site.id === selectedSiteId) || localizedSites[0];
+    return localizedSites.find(site => site.id === selectedSiteId) || localizedSites[0] || {
+      id: '',
+      name: 'Loading site...',
+      ancientName: '',
+      glyph: '𓋹',
+      region: '',
+      facts: [],
+      lore: '',
+      coordinates: { x: 0, y: 0 }
+    };
   }, [localizedSites, selectedSiteId]);
 
   // Filter sites based on search

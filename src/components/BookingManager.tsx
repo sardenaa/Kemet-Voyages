@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { FileText, Clock, MessageSquare, CheckCircle, Sparkles, Printer, QrCode, Ticket, Camera, FileSpreadsheet, Lock, Unlock, RefreshCw, ExternalLink } from 'lucide-react';
+import { FileText, Clock, MessageSquare, CheckCircle, Sparkles, Printer, QrCode, Ticket, Camera, FileSpreadsheet, Lock, Unlock, RefreshCw, ExternalLink, Award } from 'lucide-react';
 import { Booking, Excursion } from '../types';
 import { useLanguage } from './LanguageContext';
 import ReviewSystem from './ReviewSystem';
@@ -10,6 +10,7 @@ import DetailedTicketCard from './DetailedTicketCard';
 import ExcursionFeedbackForm from './ExcursionFeedbackForm';
 import TicketScanner from './TicketScanner';
 import ExcursionExpenseCalculator from './ExcursionExpenseCalculator';
+import DigitalKeepsakeCertificate from './DigitalKeepsakeCertificate';
 import { initAuth, googleSignIn, getAccessToken } from '../lib/firebaseAuth';
 import { exportUserBookingsToNewSheet } from '../lib/googleSheets';
 
@@ -50,6 +51,7 @@ export default function BookingManager({ bookings, excursions, onCancelBooking, 
   const [expandedQrId, setExpandedQrId] = useState<string | null>(null);
   const [expandedTicketId, setExpandedTicketId] = useState<string | null>(null);
   const [expandedFeedbackId, setExpandedFeedbackId] = useState<string | null>(null);
+  const [certificateBooking, setCertificateBooking] = useState<Booking | null>(null);
   const [isScannerOpen, setIsScannerOpen] = useState<boolean>(false);
   const [isManagerLoading, setIsManagerLoading] = useState<boolean>(true);
 
@@ -414,18 +416,29 @@ export default function BookingManager({ bookings, excursions, onCancelBooking, 
 
                       {/* Excursion Feedback Toggle Button - Only for Completed Bookings */}
                       {booking.status === 'Completed' && (
-                        <button
-                          onClick={() => setExpandedFeedbackId(expandedFeedbackId === booking.id ? null : booking.id)}
-                          className={`px-3 py-1 border rounded-md transition-all cursor-pointer flex items-center gap-1.5 font-bold text-[10px] uppercase tracking-wider ${
-                            expandedFeedbackId === booking.id
-                              ? 'bg-[#d4af37] text-[#140f0c] border-[#d4af37]'
-                              : 'text-[#d4af37] border-[#d4af37]/35 hover:bg-[#d4af37]/10 hover:border-[#d4af37]/60'
-                          }`}
-                          title="Inscribe a testimony or rating for this completed excursion"
-                        >
-                          <MessageSquare className="w-3 h-3" />
-                          <span>{expandedFeedbackId === booking.id ? (language === 'de' ? 'Formular ausblenden' : language === 'pl' ? 'Ukryj formularz opinii' : 'Hide Feedback Form') : (language === 'de' ? '𓏞 Bewertung schreiben' : language === 'pl' ? '𓏞 Napisz opinię' : '𓏞 Leave Review')}</span>
-                        </button>
+                        <>
+                          <button
+                            onClick={() => setCertificateBooking(booking)}
+                            className="px-3 py-1 bg-gradient-to-r from-[#d4af37]/25 to-[#bfa030]/25 hover:from-[#d4af37]/40 hover:to-[#bfa030]/40 border border-[#d4af37]/45 text-[#e6c280] rounded-md transition-all cursor-pointer flex items-center gap-1.5 font-bold text-[10px] uppercase tracking-wider"
+                            title="Generate a Pharaonic-styled printable certificate of completion"
+                          >
+                            <Award className="w-3 h-3 text-[#d4af37]" />
+                            <span>{language === 'de' ? '📜 Urkunde erstellen' : language === 'pl' ? '📜 Pobierz certyfikat' : '📜 Digital Keepsake'}</span>
+                          </button>
+
+                          <button
+                            onClick={() => setExpandedFeedbackId(expandedFeedbackId === booking.id ? null : booking.id)}
+                            className={`px-3 py-1 border rounded-md transition-all cursor-pointer flex items-center gap-1.5 font-bold text-[10px] uppercase tracking-wider ${
+                              expandedFeedbackId === booking.id
+                                ? 'bg-[#d4af37] text-[#140f0c] border-[#d4af37]'
+                                : 'text-[#d4af37] border-[#d4af37]/35 hover:bg-[#d4af37]/10 hover:border-[#d4af37]/60'
+                            }`}
+                            title="Inscribe a testimony or rating for this completed excursion"
+                          >
+                            <MessageSquare className="w-3 h-3" />
+                            <span>{expandedFeedbackId === booking.id ? (language === 'de' ? 'Formular ausblenden' : language === 'pl' ? 'Ukryj formularz opinii' : 'Hide Feedback Form') : (language === 'de' ? '𓏞 Bewertung schreiben' : language === 'pl' ? '𓏞 Napisz opinię' : '𓏞 Leave Review')}</span>
+                          </button>
+                        </>
                       )}
                       
                       {/* Print Scroll Button for Confirmed/Completed Bookings */}
@@ -515,6 +528,15 @@ export default function BookingManager({ bookings, excursions, onCancelBooking, 
           booking={selectedScrollBooking}
           excursion={excursions?.find((e) => e.id === selectedScrollBooking.excursionId)}
           onClose={() => setSelectedScrollBooking(null)}
+        />
+      )}
+
+      {/* Keepsake Certificate Modal */}
+      {certificateBooking && (
+        <DigitalKeepsakeCertificate
+          booking={certificateBooking}
+          onClose={() => setCertificateBooking(null)}
+          language={language}
         />
       )}
 

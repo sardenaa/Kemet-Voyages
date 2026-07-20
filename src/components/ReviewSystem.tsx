@@ -3,55 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Star, MessageSquare, ShieldCheck, PenTool, ThumbsUp, Filter, User, Sparkles } from 'lucide-react';
 import { Review, Excursion } from '../types';
 
-// Default initial reviews if localstorage is empty
-const INITIAL_REVIEWS: Review[] = [
-  {
-    id: 'rev-1',
-    excursionId: 'diving-1',
-    author: "Cleopatra the Diver",
-    avatar: "𓁠 Cleopatra",
-    rating: 5,
-    comment: "I plunged into Ras Mohammed and was greeted by a massive underwater statue of Osiris, surrounded by thousands of golden glassfish. Truly, Sennedjem has aligned the elements perfectly. It felt like walking through a submerged palace of the Nile!",
-    date: "2026-06-20"
-  },
-  {
-    id: 'rev-2',
-    excursionId: 'safari-1',
-    author: "Ramses the Nomad",
-    avatar: "𓀚 Ramses",
-    rating: 5,
-    comment: "Flying across the red dunes on a quad bike was as exhilarating as racing a war chariot in Kadesh! The Bedouin flatbread baked over acacia coals is delicious, and the stargazing is a true communion with Nut.",
-    date: "2026-07-01"
-  },
-  {
-    id: 'rev-3',
-    excursionId: 'history-1',
-    author: "Hatshepsut the Explorer",
-    avatar: "𓁥 Hatshepsut",
-    rating: 5,
-    comment: "Visiting the mortuary temple in Luxor left my royal caravan speechless. The columns of Karnak are so wide they command complete silence. The private Felucca cruise on the Nile at sunset was absolute bliss.",
-    date: "2026-07-11"
-  },
-  {
-    id: 'rev-4',
-    excursionId: 'boat-1',
-    author: "Bastet the Voyager",
-    avatar: "𓃠 Bastet",
-    rating: 4,
-    comment: "The Queen Nefertari Cruise was splendid. Feasting on fresh red sea bass cooked onboard while watching dolphins leap at the horizon is an experience worthy of the gods. The golden loungers were exceptionally comfortable.",
-    date: "2026-07-13"
-  },
-  {
-    id: 'rev-5',
-    excursionId: 'speedboat-1',
-    author: "Horus the Brave",
-    avatar: "𓅃 Horus",
-    rating: 5,
-    comment: "Absolutely thrilling! We flew across the azure waves at breathtaking speeds. Landing on a completely isolated sandbar and diving into virgin reefs felt like entering a pristine secret dimension. Worth every golden coin!",
-    date: "2026-07-14"
-  }
-];
-
+// Default initial reviews are stored inside the database and fetched dynamically. No client side mockups.
 const AVATARS = [
   { value: "𓁠 Cleopatra", label: "𓁠 Cleopatra the Diver" },
   { value: "𓀚 Ramses", label: "𓀚 Ramses the Nomad" },
@@ -82,10 +34,10 @@ export default function ReviewSystem({ excursionId, onReviewAdded }: ReviewSyste
       try {
         return JSON.parse(saved);
       } catch (e) {
-        return INITIAL_REVIEWS;
+        return [];
       }
     }
-    return INITIAL_REVIEWS;
+    return [];
   });
 
   // Load reviews from secure backend database on mount

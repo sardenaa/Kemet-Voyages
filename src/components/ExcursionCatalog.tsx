@@ -508,6 +508,65 @@ export default function ExcursionCatalog({ onAddBooking, excursions }: CatalogPr
   const [requests, setRequests] = useState<string>("");
   const [successMsg, setSuccessMsg] = useState<boolean>(false);
 
+  // Compare Excursions State
+  const [isComparisonMode, setIsComparisonMode] = useState<boolean>(false);
+  const [selectedCompareIds, setSelectedCompareIds] = useState<string[]>([]);
+
+  const handleToggleCompare = (exId: string) => {
+    setSelectedCompareIds(prev => {
+      if (prev.includes(exId)) {
+        return prev.filter(id => id !== exId);
+      }
+      if (prev.length >= 2) {
+        return [prev[1], exId];
+      }
+      return [...prev, exId];
+    });
+  };
+
+  const getDifficultyAndGear = (exId: string, lang: string) => {
+    const data: Record<string, Record<string, { difficulty: string; gear: string }>> = {
+      'diving-1': {
+        en: { difficulty: "Moderate / Challenging", gear: "Scuba Tanks, Regulator, Wetsuit, Fins, Mask" },
+        de: { difficulty: "Mittel / Anspruchsvoll", gear: "Sauerstoffflaschen, Atemregler, Neoprenanzug, Flossen, Maske" },
+        pl: { difficulty: "Średni / Wyzywający", gear: "Butle tlenowe, regulator, pianka, płetwy, maska" },
+        cs: { difficulty: "Střední / Náročné", gear: "Kyslíkové láhve, regulátor, neopren, ploutve, maska" }
+      },
+      'safari-1': {
+        en: { difficulty: "Moderate (Active)", gear: "ATV Quad Bike, Helmet, Safety Goggles, Desert Scarf" },
+        de: { difficulty: "Mittel (Aktiv)", gear: "ATV-Quad, Helm, Schutzbrille, Wüstenschal" },
+        pl: { difficulty: "Średni (Aktywny)", gear: "Quad ATV, kask, gogle ochronne, chusta pustynna" },
+        cs: { difficulty: "Střední (Aktivní)", gear: "Čtyřkolka, helma, ochranné brýle, pouštní šátek" }
+      },
+      'history-1': {
+        en: { difficulty: "Easy / Moderate (Walking)", gear: "Lux Mercedes Coach, VIP Tomb Passes, Cold Mineral Water" },
+        de: { difficulty: "Leicht / Mittel (Gehen)", gear: "Luxus-Mercedes-Kutsche, VIP-Grabpässe, kaltes Mineralwasser" },
+        pl: { difficulty: "Łatwy / Średni (Chodzenie)", gear: "Luksusowy autokar Mercedes, bilety VIP do grobowców, zimna woda mineralna" },
+        cs: { difficulty: "Snadné / Střední (Chůze)", gear: "Luxusní autobus Mercedes, VIP vstupenky do hrobek, studená minerální voda" }
+      },
+      'boat-1': {
+        en: { difficulty: "Easy (Leisurely)", gear: "High-Quality Snorkeling Kit, Fins, Life Vest, Towel" },
+        de: { difficulty: "Leicht (Gemütlich)", gear: "Hochwertiges Schnorchelset, Flossen, Schwimmweste, Handtuch" },
+        pl: { difficulty: "Łatwy (Rekreacyjny)", gear: "Wysokiej jakości zestaw do snorkelingu, płetwy, kamizelka, ręcznik" },
+        cs: { difficulty: "Snadné (Pohodové)", gear: "Kvalitní šnorchlovací sada, ploutve, záchranná vesta, ručník" }
+      },
+      'speedboat-1': {
+        en: { difficulty: "Moderate (Adrenaline)", gear: "Snorkeling Kits, Underwater Action Camera, Premium Life Vest" },
+        de: { difficulty: "Mittel (Adrenalin)", gear: "Schnorchelsets, Unterwasser-Actionkamera, Premium-Schwimmweste" },
+        pl: { difficulty: "Średni (Adrenalina)", gear: "Zestaw do snorkelingu, podwodna kamera sportowa, kamizelka premium" },
+        cs: { difficulty: "Střední (Adrenalin)", gear: "Šnorchlovací sada, podvodní akční kamera, prémiová vesta" }
+      }
+    };
+    
+    const siteData = data[exId] || {
+      en: { difficulty: "Moderate", gear: "Standard Safety Gear & Snorkeling Kits" },
+      de: { difficulty: "Mittel", gear: "Sicherheitsausrüstung & Schnorchelsets" },
+      pl: { difficulty: "Średni", gear: "Standardowy sprzęt ochronny i zestawy do snorkelingu" },
+      cs: { difficulty: "Střední", gear: "Standardní bezpečnostní výbava a šnorchly" }
+    };
+    return siteData[lang] || siteData['en'];
+  };
+
   // Interactive Feedback & Rating States
   const [ratingExcursion, setRatingExcursion] = useState<Excursion | null>(null);
   const [feedbackRating, setFeedbackRating] = useState<number>(5);
@@ -802,29 +861,253 @@ Please seal my booking with the High Priest approval!`;
       {/* Promotional Seasonal Discount Banner */}
       <PromotionalBanner />
 
-      {/* Filter Tabs */}
-      <div className="flex flex-wrap gap-2 justify-center">
-        {[
-          { key: 'all', label: t('cat_all', '𓆃 All Expeditions') },
-          { key: 'diving', label: t('cat_diving', '𓆛 Coral Diving') },
-          { key: 'safari', label: t('cat_safari', '𓅓 Desert Safari') },
-          { key: 'history', label: t('cat_history', '𓉐 Luxor History') },
-          { key: 'boat', label: t('cat_boat', '𓊟 Boat Trips') },
-          { key: 'speedboat', label: t('cat_speedboat', '𓊡 Speedboats') }
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setFilter(tab.key as any)}
-            className={`px-5 py-2 rounded-xl text-xs font-mono uppercase tracking-widest transition-all duration-300 cursor-pointer ${
-              filter === tab.key
-                ? 'bg-gradient-to-r from-[#d4af37] to-[#bfa030] text-[#140f0a] font-bold shadow-lg shadow-[#d4af37]/15'
-                : 'bg-[#1a140f] border border-[#d4af37]/20 text-[#e6c280]/70 hover:text-[#f3e5c8] hover:bg-[#281e14]'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      {/* Filter Tabs & Comparison Toggle */}
+      <div className="flex flex-col lg:flex-row gap-4 justify-between items-center bg-[#15100a] border border-[#d4af37]/20 p-4 rounded-2xl">
+        <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
+          {[
+            { key: 'all', label: t('cat_all', '𓆃 All Expeditions') },
+            { key: 'diving', label: t('cat_diving', '𓆛 Coral Diving') },
+            { key: 'safari', label: t('cat_safari', '𓅓 Desert Safari') },
+            { key: 'history', label: t('cat_history', '𓉐 Luxor History') },
+            { key: 'boat', label: t('cat_boat', '𓊟 Boat Trips') },
+            { key: 'speedboat', label: t('cat_speedboat', '𓊡 Speedboats') }
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setFilter(tab.key as any)}
+              className={`px-4 py-2 rounded-xl text-xs font-mono uppercase tracking-widest transition-all duration-300 cursor-pointer ${
+                filter === tab.key
+                  ? 'bg-gradient-to-r from-[#d4af37] to-[#bfa030] text-[#140f0a] font-bold shadow-lg shadow-[#d4af37]/15'
+                  : 'bg-[#1a140f] border border-[#d4af37]/20 text-[#e6c280]/70 hover:text-[#f3e5c8] hover:bg-[#281e14]'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={() => {
+            setIsComparisonMode(!isComparisonMode);
+            if (isComparisonMode) {
+              setSelectedCompareIds([]);
+            }
+          }}
+          className={`w-full lg:w-auto px-5 py-2.5 rounded-xl text-xs font-mono uppercase tracking-widest transition-all duration-300 cursor-pointer flex items-center justify-center gap-2 border ${
+            isComparisonMode
+              ? 'bg-[#d4af37] text-[#140f0a] border-[#d4af37] font-bold shadow-md shadow-[#d4af37]/15'
+              : 'bg-[#1c140d]/80 border-[#d4af37]/35 text-[#e6c280] hover:bg-[#261b11] hover:border-[#d4af37]/60'
+          }`}
+        >
+          <span>⚖</span>
+          <span>{language === 'de' ? 'Ausflüge vergleichen' : language === 'pl' ? 'Porównaj wycieczki' : 'Compare Excursions'}</span>
+          {isComparisonMode && (
+            <span className="bg-[#140f0a] text-[#d4af37] text-[10px] px-1.5 py-0.5 rounded-full font-bold ml-1">
+              {selectedCompareIds.length}/2
+            </span>
+          )}
+        </button>
       </div>
+
+      {/* Comparison Board Panel */}
+      <AnimatePresence>
+        {isComparisonMode && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden bg-[#1f160f] border border-[#d4af37]/40 rounded-2xl shadow-xl relative"
+          >
+            <div className="p-5 border-b border-[#d4af37]/20 bg-[#16100a] flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <span className="text-amber-400 text-lg">⚖</span>
+                <h3 className="font-serif text-lg font-bold text-[#e6c280] uppercase tracking-wider">
+                  {language === 'de' ? 'Ausflugsvergleichs-Tafel' : language === 'pl' ? 'Tablica porównania wycieczek' : 'Expedition Comparison Board'}
+                </h3>
+              </div>
+              <button
+                onClick={() => {
+                  setIsComparisonMode(false);
+                  setSelectedCompareIds([]);
+                }}
+                className="text-stone-400 hover:text-white text-xs font-mono uppercase tracking-widest bg-stone-800/40 hover:bg-stone-800/80 px-2 py-1 rounded cursor-pointer"
+              >
+                {language === 'de' ? 'Schließen' : language === 'pl' ? 'Zamknij' : 'Close'}
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {selectedCompareIds.length === 0 ? (
+                <div className="text-center py-8 text-stone-400 text-sm italic">
+                  {language === 'de' 
+                    ? '𓀚 Bitte wählen Sie unten zwei Ausflüge aus, um einen direkten Vergleich zu sehen.' 
+                    : language === 'pl' 
+                    ? '𓀚 Wybierz poniżej dwie wycieczki, aby zobaczyć bezpośrednie porównanie.' 
+                    : '𓀚 Please select two excursions below to see a side-by-side comparison.'}
+                </div>
+              ) : selectedCompareIds.length === 1 ? (
+                <div className="text-center py-8 text-stone-400 text-sm italic space-y-3">
+                  <div>
+                    {language === 'de'
+                      ? '𓀚 Eine Expedition ausgewählt. Wählen Sie eine zweite, um sie zu vergleichen:'
+                      : language === 'pl'
+                      ? '𓀚 Wybrano jedną ekspedycję. Wybierz drugą, aby porównać:'
+                      : '𓀚 One expedition selected. Choose a second to compare side-by-side:'}
+                  </div>
+                  <div className="inline-block bg-[#16100a] border border-[#d4af37]/30 px-4 py-2 rounded-xl text-xs text-[#e6c280] font-serif uppercase">
+                    {activeCatalog.find(e => e.id === selectedCompareIds[0])?.title}
+                  </div>
+                </div>
+              ) : (() => {
+                const ex1 = activeCatalog.find(e => e.id === selectedCompareIds[0]);
+                const ex2 = activeCatalog.find(e => e.id === selectedCompareIds[1]);
+                if (!ex1 || !ex2) return null;
+
+                const gearInfo1 = getDifficultyAndGear(ex1.id, language);
+                const gearInfo2 = getDifficultyAndGear(ex2.id, language);
+
+                return (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 divide-y md:divide-y-0 md:divide-x divide-[#d4af37]/15">
+                    {/* Excursion 1 */}
+                    <div className="space-y-4">
+                      <div className="flex gap-4 items-start">
+                        <img 
+                          src={ex1.image} 
+                          alt={ex1.title} 
+                          className="w-24 h-20 object-cover rounded-xl border border-[#d4af37]/20 flex-shrink-0" 
+                        />
+                        <div>
+                          <span className="text-[9px] font-mono text-[#d4af37] uppercase tracking-wider bg-[#140f0a] px-2 py-0.5 rounded-full border border-[#d4af37]/10">
+                            {ex1.category.toUpperCase()}
+                          </span>
+                          <h4 className="font-serif text-base font-bold text-[#e6c280] uppercase mt-1">
+                            {ex1.title}
+                          </h4>
+                          <span className="text-xs font-mono text-amber-100/70">{ex1.tagline}</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3 pt-2">
+                        <div className="grid grid-cols-3 text-xs border-b border-[#d4af37]/10 pb-2 font-mono">
+                          <span className="text-stone-500 uppercase">{language === 'de' ? 'Dauer' : language === 'pl' ? 'Czas' : 'Duration'}</span>
+                          <span className="col-span-2 text-stone-200">{ex1.duration}</span>
+                        </div>
+                        <div className="grid grid-cols-3 text-xs border-b border-[#d4af37]/10 pb-2 font-mono">
+                          <span className="text-stone-500 uppercase">{language === 'de' ? 'Tribut' : language === 'pl' ? 'Cena' : 'Price'}</span>
+                          <span className="col-span-2 text-amber-400 font-bold">${ex1.price} Gold</span>
+                        </div>
+                        <div className="grid grid-cols-3 text-xs border-b border-[#d4af37]/10 pb-2 font-mono">
+                          <span className="text-stone-500 uppercase">{language === 'de' ? 'Schwierigkeit' : language === 'pl' ? 'Trudność' : 'Difficulty'}</span>
+                          <span className="col-span-2 text-stone-200">{gearInfo1.difficulty}</span>
+                        </div>
+                        <div className="grid grid-cols-3 text-xs border-b border-[#d4af37]/10 pb-2 font-mono">
+                          <span className="text-stone-500 uppercase">{language === 'de' ? 'Ausrüstung' : language === 'pl' ? 'Sprzęt' : 'Included Gear'}</span>
+                          <span className="col-span-2 text-stone-200">{gearInfo1.gear}</span>
+                        </div>
+                        <div className="space-y-1.5 pt-2">
+                          <h5 className="text-[10px] font-mono text-stone-500 uppercase tracking-widest">
+                            {language === 'de' ? 'Inbegriffene Leistungen' : language === 'pl' ? 'W cenie' : 'Sacred Inclusions'}
+                          </h5>
+                          <ul className="text-xs text-stone-300 space-y-1 pl-4 list-disc">
+                            {ex1.inclusions.slice(0, 3).map((inc, i) => (
+                              <li key={i}>{inc}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 pt-4">
+                        <button
+                          onClick={() => {
+                            setSelectedExcursion(ex1);
+                            setIsBookingOpen(true);
+                          }}
+                          className="flex-1 bg-gradient-to-r from-[#d4af37] to-[#b08e23] text-[#140f0a] font-serif font-bold text-xs uppercase tracking-wide py-2 rounded-xl transition-all hover:scale-[1.02] cursor-pointer text-center"
+                        >
+                          {language === 'de' ? 'Buchen' : language === 'pl' ? 'Zarezerwuj' : 'Book Now'}
+                        </button>
+                        <button
+                          onClick={() => setSelectedExcursion(ex1)}
+                          className="px-4 bg-[#140f0a] border border-[#d4af37]/20 text-[#e6c280] font-mono text-xs uppercase py-2 rounded-xl hover:bg-stone-900 cursor-pointer"
+                        >
+                          Details
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Excursion 2 */}
+                    <div className="space-y-4 md:pl-6 pt-6 md:pt-0">
+                      <div className="flex gap-4 items-start">
+                        <img 
+                          src={ex2.image} 
+                          alt={ex2.title} 
+                          className="w-24 h-20 object-cover rounded-xl border border-[#d4af37]/20 flex-shrink-0" 
+                        />
+                        <div>
+                          <span className="text-[9px] font-mono text-[#d4af37] uppercase tracking-wider bg-[#140f0a] px-2 py-0.5 rounded-full border border-[#d4af37]/10">
+                            {ex2.category.toUpperCase()}
+                          </span>
+                          <h4 className="font-serif text-base font-bold text-[#e6c280] uppercase mt-1">
+                            {ex2.title}
+                          </h4>
+                          <span className="text-xs font-mono text-amber-100/70">{ex2.tagline}</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3 pt-2">
+                        <div className="grid grid-cols-3 text-xs border-b border-[#d4af37]/10 pb-2 font-mono">
+                          <span className="text-stone-500 uppercase">{language === 'de' ? 'Dauer' : language === 'pl' ? 'Czas' : 'Duration'}</span>
+                          <span className="col-span-2 text-stone-200">{ex2.duration}</span>
+                        </div>
+                        <div className="grid grid-cols-3 text-xs border-b border-[#d4af37]/10 pb-2 font-mono">
+                          <span className="text-stone-500 uppercase">{language === 'de' ? 'Tribut' : language === 'pl' ? 'Cena' : 'Price'}</span>
+                          <span className="col-span-2 text-amber-400 font-bold">${ex2.price} Gold</span>
+                        </div>
+                        <div className="grid grid-cols-3 text-xs border-b border-[#d4af37]/10 pb-2 font-mono">
+                          <span className="text-stone-500 uppercase">{language === 'de' ? 'Schwierigkeit' : language === 'pl' ? 'Trudność' : 'Difficulty'}</span>
+                          <span className="col-span-2 text-stone-200">{gearInfo2.difficulty}</span>
+                        </div>
+                        <div className="grid grid-cols-3 text-xs border-b border-[#d4af37]/10 pb-2 font-mono">
+                          <span className="text-stone-500 uppercase">{language === 'de' ? 'Ausrüstung' : language === 'pl' ? 'Sprzęt' : 'Included Gear'}</span>
+                          <span className="col-span-2 text-stone-200">{gearInfo2.gear}</span>
+                        </div>
+                        <div className="space-y-1.5 pt-2">
+                          <h5 className="text-[10px] font-mono text-stone-500 uppercase tracking-widest">
+                            {language === 'de' ? 'Inbegriffene Leistungen' : language === 'pl' ? 'W cenie' : 'Sacred Inclusions'}
+                          </h5>
+                          <ul className="text-xs text-stone-300 space-y-1 pl-4 list-disc">
+                            {ex2.inclusions.slice(0, 3).map((inc, i) => (
+                              <li key={i}>{inc}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 pt-4">
+                        <button
+                          onClick={() => {
+                            setSelectedExcursion(ex2);
+                            setIsBookingOpen(true);
+                          }}
+                          className="flex-1 bg-gradient-to-r from-[#d4af37] to-[#b08e23] text-[#140f0a] font-serif font-bold text-xs uppercase tracking-wide py-2 rounded-xl transition-all hover:scale-[1.02] cursor-pointer text-center"
+                        >
+                          {language === 'de' ? 'Buchen' : language === 'pl' ? 'Zarezerwuj' : 'Book Now'}
+                        </button>
+                        <button
+                          onClick={() => setSelectedExcursion(ex2)}
+                          className="px-4 bg-[#140f0a] border border-[#d4af37]/20 text-[#e6c280] font-mono text-xs uppercase py-2 rounded-xl hover:bg-stone-900 cursor-pointer"
+                        >
+                          Details
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Grid of Excursions */}
       {isLoading ? (
@@ -933,6 +1216,25 @@ Please seal my booking with the High Priest approval!`;
                 <span className="absolute top-4 left-4 bg-[#140f0a]/80 backdrop-blur-md text-[#d4af37] border border-[#d4af37]/40 rounded-full px-3 py-1 text-[10px] font-mono uppercase tracking-widest">
                   {ex.category === 'diving' ? (language === 'de' ? '𓆛 Tauchen' : language === 'pl' ? '𓆛 Nurkowanie' : '𓆛 Diving') : ex.category === 'safari' ? (language === 'de' ? '𓅓 Safari' : language === 'pl' ? '𓅓 Safari' : '𓅓 Safari') : ex.category === 'history' ? (language === 'de' ? '𓉐 Geschichte' : language === 'pl' ? '𓉐 Historia' : '𓉐 History') : ex.category === 'boat' ? (language === 'de' ? '𓊟 Bootsfahrt' : language === 'pl' ? '𓊟 Rejs statkiem' : '𓊟 Boat Trip') : (language === 'de' ? '𓊡 Schnellboot' : language === 'pl' ? '𓊡 Motorówka' : '𓊡 Speedboat')}
                 </span>
+
+                {/* Compare Checkbox Selection Overlay */}
+                {isComparisonMode && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      handleToggleCompare(ex.id);
+                    }}
+                    className={`absolute top-4 right-4 backdrop-blur-md px-3 py-1.5 rounded-full border text-[10px] font-mono uppercase tracking-widest transition-all duration-300 cursor-pointer flex items-center gap-1.5 z-10 shadow-lg ${
+                      selectedCompareIds.includes(ex.id)
+                        ? 'bg-[#d4af37] text-[#140f0a] border-[#d4af37] font-bold'
+                        : 'bg-[#140f0a]/95 text-[#e6c280] border-[#d4af37]/40 hover:border-[#d4af37]'
+                    }`}
+                  >
+                    <span>{selectedCompareIds.includes(ex.id) ? '✓' : '⚖'}</span>
+                    <span>{selectedCompareIds.includes(ex.id) ? (language === 'de' ? 'Ausgewählt' : language === 'pl' ? 'Wybrano' : 'Selected') : (language === 'de' ? 'Vergleichen' : language === 'pl' ? 'Porównaj' : 'Compare')}</span>
+                  </button>
+                )}
 
                 {/* Price Tag */}
                 <div className="absolute bottom-4 right-4 bg-[#d4af37] text-[#140f0a] font-mono font-bold px-3 py-1 rounded-lg text-sm shadow-md">

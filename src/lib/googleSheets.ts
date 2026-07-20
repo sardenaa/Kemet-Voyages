@@ -170,7 +170,7 @@ export async function syncTablesToSpreadsheet(
       values: [subscribersHeaders, ...subscribersRows],
     },
     {
-      range: 'Excursions!A1:J1000',
+      range: 'Excursions!A1:M1000',
       values: [excursionsHeaders, ...excursionsRows],
     },
     {

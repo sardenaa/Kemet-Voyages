@@ -968,7 +968,7 @@ export default function App() {
                       {language === 'de' ? 'Stellen Sie unserem KI-Helfer Fragen oder erstellen Sie einen individuellen Tages-Reiseplan.' : language === 'pl' ? 'Zadaj pytania naszemu asystentowi AI lub wygeneruj spersonalizowany plan podróży dzień po dniu.' : language === 'cs' ? 'Zeptejte se našeho asistenta s AI na cokoli nebo si nechte vytvořit vlastní denní itinerář.' : 'Ask our AI helper any questions or generate a custom day-by-day travel plan.'}
                     </p>
                   </div>
-                  <ScribeOracle onScribeSuccess={triggerCelebration} onAddBooking={handleAddBooking} />
+                  <ScribeOracle onScribeSuccess={triggerCelebration} onAddBooking={handleAddBooking} bookings={bookings} excursions={excursions} />
                 </motion.section>
 
                 {/* SECTION 3: IMMERSIVE GALLERY */}
