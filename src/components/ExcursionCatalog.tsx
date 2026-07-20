@@ -914,10 +914,9 @@ Please seal my booking with the High Priest approval!`;
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredExcursions.map((ex, index) => (
-            <motion.div
+            <div
               key={ex.id}
-              layout
-              className={`bg-[#1a140f] border border-[#d4af37]/25 rounded-2xl overflow-hidden shadow-xl flex flex-col group hover:border-[#d4af37]/85 hover:shadow-[0_0_22px_rgba(212,175,55,0.22)] transition-all duration-300 animate-mirage-periodic hover:animate-mirage-hover mirage-delay-${(index % 6) + 1}`}
+              className="bg-[#1a140f] border border-[#d4af37]/25 rounded-2xl overflow-hidden shadow-xl flex flex-col group hover:border-[#d4af37]/85 hover:shadow-[0_0_22px_rgba(212,175,55,0.22)] transition-all duration-300 hover:-translate-y-1.5"
               id={`excursion-card-${ex.id}`}
             >
               {/* Image Thumbnail with Overlay */}
@@ -1180,7 +1179,7 @@ Please seal my booking with the High Priest approval!`;
                   </AnimatePresence>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       )}

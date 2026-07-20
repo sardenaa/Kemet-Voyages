@@ -43,6 +43,7 @@ import { Booking, Excursion, Review, ScribeMessage } from '../types';
 import { useLanguage } from './LanguageContext';
 import { initAuth, googleSignIn, logout, getAccessToken } from '../lib/firebaseAuth';
 import { createKemetSpreadsheet, syncTablesToSpreadsheet, importExcursionsFromSpreadsheet, importBookingsFromSpreadsheet } from '../lib/googleSheets';
+import BookingAnalytics from './BookingAnalytics';
 
 // Initial Excursions from Catalog for fallback
 const INITIAL_EXCURSIONS_DATA: Excursion[] = [
@@ -234,7 +235,7 @@ interface AdminDashboardProps {
   onUpdateBookingsList: (updated: Booking[]) => void;
 }
 
-type CRMTab = 'dashboard' | 'caravans' | 'nobles' | 'offerings' | 'testimonies' | 'oracle' | 'subscribers' | 'sheets';
+type CRMTab = 'dashboard' | 'caravans' | 'nobles' | 'offerings' | 'testimonies' | 'oracle' | 'subscribers' | 'sheets' | 'analytics';
 
 export default function AdminDashboard({
   bookings,
@@ -613,9 +614,17 @@ export default function AdminDashboard({
   const [newExImage, setNewExImage] = useState<string>("/src/assets/images/egypt_sea_diving_1784070366165.jpg");
   const [newExDesc, setNewExDesc] = useState<string>("");
   const [newExLore, setNewExLore] = useState<string>("");
+  const [newExInclusions, setNewExInclusions] = useState<string>("Premium transport under royal flag; Certified High Priest Guides; Fresh water of the Nile");
+  const [newExHighlights, setNewExHighlights] = useState<string>("Inspect unique architectural glyphs; Engage with desert/maritime local tribes");
 
-  // Traveler CRM Edit States
+  // Traveler CRM Edit / Add States
   const [editingProfile, setEditingProfile] = useState<TravelerCRMProfile | null>(null);
+  const [isAddProfileOpen, setIsAddProfileOpen] = useState<boolean>(false);
+  const [newProfileName, setNewProfileName] = useState<string>("");
+  const [newProfileEmail, setNewProfileEmail] = useState<string>("");
+  const [newProfileVipTier, setNewProfileVipTier] = useState<'Noble' | 'High Priest' | 'Royal Prince' | 'Pharaoh'>('Noble');
+  const [newProfileLeadStatus, setNewProfileLeadStatus] = useState<'Warm Prospect' | 'Deposited Pilgrim' | 'Eternal Royal Traveler' | 'Closed Lost'>('Warm Prospect');
+  const [newProfileNotes, setNewProfileNotes] = useState<string>("");
   const [filterVip, setFilterVip] = useState<string>("all");
   const [filterLead, setFilterLead] = useState<string>("all");
   const [crmSearch, setCrmSearch] = useState<string>("");
@@ -996,8 +1005,8 @@ export default function AdminDashboard({
       location: newExLocation,
       image: newExImage,
       description: newExDesc,
-      inclusions: ["Premium transport under royal flag", "Certified High Priest Guides", "Fresh water of the Nile"],
-      highlights: ["Inspect unique architectural glyphs", "Engage with desert/maritime local tribes"],
+      inclusions: newExInclusions.split(';').map(s => s.trim()).filter(Boolean),
+      highlights: newExHighlights.split(';').map(s => s.trim()).filter(Boolean),
       ancientLore: newExLore || "This sacred terrain was aligned by Imhotep to match the solar zenith, granting safety to all travelers under the eye of Horus."
     };
 
@@ -1027,6 +1036,9 @@ export default function AdminDashboard({
     setNewExTagline("");
     setNewExDesc("");
     setNewExLore("");
+    setNewExLocation("Red Sea, Egypt");
+    setNewExInclusions("Premium transport under royal flag; Certified High Priest Guides; Fresh water of the Nile");
+    setNewExHighlights("Inspect unique architectural glyphs; Engage with desert/maritime local tribes");
   };
 
   const handleEditExcursionSubmit = async (e: React.FormEvent) => {
@@ -1087,6 +1099,35 @@ export default function AdminDashboard({
     setCrmProfiles(updated);
     setEditingProfile(null);
     triggerNotification("Traveler relationship card updated");
+  };
+
+  const handleAddProfileSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newProfileName || !newProfileEmail) return;
+
+    const newProfile: TravelerCRMProfile = {
+      id: `crm-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      name: newProfileName,
+      email: newProfileEmail,
+      vipTier: newProfileVipTier,
+      leadStatus: newProfileLeadStatus,
+      totalSpend: 0,
+      lastActive: new Date().toISOString().split('T')[0],
+      scribeNotes: newProfileNotes || "Manually registered noble traveler profile.",
+      inquiriesCount: 0
+    };
+
+    const updated = [newProfile, ...crmProfiles];
+    setCrmProfiles(updated);
+    localStorage.setItem('kemet_crm_profiles', JSON.stringify(updated));
+
+    setIsAddProfileOpen(false);
+    setNewProfileName("");
+    setNewProfileEmail("");
+    setNewProfileVipTier("Noble");
+    setNewProfileLeadStatus("Warm Prospect");
+    setNewProfileNotes("");
+    triggerNotification("Sovereign Traveler Profile created successfully!");
   };
 
   // Compose an email draft in the voice of Sennedjem
@@ -1161,7 +1202,8 @@ export default function AdminDashboard({
           { key: 'testimonies', label: t('admin_label_testimonies', '𓁠 Review Moderation'), desc: t('admin_desc_testimonies', 'Verify traveler testimonies') },
           { key: 'oracle', label: t('admin_label_oracle', '𓋹 Oracle Lead Logs'), desc: t('admin_desc_oracle', 'Inspect recent chats') },
           { key: 'subscribers', label: t('admin_label_subscribers', '𓇚 Imperial Scrolls'), desc: `${subscribers.length} ${t('admin_newsletter_signups', 'newsletter signups')}` },
-          { key: 'sheets', label: t('admin_label_sheets', '𓇛 Google Sheets Sync'), desc: t('admin_desc_sheets', 'Sync divine ledgers') }
+          { key: 'sheets', label: t('admin_label_sheets', '𓇛 Google Sheets Sync'), desc: t('admin_desc_sheets', 'Sync divine ledgers') },
+          { key: 'analytics', label: '📈 Booking Analytics', desc: 'Divine Recharts' }
         ].map((tab) => (
           <button
             key={tab.key}
@@ -1781,6 +1823,13 @@ export default function AdminDashboard({
                 </h3>
                 <p className="text-stone-400 text-xs">Track customer VIP tiers, spend statistics, and custom scribe relationship notes.</p>
               </div>
+
+              <button
+                onClick={() => setIsAddProfileOpen(true)}
+                className="bg-gradient-to-r from-[#d4af37] to-[#b08e23] text-[#140f0a] text-xs font-serif font-black uppercase tracking-widest px-4 py-2.5 rounded-xl shadow-lg shadow-[#d4af37]/15 hover:scale-105 transition-all cursor-pointer flex items-center gap-1.5"
+              >
+                <Plus className="w-4 h-4" /> Add Traveler Card
+              </button>
             </div>
 
             {/* Search and Filters */}
@@ -2000,6 +2049,110 @@ export default function AdminDashboard({
                 </div>
               )}
             </AnimatePresence>
+
+            {/* Profile Add Modal */}
+            <AnimatePresence>
+              {isAddProfileOpen && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="bg-[#140f0c] border border-[#d4af37] rounded-2xl max-w-md w-full p-6 space-y-4"
+                  >
+                    <h4 className="font-serif text-[#e6c280] font-black text-lg uppercase">
+                      Inscribe Noble Traveler Card
+                    </h4>
+                    
+                    <form onSubmit={handleAddProfileSubmit} className="space-y-4">
+                      {/* Name input */}
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-mono text-stone-500 uppercase block">Traveler Name</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="E.g., Princess Amunet"
+                          value={newProfileName}
+                          onChange={(e) => setNewProfileName(e.target.value)}
+                          className="w-full bg-[#1c1611] border border-stone-800 rounded-lg p-2.5 text-xs text-stone-200 focus:outline-none"
+                        />
+                      </div>
+
+                      {/* Email input */}
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-mono text-stone-500 uppercase block">Messenger Email</label>
+                        <input
+                          type="email"
+                          required
+                          placeholder="amunet@royal-palace.eg"
+                          value={newProfileEmail}
+                          onChange={(e) => setNewProfileEmail(e.target.value)}
+                          className="w-full bg-[#1c1611] border border-stone-800 rounded-lg p-2.5 text-xs text-stone-200 focus:outline-none"
+                        />
+                      </div>
+
+                      {/* VIP Select */}
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-mono text-stone-500 uppercase block">Sovereign VIP Tier</label>
+                        <select
+                          value={newProfileVipTier}
+                          onChange={(e) => setNewProfileVipTier(e.target.value as any)}
+                          className="w-full bg-[#1c1611] border border-stone-800 rounded-lg p-2 text-xs text-stone-300 focus:outline-none"
+                        >
+                          <option value="Noble">Noble (Standard VIP)</option>
+                          <option value="High Priest">High Priest (Elite status)</option>
+                          <option value="Royal Prince">Royal Prince (Sovereign class)</option>
+                          <option value="Pharaoh">Pharaoh (Supreme client)</option>
+                        </select>
+                      </div>
+
+                      {/* Lead Status Select */}
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-mono text-stone-500 uppercase block">CRM Lead Status</label>
+                        <select
+                          value={newProfileLeadStatus}
+                          onChange={(e) => setNewProfileLeadStatus(e.target.value as any)}
+                          className="w-full bg-[#1c1611] border border-stone-800 rounded-lg p-2 text-xs text-stone-300 focus:outline-none"
+                        >
+                          <option value="Warm Prospect">Warm Prospect (Oracle chat inquiry)</option>
+                          <option value="Deposited Pilgrim">Deposited Pilgrim (Active booking deposit)</option>
+                          <option value="Eternal Royal Traveler">Eternal Royal Traveler (Frequent traveler)</option>
+                          <option value="Closed Lost">Closed Lost (Revoked passage)</option>
+                        </select>
+                      </div>
+
+                      {/* Notes area */}
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-mono text-stone-500 uppercase block">Scribe Relationship Notes</label>
+                        <textarea
+                          rows={3}
+                          placeholder="Interested in private Nile boat expeditions..."
+                          value={newProfileNotes}
+                          onChange={(e) => setNewProfileNotes(e.target.value)}
+                          className="w-full bg-[#1c1611] border border-stone-800 rounded-lg p-2.5 text-xs text-stone-200 focus:outline-none"
+                        />
+                      </div>
+
+                      <div className="flex gap-2 justify-end pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setIsAddProfileOpen(false)}
+                          className="bg-stone-900 hover:bg-stone-850 text-stone-300 text-xs font-mono uppercase tracking-wider px-4 py-2 rounded-lg cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="bg-[#d4af37] text-[#140f0a] text-xs font-mono font-bold uppercase tracking-wider px-4 py-2 rounded-lg cursor-pointer"
+                        >
+                          Create Card
+                        </button>
+                      </div>
+                    </form>
+                  </motion.div>
+                </div>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
 
@@ -2164,6 +2317,39 @@ export default function AdminDashboard({
                             className="w-full bg-[#1c1611] border border-stone-800 rounded-lg p-2 text-xs text-stone-200 focus:outline-none"
                           />
                         </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-mono text-stone-400 uppercase">Sacred Location</label>
+                          <input
+                            type="text"
+                            placeholder="E.g., Luxor, Egypt"
+                            value={newExLocation}
+                            onChange={(e) => setNewExLocation(e.target.value)}
+                            className="w-full bg-[#1c1611] border border-stone-800 rounded-lg p-2 text-xs text-stone-200 focus:outline-none"
+                          />
+                        </div>
+
+                        <div className="space-y-1 sm:col-span-2">
+                          <label className="text-[9px] font-mono text-stone-400 uppercase">Inclusions (Semicolon separated)</label>
+                          <input
+                            type="text"
+                            placeholder="Premium transport; Certified High Priest Guides; Fresh water of the Nile"
+                            value={newExInclusions}
+                            onChange={(e) => setNewExInclusions(e.target.value)}
+                            className="w-full bg-[#1c1611] border border-stone-800 rounded-lg p-2 text-xs text-stone-200 focus:outline-none"
+                          />
+                        </div>
+
+                        <div className="space-y-1 sm:col-span-2">
+                          <label className="text-[9px] font-mono text-stone-400 uppercase">Highlights (Semicolon separated)</label>
+                          <input
+                            type="text"
+                            placeholder="Inspect unique architectural glyphs; Engage with desert local tribes"
+                            value={newExHighlights}
+                            onChange={(e) => setNewExHighlights(e.target.value)}
+                            className="w-full bg-[#1c1611] border border-stone-800 rounded-lg p-2 text-xs text-stone-200 focus:outline-none"
+                          />
+                        </div>
                       </div>
 
                       <div className="space-y-1">
@@ -2248,6 +2434,21 @@ export default function AdminDashboard({
                         </div>
 
                         <div className="space-y-1">
+                          <label className="text-[9px] font-mono text-stone-400 uppercase">Category</label>
+                          <select
+                            value={editingExcursion.category}
+                            onChange={(e) => setEditingExcursion({ ...editingExcursion, category: e.target.value as any })}
+                            className="w-full bg-[#1c1611] border border-stone-800 rounded-lg p-2 text-xs text-stone-300 focus:outline-none"
+                          >
+                            <option value="diving">Diving 𓆛</option>
+                            <option value="safari">Desert Safari 𓅓</option>
+                            <option value="history">Luxor History 𓉐</option>
+                            <option value="boat">Boat Trip 𓊟</option>
+                            <option value="speedboat">Speedboat 𓊡</option>
+                          </select>
+                        </div>
+
+                        <div className="space-y-1">
                           <label className="text-[9px] font-mono text-stone-400 uppercase">Price (Gold Coins)</label>
                           <input
                             type="number"
@@ -2264,6 +2465,46 @@ export default function AdminDashboard({
                             type="text"
                             value={editingExcursion.duration}
                             onChange={(e) => setEditingExcursion({ ...editingExcursion, duration: e.target.value })}
+                            className="w-full bg-[#1c1611] border border-stone-800 rounded-lg p-2 text-xs text-stone-200 focus:outline-none"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-mono text-stone-400 uppercase">Image URL</label>
+                          <input
+                            type="text"
+                            value={editingExcursion.image}
+                            onChange={(e) => setEditingExcursion({ ...editingExcursion, image: e.target.value })}
+                            className="w-full bg-[#1c1611] border border-stone-800 rounded-lg p-2 text-xs text-stone-200 focus:outline-none"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-mono text-stone-400 uppercase">Sacred Location</label>
+                          <input
+                            type="text"
+                            value={editingExcursion.location}
+                            onChange={(e) => setEditingExcursion({ ...editingExcursion, location: e.target.value })}
+                            className="w-full bg-[#1c1611] border border-stone-800 rounded-lg p-2 text-xs text-stone-200 focus:outline-none"
+                          />
+                        </div>
+
+                        <div className="space-y-1 sm:col-span-2">
+                          <label className="text-[9px] font-mono text-stone-400 uppercase">Inclusions (Semicolon separated)</label>
+                          <input
+                            type="text"
+                            value={editingExcursion.inclusions ? editingExcursion.inclusions.join('; ') : ''}
+                            onChange={(e) => setEditingExcursion({ ...editingExcursion, inclusions: e.target.value.split(';').map(s => s.trim()).filter(Boolean) })}
+                            className="w-full bg-[#1c1611] border border-stone-800 rounded-lg p-2 text-xs text-stone-200 focus:outline-none"
+                          />
+                        </div>
+
+                        <div className="space-y-1 sm:col-span-2">
+                          <label className="text-[9px] font-mono text-stone-400 uppercase">Highlights (Semicolon separated)</label>
+                          <input
+                            type="text"
+                            value={editingExcursion.highlights ? editingExcursion.highlights.join('; ') : ''}
+                            onChange={(e) => setEditingExcursion({ ...editingExcursion, highlights: e.target.value.split(';').map(s => s.trim()).filter(Boolean) })}
                             className="w-full bg-[#1c1611] border border-stone-800 rounded-lg p-2 text-xs text-stone-200 focus:outline-none"
                           />
                         </div>
@@ -2913,6 +3154,16 @@ export default function AdminDashboard({
 
               </div>
             )}
+          </motion.div>
+        )}
+
+        {/* TAB 9: BOOKING ANALYTICS */}
+        {activeTab === 'analytics' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <BookingAnalytics bookings={bookings} excursions={excursions} />
           </motion.div>
         )}
 
