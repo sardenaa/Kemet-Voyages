@@ -235,6 +235,18 @@ const TRANSLATIONS: Record<string, Record<Language, string>> = {
     pl: 'zapisów na newsletter',
     cs: 'odběrů newsletteru'
   },
+  admin_label_sheets: {
+    en: '𓇛 Google Sheets Sync',
+    de: '𓇛 Google Sheets-Sync',
+    pl: '𓇛 Synchronizacja Sheets',
+    cs: '𓇛 Synchronizace Sheets'
+  },
+  admin_desc_sheets: {
+    en: 'Sync divine ledgers',
+    de: 'Heilige Bücher abgleichen',
+    pl: 'Zsynchronizuj księgi',
+    cs: 'Synchronizovat knihy'
+  },
 };
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

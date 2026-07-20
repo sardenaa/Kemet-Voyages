@@ -30,10 +30,19 @@ import {
   MapPin,
   Clock,
   ThumbsUp,
-  UserPlus
+  UserPlus,
+  FileSpreadsheet,
+  Download,
+  Upload,
+  LogOut,
+  ExternalLink,
+  Lock,
+  Unlock
 } from 'lucide-react';
 import { Booking, Excursion, Review, ScribeMessage } from '../types';
 import { useLanguage } from './LanguageContext';
+import { initAuth, googleSignIn, logout, getAccessToken } from '../lib/firebaseAuth';
+import { createKemetSpreadsheet, syncTablesToSpreadsheet, importExcursionsFromSpreadsheet, importBookingsFromSpreadsheet } from '../lib/googleSheets';
 
 // Initial Excursions from Catalog for fallback
 const INITIAL_EXCURSIONS_DATA: Excursion[] = [
@@ -225,7 +234,7 @@ interface AdminDashboardProps {
   onUpdateBookingsList: (updated: Booking[]) => void;
 }
 
-type CRMTab = 'dashboard' | 'caravans' | 'nobles' | 'offerings' | 'testimonies' | 'oracle' | 'subscribers';
+type CRMTab = 'dashboard' | 'caravans' | 'nobles' | 'offerings' | 'testimonies' | 'oracle' | 'subscribers' | 'sheets';
 
 export default function AdminDashboard({
   bookings,
@@ -235,6 +244,255 @@ export default function AdminDashboard({
 }: AdminDashboardProps) {
   const { language, t } = useLanguage();
   const [activeTab, setActiveTab] = useState<CRMTab>('dashboard');
+
+  // Google Sheets integration state
+  const [gUser, setGUser] = useState<any>(null);
+  const [gToken, setGToken] = useState<string | null>(null);
+  const [isGAuthLoading, setIsGAuthLoading] = useState<boolean>(true);
+  const [activeSpreadsheetId, setActiveSpreadsheetId] = useState<string>(() => {
+    return localStorage.getItem('kemet_active_spreadsheet_id') || '';
+  });
+  const [activeSpreadsheetUrl, setActiveSpreadsheetUrl] = useState<string>(() => {
+    return localStorage.getItem('kemet_active_spreadsheet_url') || '';
+  });
+  const [selectedSyncTables, setSelectedSyncTables] = useState<Record<string, boolean>>({
+    bookings: true,
+    subscribers: true,
+    excursions: true,
+    crmProfiles: true,
+    oracleLogs: true
+  });
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [syncMessage, setSyncMessage] = useState<string>('');
+
+  // Handle Google OAuth initialization
+  useEffect(() => {
+    const unsubscribe = initAuth(
+      (user, token) => {
+        setGUser(user);
+        setGToken(token);
+        setIsGAuthLoading(false);
+      },
+      () => {
+        setGUser(null);
+        setGToken(null);
+        setIsGAuthLoading(false);
+      }
+    );
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
+
+  // Sync to local storage
+  useEffect(() => {
+    if (activeSpreadsheetId) {
+      localStorage.setItem('kemet_active_spreadsheet_id', activeSpreadsheetId);
+    } else {
+      localStorage.removeItem('kemet_active_spreadsheet_id');
+    }
+  }, [activeSpreadsheetId]);
+
+  useEffect(() => {
+    if (activeSpreadsheetUrl) {
+      localStorage.setItem('kemet_active_spreadsheet_url', activeSpreadsheetUrl);
+    } else {
+      localStorage.removeItem('kemet_active_spreadsheet_url');
+    }
+  }, [activeSpreadsheetUrl]);
+
+  // Trigger google sheet export
+  const handleExportToSheets = async () => {
+    if (!gToken) {
+      setSyncStatus('error');
+      setSyncMessage('Scribe must be logged into Google Account first.');
+      return;
+    }
+
+    setIsSyncing(true);
+    setSyncStatus('idle');
+    setSyncMessage('Connecting to Google Sheets and synchronizing tablets...');
+
+    try {
+      let spreadId = activeSpreadsheetId;
+      let spreadUrl = activeSpreadsheetUrl;
+
+      // Create new spreadsheet if we don't have one
+      if (!spreadId) {
+        const { id, url } = await createKemetSpreadsheet(gToken);
+        spreadId = id;
+        spreadUrl = url;
+        setActiveSpreadsheetId(id);
+        setActiveSpreadsheetUrl(url);
+      }
+
+      // Sync active tables
+      await syncTablesToSpreadsheet(gToken, spreadId, {
+        bookings: selectedSyncTables.bookings ? bookings : [],
+        subscribers: selectedSyncTables.subscribers ? subscribers : [],
+        excursions: selectedSyncTables.excursions ? excursions : [],
+        crmProfiles: selectedSyncTables.crmProfiles ? crmProfiles : [],
+        oracleLogs: selectedSyncTables.oracleLogs ? oracleLogs : []
+      });
+
+      setSyncStatus('success');
+      setSyncMessage('Ledgers have been successfully synced to the sacred Google Sheet! 𓇛');
+      triggerNotification("Divine ledgers synchronized successfully!");
+    } catch (err: any) {
+      console.error(err);
+      setSyncStatus('error');
+      setSyncMessage(`Sync failed: ${err.message || err}`);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  // Trigger Google Sheet import for Excursions and Bookings
+  const handleImportFromSheets = async () => {
+    if (!gToken) {
+      setSyncStatus('error');
+      setSyncMessage('Scribe must be logged into Google Account first.');
+      return;
+    }
+
+    if (!activeSpreadsheetId) {
+      setSyncStatus('error');
+      setSyncMessage('No active Google Sheet selected for import.');
+      return;
+    }
+
+    const confirmImport = window.confirm(
+      "Are you sure you want to pull and overwrite Kemet Tours data with the values inside your Google Sheet? This cannot be undone."
+    );
+    if (!confirmImport) return;
+
+    setIsSyncing(true);
+    setSyncStatus('idle');
+    setSyncMessage('Fetching data from the Google Sheet...');
+
+    try {
+      let excursionsUpdatedCount = 0;
+      let bookingsUpdatedCount = 0;
+
+      // 1. Pull Excursions if selected
+      if (selectedSyncTables.excursions) {
+        const importedExcursions = await importExcursionsFromSpreadsheet(gToken, activeSpreadsheetId);
+        if (importedExcursions && importedExcursions.length > 0) {
+          // Merge imported excursions back into excursions state, adding new ones
+          const excursionMap = new Map<string, any>(excursions.map(e => [e.id, e]));
+          
+          importedExcursions.forEach((imported: any) => {
+            const existing = excursionMap.get(imported.id);
+            if (existing) {
+              excursionsUpdatedCount++;
+              excursionMap.set(imported.id, {
+                ...existing,
+                title: imported.title || existing.title,
+                tagline: imported.tagline || existing.tagline,
+                category: (imported.category && ['diving', 'safari', 'history', 'boat', 'speedboat'].includes(imported.category)) ? imported.category : existing.category,
+                duration: imported.duration || existing.duration,
+                price: imported.price || existing.price,
+                rating: imported.rating || existing.rating,
+                location: imported.location || existing.location,
+                description: imported.description || existing.description,
+                ancientLore: imported.ancientLore || existing.ancientLore,
+                image: imported.image || existing.image,
+                inclusions: (imported.inclusions && imported.inclusions.length > 0) ? imported.inclusions : existing.inclusions,
+                highlights: (imported.highlights && imported.highlights.length > 0) ? imported.highlights : existing.highlights,
+              });
+            } else {
+              // Create brand new excursion from spreadsheet row
+              excursionsUpdatedCount++;
+              excursionMap.set(imported.id, {
+                id: imported.id,
+                title: imported.title || 'Untitled Tour',
+                tagline: imported.tagline || 'Eternally curated pharaonic voyage',
+                category: (imported.category && ['diving', 'safari', 'history', 'boat', 'speedboat'].includes(imported.category)) ? imported.category : 'diving',
+                duration: imported.duration || 'Full Day (8 Hours)',
+                price: imported.price || 100,
+                rating: imported.rating || 5.0,
+                location: imported.location || 'Red Sea, Egypt',
+                image: imported.image || '/src/assets/images/egypt_sea_diving_1784070366165.jpg',
+                description: imported.description || 'No description provided.',
+                inclusions: (imported.inclusions && imported.inclusions.length > 0) ? imported.inclusions : [
+                  "Premium transport under royal flag",
+                  "Certified High Priest Guides",
+                  "Fresh water of the Nile"
+                ],
+                highlights: (imported.highlights && imported.highlights.length > 0) ? imported.highlights : [
+                  "Inspect unique architectural glyphs",
+                  "Engage with desert/maritime local tribes"
+                ],
+                ancientLore: imported.ancientLore || 'This sacred terrain was aligned by Imhotep to match the solar zenith, granting safety to all travelers under the eye of Horus.'
+              });
+            }
+          });
+
+          const updatedExcursions = Array.from(excursionMap.values());
+
+          // Push in bulk to the backend server to persist in kemet_db.json
+          const passcode = localStorage.getItem('kemet_admin_passcode') || 'pharaoh';
+          try {
+            const response = await fetch('/api/excursions/bulk', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-admin-passcode': passcode
+              },
+              body: JSON.stringify(updatedExcursions)
+            });
+            if (response.ok) {
+              const serverExcursions = await response.json();
+              setExcursions(serverExcursions);
+              localStorage.setItem('kemet_excursions', JSON.stringify(serverExcursions));
+              window.dispatchEvent(new Event('kemet_excursions_updated'));
+            } else {
+              setExcursions(updatedExcursions);
+              localStorage.setItem('kemet_excursions', JSON.stringify(updatedExcursions));
+              window.dispatchEvent(new Event('kemet_excursions_updated'));
+            }
+          } catch (err) {
+            console.error("Failed to sync bulk excursions with server:", err);
+            setExcursions(updatedExcursions);
+            localStorage.setItem('kemet_excursions', JSON.stringify(updatedExcursions));
+            window.dispatchEvent(new Event('kemet_excursions_updated'));
+          }
+        }
+      }
+
+      // 2. Pull Bookings status if selected
+      if (selectedSyncTables.bookings) {
+        const importedBookings = await importBookingsFromSpreadsheet(gToken, activeSpreadsheetId);
+        if (importedBookings && importedBookings.length > 0) {
+          const updatedBookings = bookings.map(b => {
+            const imported = importedBookings.find((ib: any) => ib.id === b.id);
+            if (imported) {
+              bookingsUpdatedCount++;
+              return {
+                ...b,
+                status: imported.status as Booking['status'] || b.status
+              };
+            }
+            return b;
+          });
+          onUpdateBookingsList(updatedBookings);
+        }
+      }
+
+      setSyncStatus('success');
+      setSyncMessage(
+        `Import complete! Updated ${excursionsUpdatedCount} Excursions and ${bookingsUpdatedCount} Booking statuses from the Google Sheet!`
+      );
+      triggerNotification("Divine ledgers updated from Google Sheet!");
+    } catch (err: any) {
+      console.error(err);
+      setSyncStatus('error');
+      setSyncMessage(`Import failed: ${err.message || err}`);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   // Subscribers state
   const [subscribers, setSubscribers] = useState<any[]>(() => {
@@ -902,7 +1160,8 @@ export default function AdminDashboard({
           { key: 'offerings', label: t('admin_label_offerings', '𓆛 Offerings Catalog'), desc: `${excursions.length} ${t('admin_active_trips', 'active trips')}` },
           { key: 'testimonies', label: t('admin_label_testimonies', '𓁠 Review Moderation'), desc: t('admin_desc_testimonies', 'Verify traveler testimonies') },
           { key: 'oracle', label: t('admin_label_oracle', '𓋹 Oracle Lead Logs'), desc: t('admin_desc_oracle', 'Inspect recent chats') },
-          { key: 'subscribers', label: t('admin_label_subscribers', '𓇚 Imperial Scrolls'), desc: `${subscribers.length} ${t('admin_newsletter_signups', 'newsletter signups')}` }
+          { key: 'subscribers', label: t('admin_label_subscribers', '𓇚 Imperial Scrolls'), desc: `${subscribers.length} ${t('admin_newsletter_signups', 'newsletter signups')}` },
+          { key: 'sheets', label: t('admin_label_sheets', '𓇛 Google Sheets Sync'), desc: t('admin_desc_sheets', 'Sync divine ledgers') }
         ].map((tab) => (
           <button
             key={tab.key}
@@ -2341,6 +2600,319 @@ export default function AdminDashboard({
                 </div>
               )}
             </div>
+          </motion.div>
+        )}
+
+        {/* TAB 8: GOOGLE SHEETS DUAL DIRECTIONAL LEDGER SYNC */}
+        {activeTab === 'sheets' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-6"
+          >
+            <div>
+              <h3 className="font-serif text-xl font-bold text-[#e6c280] uppercase tracking-wider">
+                𓇛 Sacred Google Sheets Sync
+              </h3>
+              <p className="text-stone-400 text-xs">
+                Synchronize your local caravan bookings, crm nobles, subscribers, and AI chat transcripts dynamically with a Google Spreadsheet.
+              </p>
+            </div>
+
+            {isGAuthLoading ? (
+              <div className="bg-[#18120d] border border-stone-850 rounded-2xl p-12 text-center text-stone-400">
+                <RefreshCw className="w-8 h-8 animate-spin text-[#d4af37] mx-auto mb-3" />
+                <p className="font-mono text-xs uppercase tracking-widest">Restoring Google Scribe connection...</p>
+              </div>
+            ) : !gUser ? (
+              /* Unauthorized State Card */
+              <div className="bg-[#18120d] border border-[#d4af37]/20 rounded-2xl p-8 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[#d4af37] to-amber-600"></div>
+                <div className="max-w-2xl space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#d4af37]/10 flex items-center justify-center text-[#d4af37] border border-[#d4af37]/35">
+                      <Lock className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-serif text-md font-bold text-[#e6c280] uppercase tracking-wide">
+                        Chamber of Royal Scribes Locked
+                      </h4>
+                      <p className="text-[11px] text-stone-400">
+                        In order to push and pull tablets to Google Sheets, you must authorize this applet using your Google account.
+                      </p>
+                    </div>
+                  </div>
+
+                  <p className="text-stone-300 text-xs leading-relaxed">
+                    Connecting to Google Sheets allows Kemet Tours to export your reservations, subscribers, catalog items, and lead funnels directly into professional sheet tabs, complete with elegant pre-applied Pharaonic dark-gold visual layouts.
+                  </p>
+
+                  <div className="pt-2">
+                    <button
+                      onClick={async () => {
+                        try {
+                          const res = await googleSignIn();
+                          if (res) {
+                            triggerNotification("Divine authorization accepted!");
+                          }
+                        } catch (err: any) {
+                          alert(`Authorization failed: ${err.message || err}`);
+                        }
+                      }}
+                      className="bg-gradient-to-r from-[#d4af37] to-[#b88e14] hover:from-amber-400 hover:to-amber-500 text-[#140f0a] text-xs font-mono font-bold uppercase tracking-widest px-6 py-3 rounded-xl shadow-lg transition-all flex items-center gap-2 cursor-pointer"
+                    >
+                      <Unlock className="w-4 h-4" /> Sign In with Google & Sync
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Authorized State View */
+              <div className="space-y-6">
+                
+                {/* Connection Status Panel */}
+                <div className="bg-[#18120d] border border-stone-850 rounded-2xl p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={gUser.photoURL || "/src/assets/images/egypt_boat_trip_1784071711626.jpg"}
+                      alt={gUser.displayName}
+                      className="w-10 h-10 rounded-full border-2 border-[#d4af37]/50 object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-xs font-bold font-mono text-[#f3e5c8] uppercase">
+                          {gUser.displayName || 'Royal Scribe'}
+                        </h4>
+                        <span className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-full px-2 py-0.5 text-[8px] font-mono tracking-widest uppercase">
+                          Authorized
+                        </span>
+                      </div>
+                      <p className="text-[10px] font-mono text-stone-500">{gUser.email}</p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={async () => {
+                      await logout();
+                      triggerNotification("Scribe logged out successfully.");
+                    }}
+                    className="bg-stone-900/60 hover:bg-stone-900 border border-stone-800 text-stone-400 hover:text-stone-200 text-[10px] font-mono uppercase tracking-widest px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
+                  >
+                    <LogOut className="w-3.5 h-3.5" /> Disconnect Scribe
+                  </button>
+                </div>
+
+                {/* Configuration: Choose Columns and Spreadsheet ID */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  
+                  {/* Select Columns */}
+                  <div className="lg:col-span-4 bg-[#14100c] border border-stone-800 rounded-2xl p-5 space-y-4">
+                    <h4 className="font-serif text-[#e6c280] font-bold text-xs uppercase tracking-wider">
+                      𓇜 1. Ledgers to Include
+                    </h4>
+                    <p className="text-[11px] text-stone-400">Select which data repositories will be pushed and merged during synchronization.</p>
+
+                    <div className="space-y-2.5 pt-2">
+                      {[
+                        { key: 'bookings', label: 'Caravan Bookings', count: bookings.length },
+                        { key: 'subscribers', label: 'Newsletter Scroll Signups', count: subscribers.length },
+                        { key: 'excursions', label: 'Excursions Catalog', count: excursions.length },
+                        { key: 'crmProfiles', label: 'Sovereign Traveler CRM', count: crmProfiles.length },
+                        { key: 'oracleLogs', label: 'AI Oracle Transcript Logs', count: oracleLogs.length }
+                      ].map((tbl) => (
+                        <label
+                          key={tbl.key}
+                          className="flex items-center justify-between p-2.5 bg-[#18120d]/50 border border-stone-850 hover:border-stone-800 rounded-xl cursor-pointer transition-colors"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <input
+                              type="checkbox"
+                              checked={selectedSyncTables[tbl.key]}
+                              onChange={(e) => setSelectedSyncTables({ ...selectedSyncTables, [tbl.key]: e.target.checked })}
+                              className="w-4 h-4 rounded accent-[#d4af37] bg-stone-950 border-stone-800"
+                            />
+                            <span className="text-xs text-stone-300 font-medium">{tbl.label}</span>
+                          </div>
+                          <span className="text-[10px] font-mono bg-stone-900 text-stone-400 px-2 py-0.5 rounded-md border border-stone-850">
+                            {tbl.count}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Target Spreadsheet */}
+                  <div className="lg:col-span-8 bg-[#14100c] border border-stone-800 rounded-2xl p-5 space-y-4">
+                    <h4 className="font-serif text-[#e6c280] font-bold text-xs uppercase tracking-wider">
+                      𓉐 2. Target Spreadsheet
+                    </h4>
+
+                    {activeSpreadsheetId ? (
+                      /* Connected spreadsheet display */
+                      <div className="space-y-4">
+                        <div className="bg-[#18120d] border border-[#d4af37]/30 rounded-xl p-4 space-y-3 relative overflow-hidden">
+                          <div className="absolute top-0 right-0 h-1 w-full bg-gradient-to-r from-amber-500 to-[#d4af37]"></div>
+                          
+                          <div className="flex justify-between items-start gap-4">
+                            <div>
+                              <span className="text-[9px] font-mono text-[#d4af37] uppercase tracking-wider block">Connected Active Spreadsheet</span>
+                              <h5 className="font-serif font-bold text-stone-200 text-sm mt-0.5">
+                                Kemet Tours - Sacred Royal Ledger 𓉐
+                              </h5>
+                            </div>
+                            <a
+                              href={activeSpreadsheetUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="bg-[#d4af37]/10 hover:bg-[#d4af37]/20 border border-[#d4af37]/30 text-[#d4af37] p-2 rounded-lg transition-colors flex items-center justify-center"
+                              title="Open Spreadsheet in New Window"
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                            </a>
+                          </div>
+
+                          <div className="space-y-1.5 pt-1">
+                            <span className="text-[9px] font-mono text-stone-500 uppercase tracking-widest block">Unique Document Identifier:</span>
+                            <code className="text-[10px] font-mono bg-black/40 px-2.5 py-1.5 rounded border border-stone-900 text-stone-400 break-all block select-all">
+                              {activeSpreadsheetId}
+                            </code>
+                          </div>
+
+                          <div className="flex gap-2 justify-end pt-1">
+                            <button
+                              onClick={() => {
+                                const confirmDisconnect = window.confirm("Are you sure you want to unlink this Spreadsheet? This won't delete the spreadsheet in Google Drive, but we will stop syncing to it.");
+                                if (confirmDisconnect) {
+                                  setActiveSpreadsheetId('');
+                                  setActiveSpreadsheetUrl('');
+                                  triggerNotification("Spreadsheet unlinked.");
+                                }
+                              }}
+                              className="text-red-400 hover:text-red-300 font-mono text-[9px] uppercase tracking-wider"
+                            >
+                              Disconnect Sheet
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Import / Export action area */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          
+                          {/* Export */}
+                          <button
+                            disabled={isSyncing}
+                            onClick={handleExportToSheets}
+                            className={`p-4 bg-gradient-to-b from-[#251e16] to-[#16120e] hover:from-[#2e261d] hover:to-[#1e1812] border border-[#d4af37]/40 rounded-xl transition-all text-left flex flex-col justify-between h-32 relative group cursor-pointer ${
+                              isSyncing ? 'opacity-60 cursor-not-allowed' : ''
+                            }`}
+                          >
+                            <div className="flex justify-between items-start w-full">
+                              <span className="text-[#d4af37] text-xs font-mono font-bold uppercase tracking-wider">Export to Sheets</span>
+                              <Upload className="w-5 h-5 text-[#d4af37] group-hover:translate-y-[-2px] transition-transform" />
+                            </div>
+                            <div>
+                              <strong className="text-stone-300 text-xs block font-serif uppercase tracking-wider">Push Local Ledgers</strong>
+                              <span className="text-[10px] text-stone-500 mt-0.5 block leading-tight">Overwrites values inside the spreadsheet tabs with current live state.</span>
+                            </div>
+                          </button>
+
+                          {/* Import */}
+                          <button
+                            disabled={isSyncing}
+                            onClick={handleImportFromSheets}
+                            className={`p-4 bg-gradient-to-b from-[#181410] to-[#120f0c] hover:from-[#211a14] hover:to-[#17130f] border border-stone-800 rounded-xl transition-all text-left flex flex-col justify-between h-32 relative group cursor-pointer ${
+                              isSyncing ? 'opacity-60 cursor-not-allowed' : ''
+                            }`}
+                          >
+                            <div className="flex justify-between items-start w-full">
+                              <span className="text-amber-500 text-xs font-mono font-bold uppercase tracking-wider">Import from Sheets</span>
+                              <Download className="w-5 h-5 text-amber-500 group-hover:translate-y-[2px] transition-transform" />
+                            </div>
+                            <div>
+                              <strong className="text-stone-300 text-xs block font-serif uppercase tracking-wider">Pull Sheet Overrides</strong>
+                              <span className="text-[10px] text-stone-500 mt-0.5 block leading-tight">Reads excursion price/title edits and booking status updates from Google Sheet back to Kemet.</span>
+                            </div>
+                          </button>
+
+                        </div>
+                      </div>
+                    ) : (
+                      /* Disconnected spreadsheet setup */
+                      <div className="space-y-5">
+                        <div className="bg-[#18120d] border border-stone-850 rounded-xl p-5 space-y-3">
+                          <span className="text-[10px] font-mono text-stone-500 uppercase tracking-widest block">Option A: Spawn Brand New Ledger</span>
+                          <p className="text-xs text-stone-400">Creates a clean spreadsheet styled beautifully with the Royal Kemet palette in your Google Drive.</p>
+                          <button
+                            disabled={isSyncing}
+                            onClick={handleExportToSheets}
+                            className="bg-[#d4af37] hover:bg-amber-400 text-[#140f0a] text-xs font-mono uppercase font-bold tracking-wider px-4 py-2.5 rounded-lg transition-all flex items-center gap-2 cursor-pointer"
+                          >
+                            <Plus className="w-4 h-4" /> Create & Format New Spreadsheet
+                          </button>
+                        </div>
+
+                        <div className="bg-[#18120d] border border-stone-850 rounded-xl p-5 space-y-3">
+                          <span className="text-[10px] font-mono text-stone-500 uppercase tracking-widest block">Option B: Connect Existing Spreadsheet</span>
+                          <p className="text-xs text-stone-400">Enter a Google Sheet ID to bind to an existing ledger on Google Drive.</p>
+                          <div className="flex gap-2 max-w-lg">
+                            <input
+                              type="text"
+                              placeholder="e.g. 1aBCDeFGhIJKLMNoPQRsTUVwXYz12345"
+                              value={activeSpreadsheetId}
+                              onChange={(e) => setActiveSpreadsheetId(e.target.value.trim())}
+                              className="bg-black/50 border border-stone-800 rounded-lg px-3 py-2 text-xs text-stone-200 font-mono flex-1 focus:outline-none focus:border-[#d4af37]/50"
+                            />
+                            <button
+                              onClick={() => {
+                                if (!activeSpreadsheetId) {
+                                  alert("Please specify a valid Spreadsheet ID first!");
+                                  return;
+                                }
+                                setActiveSpreadsheetUrl(`https://docs.google.com/spreadsheets/d/${activeSpreadsheetId}/edit`);
+                                triggerNotification("Spreadsheet linked successfully!");
+                              }}
+                              className="bg-stone-900 hover:bg-stone-800 border border-stone-800 text-stone-300 text-[10px] font-mono uppercase tracking-widest px-4 py-2 rounded-lg cursor-pointer"
+                            >
+                              Link Sheet
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Operations & Status feedback console */}
+                {(isSyncing || syncStatus !== 'idle') && (
+                  <div className={`p-4 rounded-2xl border flex items-center gap-3 transition-all duration-300 ${
+                    syncStatus === 'success'
+                      ? 'bg-emerald-500/10 border-emerald-500/35 text-emerald-400'
+                      : syncStatus === 'error'
+                      ? 'bg-red-500/10 border-red-500/35 text-red-400'
+                      : 'bg-amber-500/10 border-amber-500/35 text-amber-400'
+                  }`}>
+                    {isSyncing ? (
+                      <RefreshCw className="w-5 h-5 animate-spin flex-shrink-0" />
+                    ) : syncStatus === 'success' ? (
+                      <CheckCircle className="w-5 h-5 flex-shrink-0" />
+                    ) : (
+                      <XCircle className="w-5 h-5 flex-shrink-0" />
+                    )}
+                    <span className="text-xs font-mono leading-tight">{syncMessage}</span>
+                  </div>
+                )}
+
+                {/* Ancient Egyptology Scribe Lore Footer Card */}
+                <div className="bg-[#120d09] border border-stone-900 rounded-2xl p-4 flex gap-3 items-center">
+                  <span className="text-2xl opacity-60">𓂀</span>
+                  <p className="text-[10px] text-stone-500 italic leading-relaxed">
+                    "The Royal Scribes of Thoth recorded every grain of gold and every caravan on clay tablets. Today, we synchronize our ledgers into the ethereal cloud sheets of Google to preserve Kemet's glory for eternity."
+                  </p>
+                </div>
+
+              </div>
+            )}
           </motion.div>
         )}
 

@@ -419,6 +419,53 @@ async function startServer() {
     res.json(db.excursions);
   });
 
+  app.post("/api/excursions/bulk", adminAuth, (req, res) => {
+    try {
+      const bulkData = req.body;
+      if (!Array.isArray(bulkData)) {
+        return res.status(400).json({ error: "Excursions list must be an array." });
+      }
+
+      const db = loadDb();
+      bulkData.forEach((ex: any) => {
+        const newExcursion = {
+          id: ex.id ? sanitizeString(ex.id, 50) : `ex-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          title: sanitizeString(ex.title, 100),
+          tagline: sanitizeString(ex.tagline, 150),
+          category: sanitizeString(ex.category, 50),
+          duration: sanitizeString(ex.duration, 50),
+          price: Math.max(1, Number(ex.price) || 50),
+          rating: Math.min(5, Math.max(1, Number(ex.rating) || 5.0)),
+          location: sanitizeString(ex.location, 150),
+          image: sanitizeString(ex.image, 250) || "/src/assets/images/egypt_sea_diving_1784070366165.jpg",
+          description: sanitizeString(ex.description, 1000),
+          inclusions: Array.isArray(ex.inclusions) ? ex.inclusions.map((i: any) => sanitizeString(i, 200)) : [
+            "Premium transport under royal flag",
+            "Certified High Priest Guides",
+            "Fresh water of the Nile"
+          ],
+          highlights: Array.isArray(ex.highlights) ? ex.highlights.map((h: any) => sanitizeString(h, 200)) : [
+            "Inspect unique architectural glyphs",
+            "Engage with desert/maritime local tribes"
+          ],
+          ancientLore: sanitizeString(ex.ancientLore, 1000) || "This sacred terrain was aligned to grant safety under the eye of Horus."
+        };
+
+        const existingIndex = db.excursions.findIndex(existing => existing.id === newExcursion.id);
+        if (existingIndex > -1) {
+          db.excursions[existingIndex] = newExcursion;
+        } else {
+          db.excursions.unshift(newExcursion);
+        }
+      });
+
+      saveDb(db);
+      res.json(db.excursions);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
   // ==========================================
   // CARAVAN BOOKINGS ENDPOINTS
   // ==========================================

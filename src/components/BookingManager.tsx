@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { FileText, Clock, MessageSquare, CheckCircle, Sparkles, Printer, QrCode, Ticket, Camera } from 'lucide-react';
+import { FileText, Clock, MessageSquare, CheckCircle, Sparkles, Printer, QrCode, Ticket, Camera, FileSpreadsheet, Lock, Unlock, RefreshCw, ExternalLink } from 'lucide-react';
 import { Booking, Excursion } from '../types';
 import { useLanguage } from './LanguageContext';
 import ReviewSystem from './ReviewSystem';
@@ -10,6 +10,8 @@ import DetailedTicketCard from './DetailedTicketCard';
 import ExcursionFeedbackForm from './ExcursionFeedbackForm';
 import TicketScanner from './TicketScanner';
 import ExcursionExpenseCalculator from './ExcursionExpenseCalculator';
+import { initAuth, googleSignIn, getAccessToken } from '../lib/firebaseAuth';
+import { exportUserBookingsToNewSheet } from '../lib/googleSheets';
 
 const STATUS_CONFIG = {
   'Pending Oracle Approval': {
@@ -51,6 +53,77 @@ export default function BookingManager({ bookings, excursions, onCancelBooking, 
   const [isScannerOpen, setIsScannerOpen] = useState<boolean>(false);
   const [isManagerLoading, setIsManagerLoading] = useState<boolean>(true);
 
+  // Google Sheets integration state for individual traveller bookings export
+  const [gUser, setGUser] = useState<any>(null);
+  const [gToken, setGToken] = useState<string | null>(null);
+  const [isGAuthLoading, setIsGAuthLoading] = useState<boolean>(true);
+  const [isExporting, setIsExporting] = useState<boolean>(false);
+  const [exportStatus, setExportStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [exportMessage, setExportMessage] = useState<string>('');
+  const [exportedSheetUrl, setExportedSheetUrl] = useState<string>('');
+
+  // Handle Google OAuth initialization
+  useEffect(() => {
+    const unsubscribe = initAuth(
+      (user, token) => {
+        setGUser(user);
+        setGToken(token);
+        setIsGAuthLoading(false);
+      },
+      () => {
+        setGUser(null);
+        setGToken(null);
+        setIsGAuthLoading(false);
+      }
+    );
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
+
+  const handleExportUserBookings = async () => {
+    let tokenToUse = gToken;
+    if (!tokenToUse) {
+      try {
+        setIsExporting(true);
+        setExportStatus('idle');
+        setExportMessage(language === 'de' ? 'Autorisiere Google-Konto...' : language === 'pl' ? 'Autoryzowanie konta Google...' : 'Authorizing Google Account...');
+        const res = await googleSignIn();
+        if (res) {
+          tokenToUse = res.accessToken;
+          setGUser(res.user);
+          setGToken(res.accessToken);
+        } else {
+          throw new Error('Authentication cancelled or failed.');
+        }
+      } catch (authErr: any) {
+        setExportStatus('error');
+        setExportMessage(language === 'de' ? `Autorisierung fehlgeschlagen: ${authErr.message || authErr}` : language === 'pl' ? `Autoryzacja nie powiodła się: ${authErr.message || authErr}` : `Authorization failed: ${authErr.message || authErr}`);
+        setIsExporting(false);
+        return;
+      }
+    }
+
+    if (!tokenToUse) return;
+
+    setIsExporting(true);
+    setExportStatus('idle');
+    setExportMessage(language === 'de' ? 'Erstelle heilige Tabelle und exportiere Buchungsdaten...' : language === 'pl' ? 'Tworzenie arkusza i eksportowanie danych...' : 'Creating sacred spreadsheet and exporting booking data...');
+
+    try {
+      const { url } = await exportUserBookingsToNewSheet(tokenToUse, bookings);
+      setExportStatus('success');
+      setExportedSheetUrl(url);
+      setExportMessage(language === 'de' ? 'Expeditionen erfolgreich in Google Sheets exportiert!' : language === 'pl' ? 'Ekspedycje pomyślnie wyeksportowane do Google Sheets!' : 'Expeditions successfully exported to Google Sheets!');
+    } catch (err: any) {
+      console.error(err);
+      setExportStatus('error');
+      setExportMessage(language === 'de' ? `Export fehlgeschlagen: ${err.message || err}` : language === 'pl' ? `Eksport nie powiódł się: ${err.message || err}` : `Export failed: ${err.message || err}`);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsManagerLoading(false);
@@ -75,19 +148,75 @@ export default function BookingManager({ bookings, excursions, onCancelBooking, 
               {t('book_heading', 'Your Booked Expeditions')}
             </h3>
           </div>
-          <button
-            onClick={() => setIsScannerOpen(!isScannerOpen)}
-            className={`flex items-center justify-center gap-1.5 px-3 py-1.5 border rounded-lg text-xs font-mono uppercase tracking-wider transition-all cursor-pointer shadow-sm active:scale-95 ${
-              isScannerOpen
-                ? 'bg-red-500/10 border-red-500/40 text-red-400'
-                : 'bg-[#d4af37]/10 hover:bg-[#d4af37]/25 border-[#d4af37]/40 text-[#fbf5e6]'
-            }`}
-            title={language === 'de' ? 'Kamera öffnen, um Ticket-QR-Code zu scannen' : language === 'pl' ? 'Otwórz aparat, aby zeskanować kod QR biletu' : 'Open camera to scan ticket QR code'}
-          >
-            <Camera className="w-3.5 h-3.5" />
-            <span>{isScannerOpen ? (language === 'de' ? 'Scanner Schließen' : language === 'pl' ? 'Zamknij skaner' : 'Close Scanner') : (language === 'de' ? 'Ticket QR scannen' : language === 'pl' ? 'Skanuj kod QR biletu' : 'Scan Ticket QR')}</span>
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            {bookings.length > 0 && (
+              <button
+                disabled={isExporting}
+                onClick={handleExportUserBookings}
+                className="bg-[#d4af37]/10 hover:bg-[#d4af37]/25 border border-[#d4af37]/40 text-[#fbf5e6] flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono uppercase tracking-wider transition-all cursor-pointer shadow-sm active:scale-95 disabled:opacity-50"
+                title="Export your current booking logs to Google Sheets"
+              >
+                {isExporting ? (
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#d4af37]" />
+                ) : (
+                  <FileSpreadsheet className="w-3.5 h-3.5 text-[#d4af37]" />
+                )}
+                <span>
+                  {isExporting 
+                    ? (language === 'de' ? 'Exportiere...' : language === 'pl' ? 'Eksportowanie...' : 'Exporting...') 
+                    : (language === 'de' ? 'In Sheets Exportieren' : language === 'pl' ? 'Eksportuj do Sheets' : 'Export to Sheets')}
+                </span>
+              </button>
+            )}
+
+            <button
+              onClick={() => setIsScannerOpen(!isScannerOpen)}
+              className={`flex items-center justify-center gap-1.5 px-3 py-1.5 border rounded-lg text-xs font-mono uppercase tracking-wider transition-all cursor-pointer shadow-sm active:scale-95 ${
+                isScannerOpen
+                  ? 'bg-red-500/10 border-red-500/40 text-red-400'
+                  : 'bg-[#d4af37]/10 hover:bg-[#d4af37]/25 border-[#d4af37]/40 text-[#fbf5e6]'
+              }`}
+              title={language === 'de' ? 'Kamera öffnen, um Ticket-QR-Code zu scannen' : language === 'pl' ? 'Otwórz aparat, aby zeskanować kod QR biletu' : 'Open camera to scan ticket QR code'}
+            >
+              <Camera className="w-3.5 h-3.5" />
+              <span>{isScannerOpen ? (language === 'de' ? 'Scanner Schließen' : language === 'pl' ? 'Zamknij skaner' : 'Close Scanner') : (language === 'de' ? 'Ticket QR scannen' : language === 'pl' ? 'Skanuj kod QR biletu' : 'Scan Ticket QR')}</span>
+            </button>
+          </div>
         </div>
+
+        {/* Export Feedback Console */}
+        {(isExporting || exportStatus !== 'idle') && (
+          <div className={`p-4 rounded-xl border flex items-center justify-between gap-3 transition-all duration-300 ${
+            exportStatus === 'success'
+              ? 'bg-emerald-500/10 border-emerald-500/35 text-emerald-400'
+              : exportStatus === 'error'
+              ? 'bg-red-500/10 border-red-500/35 text-red-400'
+              : 'bg-amber-500/10 border-amber-500/35 text-amber-400'
+          }`}>
+            <div className="flex items-center gap-2.5">
+              {isExporting ? (
+                <RefreshCw className="w-4 h-4 animate-spin flex-shrink-0 text-[#d4af37]" />
+              ) : exportStatus === 'success' ? (
+                <CheckCircle className="w-4 h-4 flex-shrink-0 text-emerald-400" />
+              ) : (
+                <Lock className="w-4 h-4 flex-shrink-0 text-red-400" />
+              )}
+              <span className="text-xs font-mono leading-tight">{exportMessage}</span>
+            </div>
+            
+            {exportStatus === 'success' && exportedSheetUrl && (
+              <a
+                href={exportedSheetUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-300 border border-emerald-500/30 px-2.5 py-1 rounded text-[10px] font-mono uppercase tracking-widest transition-colors flex items-center gap-1 cursor-pointer"
+              >
+                <span>{language === 'de' ? 'Öffnen' : language === 'pl' ? 'Otwórz' : 'Open'}</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            )}
+          </div>
+        )}
 
         <AnimatePresence>
           {isScannerOpen && onVerifyCheckIn && (
