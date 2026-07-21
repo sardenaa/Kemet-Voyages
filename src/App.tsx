@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Compass, Sparkles, ScrollText, CalendarDays, Eye, BookOpen, Anchor, Map, Info, Sun, Moon } from 'lucide-react';
+import { Compass, Sparkles, ScrollText, CalendarDays, Eye, BookOpen, Anchor, Map, Info, Sun, Moon, Globe, ChevronDown } from 'lucide-react';
 import { Booking } from './types';
 import CartoucheGenerator from './components/CartoucheGenerator';
 import ScribeOracle from './components/ScribeOracle';
@@ -49,6 +49,20 @@ export default function App() {
   const [isAdminVerified, setIsAdminVerified] = useState<boolean>(() => {
     return localStorage.getItem('kemet_admin_verified') === 'true';
   });
+
+  const [isLangDropdownOpen, setIsLangDropdownOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!isLangDropdownOpen) return;
+    const handleOutsideClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('#language-dropdown-container')) {
+        setIsLangDropdownOpen(false);
+      }
+    };
+    window.addEventListener('click', handleOutsideClick);
+    return () => window.removeEventListener('click', handleOutsideClick);
+  }, [isLangDropdownOpen]);
 
   // Sync with secure server database on mount and when admin status changes
   useEffect(() => {
@@ -586,52 +600,55 @@ export default function App() {
                   );
                 })}
 
-                {/* Language Toggle Button */}
-                <div className="flex bg-[#241a10]/60 border border-[#d4af37]/40 rounded-lg p-0.5" id="language-toggle">
+                {/* Pharaonic-styled compact Language Dropdown */}
+                <div className="relative" id="language-dropdown-container">
                   <button
-                    onClick={() => setLanguage('en')}
-                    className={`px-2 py-1 rounded text-[9px] font-mono font-bold transition-all cursor-pointer ${
-                      language === 'en'
-                        ? 'bg-[#d4af37] text-stone-950 shadow-sm font-extrabold'
-                        : 'text-stone-400 hover:text-stone-200'
-                    }`}
-                    title="English"
+                    onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)}
+                    className="px-3 py-1.5 rounded-lg border font-mono text-xs font-bold transition-all duration-300 cursor-pointer uppercase flex items-center gap-2 bg-[#241a10]/60 text-[#e6c280] border-[#d4af37]/40 hover:border-[#d4af37]"
+                    title="Select Language / Sprache wählen / Wybierz język / Vybrat jazyk"
                   >
-                    EN
+                    <span className="text-[#d4af37] text-sm animate-pulse">𓂀</span>
+                    <span className="tracking-wider">
+                      {language === 'en' ? 'EN' : language === 'de' ? 'DE' : language === 'pl' ? 'PL' : 'CS'}
+                    </span>
+                    <ChevronDown className={`w-3 h-3 text-[#d4af37] transition-transform duration-300 ${isLangDropdownOpen ? 'rotate-180' : 'rotate-0'}`} />
                   </button>
-                  <button
-                    onClick={() => setLanguage('de')}
-                    className={`px-2 py-1 rounded text-[9px] font-mono font-bold transition-all cursor-pointer ${
-                      language === 'de'
-                        ? 'bg-[#d4af37] text-stone-950 shadow-sm font-extrabold'
-                        : 'text-stone-400 hover:text-stone-200'
-                    }`}
-                    title="Deutsch"
-                  >
-                    DE
-                  </button>
-                  <button
-                    onClick={() => setLanguage('pl')}
-                    className={`px-2 py-1 rounded text-[9px] font-mono font-bold transition-all cursor-pointer ${
-                      language === 'pl'
-                        ? 'bg-[#d4af37] text-stone-950 shadow-sm font-extrabold'
-                        : 'text-stone-400 hover:text-stone-200'
-                    }`}
-                    title="Polski"
-                  >
-                    PL
-                  </button>
-                  <button
-                    onClick={() => setLanguage('cs')}
-                    className={`px-2 py-1 rounded text-[9px] font-mono font-bold transition-all cursor-pointer ${
-                      language === 'cs'
-                        ? 'bg-[#d4af37] text-stone-950 shadow-sm font-extrabold'
-                        : 'text-stone-400 hover:text-stone-200'
-                    }`}
-                    title="Čeština"
-                  >
-                    CS
-                  </button>
+
+                  <AnimatePresence>
+                    {isLangDropdownOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                        transition={{ duration: 0.15, ease: 'easeOut' }}
+                        className="absolute right-0 mt-2 w-36 bg-[#1a120b] border border-[#d4af37]/50 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.5)] overflow-hidden z-50 py-1 font-mono text-xs backdrop-blur-md"
+                      >
+                        {[
+                          { code: 'en', label: 'EN', fullName: 'English', glyph: '𓎛' },
+                          { code: 'de', label: 'DE', fullName: 'Deutsch', glyph: '𓐠' },
+                          { code: 'pl', label: 'PL', fullName: 'Polski', glyph: '𓃮' },
+                          { code: 'cs', label: 'CS', fullName: 'Čeština', glyph: '𓅱' }
+                        ].map((item) => (
+                          <button
+                            key={item.code}
+                            onClick={() => {
+                              setLanguage(item.code as any);
+                              setIsLangDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 flex items-center gap-2 transition-all cursor-pointer ${
+                              language === item.code
+                                ? 'bg-[#d4af37]/20 text-[#d4af37] font-bold'
+                                : 'text-stone-300 hover:bg-[#d4af37]/10 hover:text-white'
+                            }`}
+                          >
+                            <span className="text-[#d4af37] text-sm">{item.glyph}</span>
+                            <span className="font-semibold text-[11px]">{item.fullName}</span>
+                            <span className="ml-auto text-[9px] text-stone-500 font-bold">{item.label}</span>
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {/* Theme Toggle Button */}
