@@ -516,12 +516,26 @@ export default function App() {
             <div className="flex flex-col lg:flex-row justify-between items-center gap-4">
               
               {/* Logo */}
-              <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                <span className="text-[#d4af37] text-2xl font-serif">𓋹</span>
-                <span className="font-serif font-bold text-[#e6c280] tracking-widest uppercase text-base">
+              <motion.div
+                whileHover="hover"
+                whileTap="tap"
+                className="flex items-center gap-2 cursor-pointer group"
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              >
+                <motion.span
+                  variants={{
+                    hover: { scale: 1.35, rotate: 360, y: -2 },
+                    tap: { scale: 0.85 }
+                  }}
+                  transition={{ type: 'spring', stiffness: 250, damping: 15 }}
+                  className="text-[#d4af37] text-2xl font-serif inline-block"
+                >
+                  𓋹
+                </motion.span>
+                <span className="font-serif font-bold text-[#e6c280] tracking-widest uppercase text-base group-hover:text-[#d4af37] transition-all duration-300">
                   KEMET TOURS
                 </span>
-              </div>
+              </motion.div>
 
               {/* Anchors & Toggle */}
               <div className="flex flex-wrap items-center justify-center gap-4 md:gap-5 text-xs font-mono uppercase tracking-widest">
@@ -535,14 +549,36 @@ export default function App() {
                   { label: t('nav_bookings', '𓎬 My Bookings'), target: 'ledger-section' }
                 ].map((item) => {
                   const isFaqActive = item.target === 'faq-section' && activePage === 'faq';
+                  const text = item.label;
+                  const firstSpaceIdx = text.indexOf(' ');
+                  const glyph = firstSpaceIdx !== -1 ? text.substring(0, firstSpaceIdx) : '';
+                  const rest = firstSpaceIdx !== -1 ? text.substring(firstSpaceIdx + 1) : text;
+                  
                   return (
-                    <button
+                    <motion.button
                       key={item.target}
                       onClick={() => scrollToSection(item.target)}
-                      className={`${isFaqActive ? 'text-[#d4af37] underline underline-offset-4 font-bold' : 'text-stone-400'} hover:text-[#d4af37] hover:underline underline-offset-4 transition-all duration-300 cursor-pointer`}
+                      whileHover="hover"
+                      whileTap="tap"
+                      className={`${isFaqActive ? 'text-[#d4af37] font-bold' : 'text-stone-400'} hover:text-[#d4af37] transition-all duration-300 cursor-pointer flex items-center gap-1.5`}
                     >
-                      {item.label}
-                    </button>
+                      {glyph && (
+                        <motion.span
+                          className="text-[#d4af37] text-sm inline-block"
+                          variants={{
+                            hover: { scale: 1.35, rotate: 18, y: -2 },
+                            tap: { scale: 0.9, rotate: -15 }
+                          }}
+                          animate={isFaqActive ? { scale: [1, 1.15, 1], y: [0, -1, 0] } : {}}
+                          transition={{ type: 'spring', stiffness: 450, damping: 10 }}
+                        >
+                          {glyph}
+                        </motion.span>
+                      )}
+                      <span className={`${isFaqActive ? 'underline underline-offset-4' : 'hover:underline hover:underline-offset-4'}`}>
+                        {rest}
+                      </span>
+                    </motion.button>
                   );
                 })}
 

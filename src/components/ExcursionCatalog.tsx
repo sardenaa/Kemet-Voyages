@@ -993,6 +993,13 @@ Please seal my booking with the High Priest approval!`;
                           <span className="col-span-2 text-stone-200">{ex1.duration}</span>
                         </div>
                         <div className="grid grid-cols-3 text-xs border-b border-[#d4af37]/10 pb-2 font-mono">
+                          <span className="text-stone-500 uppercase">{language === 'de' ? 'Bewertung' : language === 'pl' ? 'Ocena' : 'Rating'}</span>
+                          <span className="col-span-2 text-[#d4af37] font-bold flex items-center gap-1">
+                            <span className="text-amber-400">★</span>
+                            <span>{ex1.rating ? ex1.rating.toFixed(1) : '0.0'} ({reviews.filter((r: any) => r.excursionId === ex1.id).length})</span>
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-3 text-xs border-b border-[#d4af37]/10 pb-2 font-mono">
                           <span className="text-stone-500 uppercase">{language === 'de' ? 'Tribut' : language === 'pl' ? 'Cena' : 'Price'}</span>
                           <span className="col-span-2 text-amber-400 font-bold">${ex1.price} Gold</span>
                         </div>
@@ -1058,6 +1065,13 @@ Please seal my booking with the High Priest approval!`;
                         <div className="grid grid-cols-3 text-xs border-b border-[#d4af37]/10 pb-2 font-mono">
                           <span className="text-stone-500 uppercase">{language === 'de' ? 'Dauer' : language === 'pl' ? 'Czas' : 'Duration'}</span>
                           <span className="col-span-2 text-stone-200">{ex2.duration}</span>
+                        </div>
+                        <div className="grid grid-cols-3 text-xs border-b border-[#d4af37]/10 pb-2 font-mono">
+                          <span className="text-stone-500 uppercase">{language === 'de' ? 'Bewertung' : language === 'pl' ? 'Ocena' : 'Rating'}</span>
+                          <span className="col-span-2 text-[#d4af37] font-bold flex items-center gap-1">
+                            <span className="text-amber-400">★</span>
+                            <span>{ex2.rating ? ex2.rating.toFixed(1) : '0.0'} ({reviews.filter((r: any) => r.excursionId === ex2.id).length})</span>
+                          </span>
                         </div>
                         <div className="grid grid-cols-3 text-xs border-b border-[#d4af37]/10 pb-2 font-mono">
                           <span className="text-stone-500 uppercase">{language === 'de' ? 'Tribut' : language === 'pl' ? 'Cena' : 'Price'}</span>
@@ -1212,10 +1226,19 @@ Please seal my booking with the High Priest approval!`;
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#140f0a] via-transparent to-transparent"></div>
                 
-                {/* Category Tag */}
-                <span className="absolute top-4 left-4 bg-[#140f0a]/80 backdrop-blur-md text-[#d4af37] border border-[#d4af37]/40 rounded-full px-3 py-1 text-[10px] font-mono uppercase tracking-widest">
-                  {ex.category === 'diving' ? (language === 'de' ? '𓆛 Tauchen' : language === 'pl' ? '𓆛 Nurkowanie' : '𓆛 Diving') : ex.category === 'safari' ? (language === 'de' ? '𓅓 Safari' : language === 'pl' ? '𓅓 Safari' : '𓅓 Safari') : ex.category === 'history' ? (language === 'de' ? '𓉐 Geschichte' : language === 'pl' ? '𓉐 Historia' : '𓉐 History') : ex.category === 'boat' ? (language === 'de' ? '𓊟 Bootsfahrt' : language === 'pl' ? '𓊟 Rejs statkiem' : '𓊟 Boat Trip') : (language === 'de' ? '𓊡 Schnellboot' : language === 'pl' ? '𓊡 Motorówka' : '𓊡 Speedboat')}
-                </span>
+                {/* Category & Rating Badges */}
+                <div className="absolute top-4 left-4 flex flex-col gap-1.5 items-start z-10">
+                  <span className="bg-[#140f0a]/85 backdrop-blur-md text-[#d4af37] border border-[#d4af37]/40 rounded-full px-3 py-1 text-[10px] font-mono uppercase tracking-widest">
+                    {ex.category === 'diving' ? (language === 'de' ? '𓆛 Tauchen' : language === 'pl' ? '𓆛 Nurkowanie' : '𓆛 Diving') : ex.category === 'safari' ? (language === 'de' ? '𓅓 Safari' : language === 'pl' ? '𓅓 Safari' : '𓅓 Safari') : ex.category === 'history' ? (language === 'de' ? '𓉐 Geschichte' : language === 'pl' ? '𓉐 Historia' : '𓉐 History') : ex.category === 'boat' ? (language === 'de' ? '𓊟 Bootsfahrt' : language === 'pl' ? '𓊟 Rejs statkiem' : '𓊟 Boat Trip') : (language === 'de' ? '𓊡 Schnellboot' : language === 'pl' ? '𓊡 Motorówka' : '𓊡 Speedboat')}
+                  </span>
+                  
+                  {ex.rating >= 4.9 && (
+                    <span className="bg-gradient-to-r from-amber-400 to-amber-500 text-stone-950 font-sans font-extrabold rounded-full px-2.5 py-0.5 text-[9px] uppercase tracking-wider shadow-lg flex items-center gap-1">
+                      <Star className="w-2.5 h-2.5 fill-stone-950 text-stone-950" />
+                      <span>{language === 'de' ? 'Beliebt' : language === 'pl' ? 'Popularne' : 'Popular'}</span>
+                    </span>
+                  )}
+                </div>
 
                 {/* Compare Checkbox Selection Overlay */}
                 {isComparisonMode && (
@@ -1277,6 +1300,9 @@ Please seal my booking with the High Priest approval!`;
                       </div>
                       <span className="text-[#d4af37] font-mono font-bold text-xs group-hover/rating:text-amber-200 ml-0.5 transition-colors">
                         {ex.rating ? ex.rating.toFixed(1) : '0.0'}
+                      </span>
+                      <span className="text-stone-500 text-[10px] font-mono group-hover/rating:text-stone-400 transition-colors">
+                        ({reviews.filter((r: any) => r.excursionId === ex.id).length})
                       </span>
                       
                       {/* Floating tooltip invitation */}

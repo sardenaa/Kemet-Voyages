@@ -30,41 +30,83 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
       <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#140f0c]/95 border-t border-[#d4af37]/35 backdrop-blur-lg px-4 py-2.5 flex justify-around items-center md:hidden shadow-[0_-8px_30px_rgba(0,0,0,0.8)] pb-safe no-print">
         
         {/* Expeditions button */}
-        <button
+        <motion.button
+          whileHover="hover"
+          whileTap="tap"
           onClick={() => handleNavClick('excursions-section')}
-          className={`flex flex-col items-center gap-1 ${activePage === 'home' ? 'text-[#d4af37]' : 'text-stone-400'} hover:text-[#d4af37] active:text-[#d4af37] transition-all cursor-pointer flex-1`}
+          className={`flex flex-col items-center gap-1 ${activePage === 'home' ? 'text-[#d4af37]' : 'text-stone-400'} hover:text-[#d4af37] transition-all cursor-pointer flex-1`}
         >
-          <Compass className="w-5 h-5" />
+          <motion.div
+            variants={{
+              hover: { scale: 1.25, rotate: 12, y: -2 },
+              tap: { scale: 0.9, rotate: -8 }
+            }}
+            animate={activePage === 'home' ? { scale: 1.15, y: -1 } : { scale: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 12 }}
+          >
+            <Compass className="w-5 h-5" />
+          </motion.div>
           <span className="text-[9px] font-mono uppercase tracking-widest font-medium">Expeditions</span>
-        </button>
+        </motion.button>
 
         {/* FAQ button */}
-        <button
+        <motion.button
+          whileHover="hover"
+          whileTap="tap"
           onClick={() => handleNavClick('faq-section')}
-          className={`flex flex-col items-center gap-1 ${activePage === 'faq' ? 'text-[#d4af37]' : 'text-stone-400'} hover:text-[#d4af37] active:text-[#d4af37] transition-all cursor-pointer flex-1`}
+          className={`flex flex-col items-center gap-1 ${activePage === 'faq' ? 'text-[#d4af37]' : 'text-stone-400'} hover:text-[#d4af37] transition-all cursor-pointer flex-1`}
         >
-          <HelpCircle className="w-5 h-5" />
+          <motion.div
+            variants={{
+              hover: { scale: 1.25, rotate: -12, y: -2 },
+              tap: { scale: 0.9, rotate: 8 }
+            }}
+            animate={activePage === 'faq' ? { scale: 1.15, y: -1 } : { scale: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 12 }}
+          >
+            <HelpCircle className="w-5 h-5" />
+          </motion.div>
           <span className="text-[9px] font-mono uppercase tracking-widest font-medium">FAQs</span>
-        </button>
+        </motion.button>
 
         {/* Ledger button */}
-        <button
+        <motion.button
+          whileHover="hover"
+          whileTap="tap"
           onClick={() => handleNavClick('ledger-section')}
-          className="flex flex-col items-center gap-1 text-stone-400 hover:text-[#d4af37] active:text-[#d4af37] transition-all cursor-pointer flex-1"
+          className="flex flex-col items-center gap-1 text-stone-400 hover:text-[#d4af37] transition-all cursor-pointer flex-1"
         >
-          <FileText className="w-5 h-5" />
+          <motion.div
+            variants={{
+              hover: { scale: 1.25, rotate: 8, y: -2 },
+              tap: { scale: 0.9, rotate: -8 }
+            }}
+            transition={{ type: 'spring', stiffness: 400, damping: 12 }}
+          >
+            <FileText className="w-5 h-5" />
+          </motion.div>
           <span className="text-[9px] font-mono uppercase tracking-widest font-medium">Bookings</span>
-        </button>
+        </motion.button>
 
         {/* More/Drawer Trigger button */}
-        <button
+        <motion.button
+          whileHover="hover"
+          whileTap="tap"
           onClick={() => setIsDrawerOpen(true)}
           className="flex flex-col items-center gap-1 text-[#d4af37] hover:text-amber-300 transition-all cursor-pointer flex-1 relative"
         >
           <div className="absolute -top-1 right-8 w-2 h-2 rounded-full bg-[#d4af37] animate-pulse" />
-          <Menu className="w-5 h-5" />
+          <motion.div
+            variants={{
+              hover: { scale: 1.25, rotate: 90, y: -1 },
+              tap: { scale: 0.9, rotate: -45 }
+            }}
+            transition={{ type: 'spring', stiffness: 350, damping: 15 }}
+          >
+            <Menu className="w-5 h-5" />
+          </motion.div>
           <span className="text-[9px] font-mono uppercase tracking-widest font-bold">Menu</span>
-        </button>
+        </motion.button>
 
       </div>
 
@@ -116,80 +158,152 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
               <div className="grid grid-cols-2 gap-3">
                 
                 {/* 1. Expeditions */}
-                <button
+                <motion.button
+                  whileHover="hover"
+                  whileTap="tap"
                   onClick={() => handleNavClick('excursions-section')}
                   className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-[#1c1510] border border-[#d4af37]/15 hover:border-[#d4af37]/45 text-left transition-all cursor-pointer"
                 >
-                  <Compass className="w-5 h-5 text-[#d4af37]" />
+                  <motion.div
+                    variants={{
+                      hover: { scale: 1.3, rotate: 15, y: -2 },
+                      tap: { scale: 0.85, rotate: -10 }
+                    }}
+                    transition={{ type: 'spring', stiffness: 450, damping: 10 }}
+                  >
+                    <Compass className="w-5 h-5 text-[#d4af37]" />
+                  </motion.div>
                   <span className="font-serif text-xs font-bold text-[#e6c280] uppercase">Expeditions</span>
                   <span className="text-[9px] font-sans text-stone-500">Traverse deep Sea & Dunes</span>
-                </button>
+                </motion.button>
 
                 {/* 1.5. Ancient Map */}
-                <button
+                <motion.button
+                  whileHover="hover"
+                  whileTap="tap"
                   onClick={() => handleNavClick('map-section')}
                   className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-[#1c1510] border border-[#d4af37]/15 hover:border-[#d4af37]/45 text-left transition-all cursor-pointer"
                 >
-                  <Map className="w-5 h-5 text-[#d4af37]" />
+                  <motion.div
+                    variants={{
+                      hover: { scale: 1.3, rotate: 10, y: -2 },
+                      tap: { scale: 0.85, rotate: -8 }
+                    }}
+                    transition={{ type: 'spring', stiffness: 450, damping: 10 }}
+                  >
+                    <Map className="w-5 h-5 text-[#d4af37]" />
+                  </motion.div>
                   <span className="font-serif text-xs font-bold text-[#e6c280] uppercase">Ancient Map</span>
                   <span className="text-[9px] font-sans text-stone-500">Interactive geography & lore</span>
-                </button>
+                </motion.button>
 
                 {/* 2. Scribe Oracle */}
-                <button
+                <motion.button
+                  whileHover="hover"
+                  whileTap="tap"
                   onClick={() => handleNavClick('scribe-section')}
                   className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-[#1c1510] border border-[#d4af37]/15 hover:border-[#d4af37]/45 text-left transition-all cursor-pointer"
                 >
-                  <MessageSquare className="w-5 h-5 text-[#d4af37]" />
+                  <motion.div
+                    variants={{
+                      hover: { scale: 1.3, rotate: -12, y: -2 },
+                      tap: { scale: 0.85, rotate: 8 }
+                    }}
+                    transition={{ type: 'spring', stiffness: 450, damping: 10 }}
+                  >
+                    <MessageSquare className="w-5 h-5 text-[#d4af37]" />
+                  </motion.div>
                   <span className="font-serif text-xs font-bold text-[#e6c280] uppercase">AI Assistant</span>
                   <span className="text-[9px] font-sans text-stone-500">Chat with Sennedjem</span>
-                </button>
+                </motion.button>
 
                 {/* 3. Immersive Galleries */}
-                <button
+                <motion.button
+                  whileHover="hover"
+                  whileTap="tap"
                   onClick={() => handleNavClick('gallery-section')}
                   className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-[#1c1510] border border-[#d4af37]/15 hover:border-[#d4af37]/45 text-left transition-all cursor-pointer"
                 >
-                  <Image className="w-5 h-5 text-[#d4af37]" />
+                  <motion.div
+                    variants={{
+                      hover: { scale: 1.3, rotate: 8, y: -2 },
+                      tap: { scale: 0.85, rotate: -8 }
+                    }}
+                    transition={{ type: 'spring', stiffness: 450, damping: 10 }}
+                  >
+                    <Image className="w-5 h-5 text-[#d4af37]" />
+                  </motion.div>
                   <span className="font-serif text-xs font-bold text-[#e6c280] uppercase">Galleries</span>
                   <span className="text-[9px] font-sans text-stone-500">Visual Egyptology guide</span>
-                </button>
+                </motion.button>
 
                 {/* 4. Cartouche Scribe */}
-                <button
+                <motion.button
+                  whileHover="hover"
+                  whileTap="tap"
                   onClick={() => handleNavClick('cartouche-section')}
                   className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-[#1c1510] border border-[#d4af37]/15 hover:border-[#d4af37]/45 text-left transition-all cursor-pointer"
                 >
-                  <Award className="w-5 h-5 text-[#d4af37]" />
+                  <motion.div
+                    variants={{
+                      hover: { scale: 1.3, rotate: 20, y: -2 },
+                      tap: { scale: 0.85, rotate: -15 }
+                    }}
+                    transition={{ type: 'spring', stiffness: 450, damping: 10 }}
+                  >
+                    <Award className="w-5 h-5 text-[#d4af37]" />
+                  </motion.div>
                   <span className="font-serif text-xs font-bold text-[#e6c280] uppercase">Cartouche</span>
                   <span className="text-[9px] font-sans text-stone-500">Write your name in hieroglyphs</span>
-                </button>
+                </motion.button>
 
                 {/* 5. FAQ Wisdom */}
-                <button
+                <motion.button
+                  whileHover="hover"
+                  whileTap="tap"
                   onClick={() => handleNavClick('faq-section')}
                   className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-[#1c1510] border border-[#d4af37]/15 hover:border-[#d4af37]/45 text-left transition-all cursor-pointer"
                 >
-                  <HelpCircle className="w-5 h-5 text-[#d4af37]" />
+                  <motion.div
+                    variants={{
+                      hover: { scale: 1.3, rotate: -10, y: -2 },
+                      tap: { scale: 0.85, rotate: 10 }
+                    }}
+                    transition={{ type: 'spring', stiffness: 450, damping: 10 }}
+                  >
+                    <HelpCircle className="w-5 h-5 text-[#d4af37]" />
+                  </motion.div>
                   <span className="font-serif text-xs font-bold text-[#e6c280] uppercase">Help & FAQs</span>
                   <span className="text-[9px] font-sans text-stone-500">Gear, seasons, & health tips</span>
-                </button>
+                </motion.button>
 
                 {/* 6. Ledger ledger */}
-                <button
+                <motion.button
+                  whileHover="hover"
+                  whileTap="tap"
                   onClick={() => handleNavClick('ledger-section')}
                   className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-[#1c1510] border border-[#d4af37]/15 hover:border-[#d4af37]/45 text-left transition-all cursor-pointer"
                 >
-                  <FileText className="w-5 h-5 text-[#d4af37]" />
+                  <motion.div
+                    variants={{
+                      hover: { scale: 1.3, rotate: 12, y: -2 },
+                      tap: { scale: 0.85, rotate: -8 }
+                    }}
+                    transition={{ type: 'spring', stiffness: 450, damping: 10 }}
+                  >
+                    <FileText className="w-5 h-5 text-[#d4af37]" />
+                  </motion.div>
                   <span className="font-serif text-xs font-bold text-[#e6c280] uppercase">My Bookings</span>
                   <span className="text-[9px] font-sans text-stone-500">View trip statuses & details</span>
-                </button>
+                </motion.button>
 
               </div>
 
               {/* WhatsApp Quick Chat Integration */}
               <div className="pt-1">
-                <button
+                <motion.button
+                  whileHover="hover"
+                  whileTap="tap"
                   onClick={() => {
                     const msg = "𓂀 Kemet Tours - Powered by Mas international Agency 𓂀\n\nGreetings Scribe! I am visiting your temple dashboard and would like to ask a general question about excursions, bookings, or custom travel plans!";
                     const url = `https://wa.me/201202181834?text=${encodeURIComponent(msg)}`;
@@ -197,42 +311,79 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
                   }}
                   className="w-full py-3.5 px-4 rounded-xl border font-mono text-xs uppercase tracking-widest font-bold transition-all duration-300 cursor-pointer flex items-center justify-center gap-2 bg-emerald-950/20 text-emerald-400 border-emerald-500/35 hover:border-emerald-500 hover:bg-emerald-950/40"
                 >
-                  <span className="text-emerald-400 text-sm">𓍢</span>
+                  <motion.span
+                    className="text-emerald-400 text-sm inline-block"
+                    variants={{
+                      hover: { scale: 1.4, rotate: -25 },
+                      tap: { scale: 0.85, rotate: 10 }
+                    }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                  >
+                    𓍢
+                  </motion.span>
                   <span>WhatsApp Chat (+201202181834)</span>
-                </button>
+                </motion.button>
               </div>
 
               {/* Theme Toggle (Mobile Drawer) */}
               <div className="pt-2">
-                <button
+                <motion.button
+                  whileHover="hover"
+                  whileTap="tap"
                   onClick={() => setTheme(theme === 'desert' ? 'nile' : 'desert')}
                   className="w-full py-3.5 px-4 rounded-xl border font-mono text-xs uppercase tracking-widest font-bold transition-all duration-300 cursor-pointer flex items-center justify-center gap-2 bg-[#241a10]/60 text-[#e6c280] border-[#d4af37]/35 hover:border-[#d4af37]"
                 >
                   {theme === 'desert' ? (
                     <>
-                      <Sun className="w-4 h-4 text-amber-400" />
+                      <motion.div
+                        variants={{
+                          hover: { scale: 1.3, rotate: 45 },
+                          tap: { scale: 0.85, rotate: -15 }
+                        }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                      >
+                        <Sun className="w-4 h-4 text-amber-400" />
+                      </motion.div>
                       <span>Desert Sun Theme</span>
                     </>
                   ) : (
                     <>
-                      <Moon className="w-4 h-4 text-sky-400" />
+                      <motion.div
+                        variants={{
+                          hover: { scale: 1.3, rotate: 30 },
+                          tap: { scale: 0.85, rotate: -15 }
+                        }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                      >
+                        <Moon className="w-4 h-4 text-sky-400" />
+                      </motion.div>
                       <span>Nile Midnight Theme</span>
                     </>
                   )}
-                </button>
+                </motion.button>
               </div>
 
               {/* Admin Portal Toggle (High Priest CRM console) */}
               <div className="pt-2 border-t border-stone-800/85">
-                <button
+                <motion.button
+                  whileHover="hover"
+                  whileTap="tap"
                   onClick={handleAdminToggle}
                   className="w-full py-3.5 px-4 rounded-xl border font-mono text-xs uppercase tracking-widest font-bold transition-all duration-300 cursor-pointer flex items-center justify-center gap-2 bg-[#d4af37]/10 text-[#e6c280] border-[#d4af37]/35 hover:bg-[#d4af37]/20"
                 >
-                  <ShieldAlert className="w-4 h-4 text-[#d4af37]" />
+                  <motion.div
+                    variants={{
+                      hover: { scale: 1.3, rotate: 15 },
+                      tap: { scale: 0.85, rotate: -15 }
+                    }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                  >
+                    <ShieldAlert className="w-4 h-4 text-[#d4af37]" />
+                  </motion.div>
                   <span>
                     {isAdminMode ? '𓀚 Exit Manager Mode' : '𓋹 Manager Console (CRM)'}
                   </span>
-                </button>
+                </motion.button>
               </div>
 
               {/* Small lore quote in drawer footer */}
