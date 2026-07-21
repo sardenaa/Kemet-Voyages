@@ -8,7 +8,7 @@ interface MobileBottomNavProps {
   setIsAdminMode: (mode: boolean) => void;
   theme: 'desert' | 'nile';
   setTheme: (theme: 'desert' | 'nile') => void;
-  activePage: 'home' | 'faq';
+  activePage: string;
 }
 
 export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdminMode, theme, setTheme, activePage }: MobileBottomNavProps) {
@@ -34,14 +34,14 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
           whileHover="hover"
           whileTap="tap"
           onClick={() => handleNavClick('excursions-section')}
-          className={`flex flex-col items-center gap-1 ${activePage === 'home' ? 'text-[#d4af37]' : 'text-stone-400'} hover:text-[#d4af37] transition-all cursor-pointer flex-1`}
+          className={`flex flex-col items-center gap-1 ${activePage === 'tours' ? 'text-[#d4af37]' : 'text-stone-400'} hover:text-[#d4af37] transition-all cursor-pointer flex-1`}
         >
           <motion.div
             variants={{
               hover: { scale: 1.25, rotate: 12, y: -2 },
               tap: { scale: 0.9, rotate: -8 }
             }}
-            animate={activePage === 'home' ? { scale: 1.15, y: -1 } : { scale: 1, y: 0 }}
+            animate={activePage === 'tours' ? { scale: 1.15, y: -1 } : { scale: 1, y: 0 }}
             transition={{ type: 'spring', stiffness: 400, damping: 12 }}
           >
             <Compass className="w-5 h-5" />
@@ -74,13 +74,14 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
           whileHover="hover"
           whileTap="tap"
           onClick={() => handleNavClick('ledger-section')}
-          className="flex flex-col items-center gap-1 text-stone-400 hover:text-[#d4af37] transition-all cursor-pointer flex-1"
+          className={`flex flex-col items-center gap-1 ${activePage === 'bookings' ? 'text-[#d4af37]' : 'text-stone-400'} hover:text-[#d4af37] transition-all cursor-pointer flex-1`}
         >
           <motion.div
             variants={{
               hover: { scale: 1.25, rotate: 8, y: -2 },
               tap: { scale: 0.9, rotate: -8 }
             }}
+            animate={activePage === 'bookings' ? { scale: 1.15, y: -1 } : { scale: 1, y: 0 }}
             transition={{ type: 'spring', stiffness: 400, damping: 12 }}
           >
             <FileText className="w-5 h-5" />
@@ -162,7 +163,11 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
                   whileHover="hover"
                   whileTap="tap"
                   onClick={() => handleNavClick('excursions-section')}
-                  className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-[#1c1510] border border-[#d4af37]/15 hover:border-[#d4af37]/45 text-left transition-all cursor-pointer"
+                  className={`flex flex-col items-start gap-2 p-4 rounded-2xl text-left transition-all cursor-pointer border ${
+                    activePage === 'tours'
+                      ? 'bg-[#2a2016]/80 border-[#d4af37] shadow-[0_0_12px_rgba(212,175,55,0.15)]'
+                      : 'bg-[#1c1510] border-[#d4af37]/15 hover:border-[#d4af37]/45'
+                  }`}
                 >
                   <motion.div
                     variants={{
@@ -182,7 +187,11 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
                   whileHover="hover"
                   whileTap="tap"
                   onClick={() => handleNavClick('map-section')}
-                  className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-[#1c1510] border border-[#d4af37]/15 hover:border-[#d4af37]/45 text-left transition-all cursor-pointer"
+                  className={`flex flex-col items-start gap-2 p-4 rounded-2xl text-left transition-all cursor-pointer border ${
+                    activePage === 'map'
+                      ? 'bg-[#2a2016]/80 border-[#d4af37] shadow-[0_0_12px_rgba(212,175,55,0.15)]'
+                      : 'bg-[#1c1510] border-[#d4af37]/15 hover:border-[#d4af37]/45'
+                  }`}
                 >
                   <motion.div
                     variants={{
@@ -202,7 +211,11 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
                   whileHover="hover"
                   whileTap="tap"
                   onClick={() => handleNavClick('scribe-section')}
-                  className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-[#1c1510] border border-[#d4af37]/15 hover:border-[#d4af37]/45 text-left transition-all cursor-pointer"
+                  className={`flex flex-col items-start gap-2 p-4 rounded-2xl text-left transition-all cursor-pointer border ${
+                    activePage === 'scribe'
+                      ? 'bg-[#2a2016]/80 border-[#d4af37] shadow-[0_0_12px_rgba(212,175,55,0.15)]'
+                      : 'bg-[#1c1510] border-[#d4af37]/15 hover:border-[#d4af37]/45'
+                  }`}
                 >
                   <motion.div
                     variants={{
@@ -222,7 +235,11 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
                   whileHover="hover"
                   whileTap="tap"
                   onClick={() => handleNavClick('gallery-section')}
-                  className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-[#1c1510] border border-[#d4af37]/15 hover:border-[#d4af37]/45 text-left transition-all cursor-pointer"
+                  className={`flex flex-col items-start gap-2 p-4 rounded-2xl text-left transition-all cursor-pointer border ${
+                    activePage === 'gallery'
+                      ? 'bg-[#2a2016]/80 border-[#d4af37] shadow-[0_0_12px_rgba(212,175,55,0.15)]'
+                      : 'bg-[#1c1510] border-[#d4af37]/15 hover:border-[#d4af37]/45'
+                  }`}
                 >
                   <motion.div
                     variants={{
@@ -242,7 +259,11 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
                   whileHover="hover"
                   whileTap="tap"
                   onClick={() => handleNavClick('cartouche-section')}
-                  className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-[#1c1510] border border-[#d4af37]/15 hover:border-[#d4af37]/45 text-left transition-all cursor-pointer"
+                  className={`flex flex-col items-start gap-2 p-4 rounded-2xl text-left transition-all cursor-pointer border ${
+                    activePage === 'cartouche'
+                      ? 'bg-[#2a2016]/80 border-[#d4af37] shadow-[0_0_12px_rgba(212,175,55,0.15)]'
+                      : 'bg-[#1c1510] border-[#d4af37]/15 hover:border-[#d4af37]/45'
+                  }`}
                 >
                   <motion.div
                     variants={{
@@ -262,7 +283,11 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
                   whileHover="hover"
                   whileTap="tap"
                   onClick={() => handleNavClick('faq-section')}
-                  className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-[#1c1510] border border-[#d4af37]/15 hover:border-[#d4af37]/45 text-left transition-all cursor-pointer"
+                  className={`flex flex-col items-start gap-2 p-4 rounded-2xl text-left transition-all cursor-pointer border ${
+                    activePage === 'faq'
+                      ? 'bg-[#2a2016]/80 border-[#d4af37] shadow-[0_0_12px_rgba(212,175,55,0.15)]'
+                      : 'bg-[#1c1510] border-[#d4af37]/15 hover:border-[#d4af37]/45'
+                  }`}
                 >
                   <motion.div
                     variants={{
@@ -282,7 +307,11 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
                   whileHover="hover"
                   whileTap="tap"
                   onClick={() => handleNavClick('ledger-section')}
-                  className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-[#1c1510] border border-[#d4af37]/15 hover:border-[#d4af37]/45 text-left transition-all cursor-pointer"
+                  className={`flex flex-col items-start gap-2 p-4 rounded-2xl text-left transition-all cursor-pointer border ${
+                    activePage === 'bookings'
+                      ? 'bg-[#2a2016]/80 border-[#d4af37] shadow-[0_0_12px_rgba(212,175,55,0.15)]'
+                      : 'bg-[#1c1510] border-[#d4af37]/15 hover:border-[#d4af37]/45'
+                  }`}
                 >
                   <motion.div
                     variants={{

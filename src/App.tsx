@@ -45,7 +45,7 @@ export default function App() {
 
   const [isAdminMode, setIsAdminMode] = useState<boolean>(false);
   const [activeStage, setActiveStage] = useState<'browsing' | 'itinerary' | 'finalizing'>('browsing');
-  const [activePage, setActivePage] = useState<'home' | 'faq'>('home');
+  const [activePage, setActivePage] = useState<'tours' | 'map' | 'scribe' | 'gallery' | 'cartouche' | 'faq' | 'bookings'>('tours');
   const [isAdminVerified, setIsAdminVerified] = useState<boolean>(() => {
     return localStorage.getItem('kemet_admin_verified') === 'true';
   });
@@ -337,25 +337,22 @@ export default function App() {
   };
 
   const scrollToSection = (id: string) => {
-    if (id === 'faq-section') {
+    if (id === 'excursions-section') {
+      setActivePage('tours');
+    } else if (id === 'map-section') {
+      setActivePage('map');
+    } else if (id === 'scribe-section') {
+      setActivePage('scribe');
+    } else if (id === 'gallery-section') {
+      setActivePage('gallery');
+    } else if (id === 'cartouche-section') {
+      setActivePage('cartouche');
+    } else if (id === 'faq-section') {
       setActivePage('faq');
-      setTimeout(() => {
-        const element = document.getElementById(id);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        } else {
-          window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-        }
-      }, 100);
-    } else {
-      setActivePage('home');
-      setTimeout(() => {
-        const element = document.getElementById(id);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
+    } else if (id === 'ledger-section') {
+      setActivePage('bookings');
     }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -548,7 +545,14 @@ export default function App() {
                   { label: t('nav_faq', '𓇚 Questions & Answers'), target: 'faq-section' },
                   { label: t('nav_bookings', '𓎬 My Bookings'), target: 'ledger-section' }
                 ].map((item) => {
-                  const isFaqActive = item.target === 'faq-section' && activePage === 'faq';
+                  const isItemActive = 
+                    (item.target === 'excursions-section' && activePage === 'tours') ||
+                    (item.target === 'map-section' && activePage === 'map') ||
+                    (item.target === 'scribe-section' && activePage === 'scribe') ||
+                    (item.target === 'gallery-section' && activePage === 'gallery') ||
+                    (item.target === 'cartouche-section' && activePage === 'cartouche') ||
+                    (item.target === 'faq-section' && activePage === 'faq') ||
+                    (item.target === 'ledger-section' && activePage === 'bookings');
                   const text = item.label;
                   const firstSpaceIdx = text.indexOf(' ');
                   const glyph = firstSpaceIdx !== -1 ? text.substring(0, firstSpaceIdx) : '';
@@ -560,7 +564,7 @@ export default function App() {
                       onClick={() => scrollToSection(item.target)}
                       whileHover="hover"
                       whileTap="tap"
-                      className={`${isFaqActive ? 'text-[#d4af37] font-bold' : 'text-stone-400'} hover:text-[#d4af37] transition-all duration-300 cursor-pointer flex items-center gap-1.5`}
+                      className={`${isItemActive ? 'text-[#d4af37] font-bold' : 'text-stone-400'} hover:text-[#d4af37] transition-all duration-300 cursor-pointer flex items-center gap-1.5`}
                     >
                       {glyph && (
                         <motion.span
@@ -569,13 +573,13 @@ export default function App() {
                             hover: { scale: 1.35, rotate: 18, y: -2 },
                             tap: { scale: 0.9, rotate: -15 }
                           }}
-                          animate={isFaqActive ? { scale: [1, 1.15, 1], y: [0, -1, 0] } : {}}
+                          animate={isItemActive ? { scale: 1.15, y: -1 } : { scale: 1, y: 0 }}
                           transition={{ type: 'spring', stiffness: 450, damping: 10 }}
                         >
                           {glyph}
                         </motion.span>
                       )}
-                      <span className={`${isFaqActive ? 'underline underline-offset-4' : 'hover:underline hover:underline-offset-4'}`}>
+                      <span className={`${isItemActive ? 'underline underline-offset-4' : 'hover:underline hover:underline-offset-4'}`}>
                         {rest}
                       </span>
                     </motion.button>
@@ -882,118 +886,41 @@ export default function App() {
               </motion.div>
             )
           ) : (
-            activePage === 'faq' ? (
-              <div className="space-y-16">
-                {/* Back Button and Subheader */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#140f0c]/60 border border-[#d4af37]/20 p-6 rounded-2xl relative overflow-hidden backdrop-blur-md">
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.3em] flex items-center gap-1.5">
-                      <span className="animate-pulse">𓇚</span> {t('archive', 'Egyptian Archives 𓇚')}
-                    </span>
-                    <h2 className="font-serif text-xl font-bold text-[#e6c280] uppercase">{t('sanctuary_title', "The Scribes' Sanctuary")}</h2>
-                    <p className="text-stone-400 text-xs">{t('sanctuary_desc', 'Access critical travel wisdom and sacred records here.')}</p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setActivePage('home');
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                    className="inline-flex items-center gap-2 px-4 py-2 border border-[#d4af37]/40 bg-[#1e1712] hover:bg-[#2e231b] text-[#e6c280] hover:text-white rounded-xl text-xs font-mono uppercase tracking-widest transition-all cursor-pointer"
-                  >
-                    {t('back_to_sanctuary', '← Back to Sanctuary')}
-                  </button>
-                </div>
-
-                {/* Decorative Wisdom Column / Travel Tips before the FAQ section */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-[#120e0a]/80 border border-[#d4af37]/15 rounded-2xl p-6 space-y-4">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl text-[#d4af37]">𓋹</span>
-                      <h4 className="font-serif text-lg font-bold text-[#e6c280] uppercase">{t('safety_title', 'Sacred Nile & Desert Safety')}</h4>
-                    </div>
-                    <ul className="space-y-3.5 text-xs text-stone-400 leading-relaxed">
-                      <li className="flex gap-2">
-                        <span className="text-[#d4af37]">✦</span>
-                        <span><strong>{t('safety_water', 'Water Wisdom')}:</strong> {t('safety_water_desc', 'Standard tap water is not fit for consumption. Please enjoy the abundant, complimentary ice-cold bottled mineral water provided across all tours and camps.')}</span>
-                      </li>
-                      <li className="flex gap-2">
-                        <span className="text-[#d4af37]">✦</span>
-                        <span><strong>{t('safety_garb', 'Desert Garb')}:</strong> {t('safety_garb_desc', 'When riding quad bikes or hiking sand dunes, wear secure closed-toe shoes and wraps. The sun evaporates heat instantly, but temperatures drop rapidly after twilight.')}</span>
-                      </li>
-                      <li className="flex gap-2">
-                        <span className="text-[#d4af37]">✦</span>
-                        <span><strong>{t('safety_cultural', 'Cultural Respect')}:</strong> {t('safety_cultural_desc', 'Cover shoulders and knees when visiting ancient shrines, and always request permission before capturing memories of Bedouin hosts.')}</span>
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div className="bg-[#120e0a]/80 border border-[#d4af37]/15 rounded-2xl p-6 space-y-4">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl text-[#d4af37]">𓅃</span>
-                      <h4 className="font-serif text-lg font-bold text-[#e6c280] uppercase">{t('diving_title', 'Diving & Historical Passes')}</h4>
-                    </div>
-                    <ul className="space-y-3.5 text-xs text-stone-400 leading-relaxed">
-                      <li className="flex gap-2">
-                        <span className="text-[#d4af37]">✦</span>
-                        <span><strong>{t('diving_coral', 'Corals of Sobek')}:</strong> {t('diving_coral_desc', 'Use strictly reef-safe biodegradable sunscreen. Never stand on, touch, or handle corals as it damages sensitive living systems.')}</span>
-                      </li>
-                      <li className="flex gap-2">
-                        <span className="text-[#d4af37]">✦</span>
-                        <span><strong>{t('diving_passes', 'Valley Passes')}:</strong> {t('diving_passes_desc', 'Standard entry tickets are included and allow entry into 3 major tombs. Specialty tombs like Tutankhamun can be booked through your guide 48 hours in advance.')}</span>
-                      </li>
-                      <li className="flex gap-2">
-                        <span className="text-[#d4af37]">✦</span>
-                        <span><strong>{t('diving_photo', 'Pharaonic Photography')}:</strong> {t('diving_photo_desc', 'Smartphone photos are free inside tombs, but professional DSLR cameras/tripods are strictly banned without commercial licenses.')}</span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                {/* THE FAQ SECTION - placed explicitly "in the end of the page" */}
-                <motion.section
-                  id="faq-section"
-                  className="scroll-mt-24 pt-4 border-t border-[#d4af37]/15"
-                  initial={{ opacity: 0, y: 35 }}
+            <AnimatePresence mode="wait">
+              {activePage === 'tours' && (
+                <motion.div
+                  key="tours"
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
-                >
-                  <OraclesWisdomFAQ />
-                </motion.section>
-              </div>
-            ) : (
-              <div className="space-y-16">
-                {/* SECTION 1: EXCURSIONS CATALOG */}
-                <motion.section
-                  id="excursions-section"
-                  className="scroll-mt-24"
-                  initial={{ opacity: 0, y: 35 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-100px" }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.4 }}
+                  className="space-y-8"
                 >
                   <ExcursionCatalog onAddBooking={handleAddBooking} excursions={excursions} />
-                </motion.section>
+                </motion.div>
+              )}
 
-                {/* SECTION 1.5: INTERACTIVE ANCIENT SITES MAP */}
-                <motion.section
-                  id="map-section"
-                  className="scroll-mt-24"
-                  initial={{ opacity: 0, y: 35 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-100px" }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
+              {activePage === 'map' && (
+                <motion.div
+                  key="map"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.4 }}
+                  className="space-y-8"
                 >
                   <AncientSitesMap />
-                </motion.section>
+                </motion.div>
+              )}
 
-                {/* SECTION 2: AI SCRIBE ORACLE */}
-                <motion.section
-                  id="scribe-section"
-                  className="scroll-mt-24 space-y-8"
-                  initial={{ opacity: 0, y: 35 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-100px" }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
+              {activePage === 'scribe' && (
+                <motion.div
+                  key="scribe"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.4 }}
+                  className="space-y-8"
                 >
                   <div className="text-center">
                     <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">{language === 'de' ? 'Künstliche Intelligenz' : language === 'pl' ? 'Sztuczna inteligencja' : language === 'cs' ? 'Umělá inteligence' : 'Artificial Intelligence'}</span>
@@ -1001,32 +928,34 @@ export default function App() {
                       {language === 'de' ? 'KI-Reiseführer & Assistent' : language === 'pl' ? 'Asystent i przewodnik AI' : language === 'cs' ? 'Průvodce a asistent s AI' : 'AI Travel Guide & Assistant'}
                     </h2>
                     <p className="text-stone-400 text-sm max-w-xl mx-auto mt-2">
-                      {language === 'de' ? 'Stellen Sie unserem KI-Helfer Fragen oder erstellen Sie einen individuellen Tages-Reiseplan.' : language === 'pl' ? 'Zadaj pytania naszemu asystentowi AI lub wygeneruj spersonalizowany plan podróży dzień po dniu.' : language === 'cs' ? 'Zeptejte se našeho asistenta s AI na cokoli nebo si nechte vytvořit vlastní denní itinerář.' : 'Ask our AI helper any questions or generate a custom day-by-day travel plan.'}
+                      {language === 'de' ? 'Stellen Sie unserem KI-Helfer Fragen oder erstellen Sie einen individuellen Tages-Reiseplan.' : language === 'pl' ? 'Zadaj pytania naszemu asystentowi AI lub wygeneruj spersonalizowany plan dobrobytu.' : language === 'cs' ? 'Zeptejte se našeho asistenta s AI na cokoli nebo si nechte vytvořit vlastní denní itinerář.' : 'Ask our AI helper any questions or generate a custom day-by-day travel plan.'}
                     </p>
                   </div>
                   <ScribeOracle onScribeSuccess={triggerCelebration} onAddBooking={handleAddBooking} bookings={bookings} excursions={excursions} />
-                </motion.section>
+                </motion.div>
+              )}
 
-                {/* SECTION 3: IMMERSIVE GALLERY */}
-                <motion.section
-                  id="gallery-section"
-                  className="scroll-mt-24"
-                  initial={{ opacity: 0, y: 35 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-100px" }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
+              {activePage === 'gallery' && (
+                <motion.div
+                  key="gallery"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.4 }}
+                  className="space-y-8"
                 >
                   <EgyptologyGallery />
-                </motion.section>
+                </motion.div>
+              )}
 
-                {/* SECTION 4: HIEROGLYPHIC CARTOUCHE GENERATOR */}
-                <motion.section
-                  id="cartouche-section"
-                  className="scroll-mt-24 space-y-8"
-                  initial={{ opacity: 0, y: 35 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-100px" }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
+              {activePage === 'cartouche' && (
+                <motion.div
+                  key="cartouche"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.4 }}
+                  className="space-y-8"
                 >
                   <div className="text-center">
                     <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">{language === 'de' ? 'Ägyptische Kartusche' : language === 'pl' ? 'Egipska kartusza' : language === 'cs' ? 'Egyptská kartuše' : 'Egyptian Cartouche'}</span>
@@ -1038,16 +967,89 @@ export default function App() {
                     </p>
                   </div>
                   <CartoucheGenerator />
-                </motion.section>
+                </motion.div>
+              )}
 
-                {/* SECTION 6: BOOKING LEDGER & REVIEWS */}
-                <motion.section
-                  id="ledger-section"
-                  className="scroll-mt-24 space-y-8"
-                  initial={{ opacity: 0, y: 35 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-100px" }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
+              {activePage === 'faq' && (
+                <motion.div
+                  key="faq"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.4 }}
+                  className="space-y-12"
+                >
+                  {/* Subheader */}
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#140f0c]/60 border border-[#d4af37]/20 p-6 rounded-2xl relative overflow-hidden backdrop-blur-md">
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.3em] flex items-center gap-1.5">
+                        <span className="animate-pulse">𓇚</span> {t('archive', 'Egyptian Archives 𓇚')}
+                      </span>
+                      <h2 className="font-serif text-xl font-bold text-[#e6c280] uppercase">{t('sanctuary_title', "The Scribes' Sanctuary")}</h2>
+                      <p className="text-stone-400 text-xs">{t('sanctuary_desc', 'Access critical travel wisdom and sacred records here.')}</p>
+                    </div>
+                  </div>
+
+                  {/* Decorative Wisdom Column / Travel Tips before the FAQ section */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-[#120e0a]/80 border border-[#d4af37]/15 rounded-2xl p-6 space-y-4">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl text-[#d4af37]">𓋹</span>
+                        <h4 className="font-serif text-lg font-bold text-[#e6c280] uppercase">{t('safety_title', 'Sacred Nile & Desert Safety')}</h4>
+                      </div>
+                      <ul className="space-y-3.5 text-xs text-stone-400 leading-relaxed">
+                        <li className="flex gap-2">
+                          <span className="text-[#d4af37]">✦</span>
+                          <span><strong>{t('safety_water', 'Water Wisdom')}:</strong> {t('safety_water_desc', 'Standard tap water is not fit for consumption. Please enjoy the abundant, complimentary ice-cold bottled mineral water provided across all tours and camps.')}</span>
+                        </li>
+                        <li className="flex gap-2">
+                          <span className="text-[#d4af37]">✦</span>
+                          <span><strong>{t('safety_garb', 'Desert Garb')}:</strong> {t('safety_garb_desc', 'When riding quad bikes or hiking sand dunes, wear secure closed-toe shoes and wraps. The sun evaporates heat instantly, but temperatures drop rapidly after twilight.')}</span>
+                        </li>
+                        <li className="flex gap-2">
+                          <span className="text-[#d4af37]">✦</span>
+                          <span><strong>{t('safety_cultural', 'Cultural Respect')}:</strong> {t('safety_cultural_desc', 'Cover shoulders and knees when visiting ancient shrines, and always request permission before capturing memories of Bedouin hosts.')}</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div className="bg-[#120e0a]/80 border border-[#d4af37]/15 rounded-2xl p-6 space-y-4">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl text-[#d4af37]">𓅃</span>
+                        <h4 className="font-serif text-lg font-bold text-[#e6c280] uppercase">{t('diving_title', 'Diving & Historical Passes')}</h4>
+                      </div>
+                      <ul className="space-y-3.5 text-xs text-stone-400 leading-relaxed">
+                        <li className="flex gap-2">
+                          <span className="text-[#d4af37]">✦</span>
+                          <span><strong>{t('diving_coral', 'Corals of Sobek')}:</strong> {t('diving_coral_desc', 'Use strictly reef-safe biodegradable sunscreen. Never stand on, touch, or handle corals as it damages sensitive living systems.')}</span>
+                        </li>
+                        <li className="flex gap-2">
+                          <span className="text-[#d4af37]">✦</span>
+                          <span><strong>{t('diving_passes', 'Valley Passes')}:</strong> {t('diving_passes_desc', 'Standard entry tickets are included and allow entry into 3 major tombs. Specialty tombs like Tutankhamun can be booked through your guide 48 hours in advance.')}</span>
+                        </li>
+                        <li className="flex gap-2">
+                          <span className="text-[#d4af37]">✦</span>
+                          <span><strong>{t('diving_photo', 'Pharaonic Photography')}:</strong> {t('diving_photo_desc', 'Smartphone photos are free inside tombs, but professional DSLR cameras/tripods are strictly banned without commercial licenses.')}</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* THE FAQ SECTION */}
+                  <div className="pt-4 border-t border-[#d4af37]/15">
+                    <OraclesWisdomFAQ />
+                  </div>
+                </motion.div>
+              )}
+
+              {activePage === 'bookings' && (
+                <motion.div
+                  key="bookings"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.4 }}
+                  className="space-y-8"
                 >
                   <div className="text-center">
                     <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">{language === 'de' ? 'Meine Buchungen' : language === 'pl' ? 'Moje rezerwacje' : language === 'cs' ? 'Moje rezervace' : 'My Bookings'}</span>
@@ -1059,9 +1061,9 @@ export default function App() {
                     </p>
                   </div>
                   <BookingManager bookings={bookings} excursions={excursions} onCancelBooking={handleCancelBooking} onVerifyCheckIn={handleVerifyCheckIn} />
-                </motion.section>
-              </div>
-            )
+                </motion.div>
+              )}
+            </AnimatePresence>
           )}
 
         </main>
