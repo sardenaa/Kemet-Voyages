@@ -9,9 +9,10 @@ interface ScribeOracleProps {
   onAddBooking?: (newBooking: Booking) => Promise<void>;
   bookings?: Booking[];
   excursions?: Excursion[];
+  onUpdateExcursions?: (newExcursions: Excursion[]) => void;
 }
 
-export default function ScribeOracle({ onScribeSuccess, onAddBooking, bookings = [], excursions = [] }: ScribeOracleProps) {
+export default function ScribeOracle({ onScribeSuccess, onAddBooking, bookings = [], excursions = [], onUpdateExcursions }: ScribeOracleProps) {
   const { language } = useLanguage();
   // Tabs: 'planner' or 'chat'
   const [activeTab, setActiveTab] = useState<'planner' | 'chat'>('planner');
@@ -46,6 +47,242 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking, bookings =
   });
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
   const [copySuccess, setCopySuccess] = useState<boolean>(false);
+
+  // Spreadsheet States
+  const [sheetUrlInput, setSheetUrlInput] = useState<string>(() => {
+    return localStorage.getItem('kemet_oracle_sync_spreadsheet_url') || '';
+  });
+  const [isSyncingSheet, setIsSyncingSheet] = useState<boolean>(false);
+  const [sheetSyncError, setSheetSyncError] = useState<string | null>(null);
+  const [sheetSyncSuccess, setSheetSyncSuccess] = useState<boolean>(false);
+
+  // WhatsApp & Toggle Sync States
+  const [showBookingForm, setShowBookingForm] = useState<boolean>(false);
+  const [isSyncExpanded, setIsSyncExpanded] = useState<boolean>(false);
+  const [waBookName, setWaBookName] = useState<string>('');
+  const [waBookExcursion, setWaBookExcursion] = useState<string>('');
+  const [waBookDate, setWaBookDate] = useState<string>('');
+  const [waBookGuests, setWaBookGuests] = useState<number>(2);
+
+  // Parse CSV data while respecting quoted commas
+  const parseCSVData = (csvText: string): any[] => {
+    const lines = csvText.split(/\r?\n/).filter(Boolean);
+    if (lines.length < 2) return [];
+    
+    const parseRow = (line: string) => {
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          result.push(current.trim());
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+      result.push(current.trim());
+      return result.map(cell => cell.replace(/^"(.*)"$/, '$1').trim());
+    };
+
+    const headers = parseRow(lines[0]).map(h => h.toLowerCase());
+    const rows = [];
+    
+    for (let i = 1; i < lines.length; i++) {
+      const cells = parseRow(lines[i]);
+      if (cells.length === 0 || !cells[0]) continue;
+      
+      const item: any = {};
+      headers.forEach((header, index) => {
+        const val = cells[index] || '';
+        if (header.includes('id')) item.id = val;
+        else if (header.includes('title')) item.title = val;
+        else if (header.includes('tagline')) item.tagline = val;
+        else if (header.includes('category')) item.category = val;
+        else if (header.includes('duration')) item.duration = val;
+        else if (header.includes('price')) item.price = Number(val.replace(/[^0-9.]/g, '')) || 100;
+        else if (header.includes('rating')) item.rating = Number(val) || 5.0;
+        else if (header.includes('location')) item.location = val;
+        else if (header.includes('description')) item.description = val;
+        else if (header.includes('lore') || header.includes('ancient')) item.ancientLore = val;
+        else if (header.includes('image')) item.image = val;
+        else if (header.includes('inclusions')) {
+          item.inclusions = val ? val.split(/[;|\n]/).map((s: string) => s.trim()).filter(Boolean) : [];
+        }
+        else if (header.includes('highlights')) {
+          item.highlights = val ? val.split(/[;|\n]/).map((s: string) => s.trim()).filter(Boolean) : [];
+        }
+      });
+
+      // Fallbacks
+      if (!item.id) item.id = `ex-sheet-${i}-${Date.now().toString().slice(-4)}`;
+      if (!item.title) item.title = cells[1] || `Trip ${i}`;
+      if (!item.category) item.category = 'diving';
+      if (!item.price) item.price = 100;
+      if (!item.duration) item.duration = 'Full Day';
+      if (!item.location) item.location = 'Red Sea, Egypt';
+      if (!item.image) item.image = '/src/assets/images/egypt_sea_diving_1784070366165.jpg';
+
+      rows.push(item);
+    }
+    return rows;
+  };
+
+  const handleSyncFromSpreadsheet = async (explicitUrl?: string) => {
+    const targetUrl = explicitUrl || sheetUrlInput;
+    if (!targetUrl.trim()) {
+      setSheetSyncError("Please enter a valid Google Spreadsheet URL or ID.");
+      return;
+    }
+
+    setIsSyncingSheet(true);
+    setSheetSyncError(null);
+    setSheetSyncSuccess(false);
+
+    try {
+      let spreadsheetId = targetUrl.trim();
+      const match = targetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+      if (match) {
+        spreadsheetId = match[1];
+      }
+
+      const csvUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=Excursions`;
+      let csvRes = await fetch(csvUrl);
+      if (!csvRes.ok) {
+        const fallbackUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv`;
+        csvRes = await fetch(fallbackUrl);
+        if (!csvRes.ok) {
+          throw new Error("Could not access Google Sheet. Please ensure it is shared as 'Anyone with the link can view' (Public).");
+        }
+      }
+
+      const csvText = await csvRes.text();
+      const parsedExcursions = parseCSVData(csvText);
+
+      if (parsedExcursions.length === 0) {
+        throw new Error("No valid excursions rows found in the spreadsheet. Make sure your sheet has a header row like 'ID', 'Title', 'Price', 'Category'...");
+      }
+
+      const saveRes = await fetch('/api/excursions/sync-public-sheet', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(parsedExcursions)
+      });
+
+      if (!saveRes.ok) {
+        throw new Error("Failed to persist excursions in the divine server archives.");
+      }
+
+      const updatedExcursions = await saveRes.json();
+      
+      if (onUpdateExcursions) {
+        onUpdateExcursions(updatedExcursions);
+      }
+      localStorage.setItem('kemet_excursions', JSON.stringify(updatedExcursions));
+      localStorage.setItem('kemet_oracle_sync_spreadsheet_url', targetUrl.trim());
+      localStorage.setItem('kemet_active_spreadsheet_id', spreadsheetId);
+
+      setSheetSyncSuccess(true);
+      
+      setChatMessages(prev => [
+        ...prev,
+        {
+          id: `scribe-${Date.now()}`,
+          role: 'assistant',
+          text: `**Sacred Scroll Synchronized!**\n\nBy the order of the cosmic inkwells of Kemet, I have aligned my divine vision with your royal spreadsheet: \`${spreadsheetId.slice(0, 8)}...\`.\n\nOur excursions catalog has been updated with **${parsedExcursions.length}** newly revealed expeditions. Ask me about them, and I shall guide your caravan!`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ]);
+
+      if (onScribeSuccess) {
+        onScribeSuccess();
+      }
+
+    } catch (err: any) {
+      console.error(err);
+      setSheetSyncError(err.message || "An error occurred while communicating with the Google Sheet API.");
+    } finally {
+      setIsSyncingSheet(false);
+    }
+  };
+
+  const handleWaBookingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!waBookName.trim() || !waBookExcursion || !waBookDate) return;
+
+    const selectedTour = excursions.find(ex => ex.id === waBookExcursion);
+    if (!selectedTour) return;
+
+    const totalCost = (selectedTour.price || 100) * waBookGuests;
+
+    // Post booking record to backend
+    try {
+      const res = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          excursionId: selectedTour.id,
+          excursionTitle: selectedTour.title,
+          travelerName: waBookName.trim(),
+          travelerEmail: `whatsapp.${Math.floor(Math.random() * 900) + 100}@wa.kemet.com`,
+          date: waBookDate,
+          numberOfGuests: waBookGuests,
+          totalCost,
+          specialRequests: "WhatsApp Instant Reservation Direct Inquiry"
+        })
+      });
+
+      if (res.ok) {
+        const newBooking = await res.json();
+        if (onAddBooking) {
+          await onAddBooking(newBooking);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to register booking in background archives", err);
+    }
+
+    const waText = `Hail High Priests of Kemet (Mas International Agency)! 𓂀\n\nI, *${waBookName.trim()}*, wish to reserve royal passage for the following caravan expedition:\n\n✨ *Trip:* ${selectedTour.title}\n📅 *Date:* ${waBookDate}\n👥 *Guests:* ${waBookGuests} Noble Travelers\n💰 *Total Cost Estimate:* $${totalCost}\n\nPlease register my caravan and confirm availability. May Ra align our paths!`;
+
+    const waLink = `https://wa.me/201004812323?text=${encodeURIComponent(waText)}`;
+    
+    setChatMessages(prev => [
+      ...prev,
+      {
+        id: `scribe-${Date.now()}`,
+        role: 'assistant',
+        text: `**Caravan Ledger Updated!** 𓂀\n\nNoble traveler **${waBookName.trim()}**, your request has been recorded into our archives. I am now redirecting you to our High Priests via WhatsApp to finalize your golden passage. If the window did not open, [click here to open WhatsApp directly](${waLink}).`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+    ]);
+
+    setShowBookingForm(false);
+    window.open(waLink, '_blank');
+  };
+
+  const handleWaSupportClick = () => {
+    const waText = `Hail High Priests of Kemet (Mas International Agency)! 𓂀\n\nI am consulting Scribe Sennedjem and require personal guidance from a real agent regarding my travel plans. Please guide my caravan!`;
+    const waLink = `https://wa.me/201004812323?text=${encodeURIComponent(waText)}`;
+    
+    setChatMessages(prev => [
+      ...prev,
+      {
+        id: `scribe-${Date.now()}`,
+        role: 'assistant',
+        text: `**High Priest Summoned!** 𓀚\n\nI have signaled our personal advisors at Mas International Agency. You can message them immediately via WhatsApp: [Message Agent Now](${waLink}).`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+    ]);
+
+    window.open(waLink, '_blank');
+  };
 
   const bookingsLength = bookings.length;
   React.useEffect(() => {
@@ -653,6 +890,138 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking, bookings =
     }
   };
 
+  // Format assistant messages to support markdown-like structures gracefully
+  const formatScribeMessage = (text: string, isUserMessage: boolean) => {
+    if (!text) return null;
+    if (isUserMessage) {
+      return <p className="text-[#140f0a] font-medium whitespace-pre-wrap">{text}</p>;
+    }
+    
+    // Split by newlines to handle paragraphs and lists
+    const lines = text.split('\n');
+    return (
+      <div className="space-y-1.5 text-stone-200">
+        {lines.map((line, idx) => {
+          let content = line;
+          
+          // Bold formatting **text**
+          content = content.replace(/\*\*(.*?)\*\*/g, '<strong class="text-amber-200 font-bold">$1</strong>');
+          
+          // Inline highlighted terms `text`
+          content = content.replace(/`(.*?)`/g, '<code class="bg-[#140f0a] border border-[#d4af37]/20 px-1.5 py-0.5 rounded font-mono text-xs text-amber-400">$1</code>');
+
+          // Check if it's a bullet point
+          if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) {
+            const cleanLi = content.trim().replace(/^[\-\*]\s+/, '');
+            return (
+              <li key={idx} className="ml-4 list-disc list-outside text-stone-200 pl-1 leading-relaxed" dangerouslySetInnerHTML={{ __html: cleanLi }} />
+            );
+          }
+          
+          if (line.trim() === '') {
+            return <div key={idx} className="h-1" />;
+          }
+
+          return (
+            <p key={idx} className="leading-relaxed text-stone-200" dangerouslySetInnerHTML={{ __html: content }} />
+          );
+        })}
+      </div>
+    );
+  };
+
+  // Submit suggestion prompt immediately
+  const triggerQuickPrompt = async (promptText: string) => {
+    if (isChatLoading) return;
+    setIsChatLoading(true);
+    
+    const userMsg: ScribeMessage = {
+      id: `user-${Date.now()}`,
+      role: 'user',
+      text: promptText,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+
+    setChatMessages(prev => [...prev, userMsg]);
+
+    // Detect spreadsheet commands in quick prompt
+    const sheetRegex = /(?:https:\/\/docs\.google\.com\/spreadsheets\/d\/([a-zA-Z0-9-_]+)|(?:pull|sync|import)\s+(?:from\s+)?(?:sheet|spreadsheet)\s+([a-zA-Z0-9-_:\/.]+))/i;
+    const sheetMatch = promptText.match(sheetRegex);
+    if (sheetMatch) {
+       const urlOrId = sheetMatch[1] || sheetMatch[2];
+       if (urlOrId && (urlOrId.startsWith('http') || urlOrId.length > 15)) {
+         setTimeout(() => {
+           handleSyncFromSpreadsheet(urlOrId);
+         }, 400);
+         return;
+       }
+    }
+    
+    // Save CRM Lead Log
+    try {
+      const savedLogs = localStorage.getItem('kemet_oracle_chats_logs');
+      const currentLogs = savedLogs ? JSON.parse(savedLogs) : [];
+      const newLog = {
+        id: `log-${Date.now()}`,
+        name: "Prospect Noble",
+        email: `prospect.${Math.floor(Math.random() * 900) + 100}@traveler.kemet.com`,
+        query: promptText,
+        time: new Date().toISOString().replace('T', ' ').slice(0, 16)
+      };
+      localStorage.setItem('kemet_oracle_chats_logs', JSON.stringify([newLog, ...currentLogs]));
+    } catch (e) {
+      console.warn("Could not save inquiry lead", e);
+    }
+
+    try {
+      // Create simplified history
+      const history = [...chatMessages, userMsg].slice(-6).map(m => ({
+        role: m.role,
+        text: m.text
+      }));
+
+      const response = await fetch('/api/scribe-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: promptText,
+          chatHistory: history,
+          excursions,
+          bookings
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("Scribe is busy consulting Osiris");
+      }
+
+      const data = await response.json();
+      setChatMessages(prev => [...prev, {
+        id: `scribe-${Date.now()}`,
+        role: 'assistant',
+        text: data.response || "My apologies, the cosmic inkwells of Kemet have run dry for a moment. Ask again, noble voyager.",
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }]);
+      onScribeSuccess?.();
+    } catch (err) {
+      console.warn("Express chat failed, utilizing offline scribe response.");
+      const reply = getOfflineScribeResponse(promptText, language);
+      setTimeout(() => {
+        setChatMessages(prev => [...prev, {
+          id: `scribe-${Date.now()}`,
+          role: 'assistant',
+          text: reply,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }]);
+        onScribeSuccess?.();
+      }, 800);
+    } finally {
+      setIsChatLoading(false);
+    }
+  };
+
   // Chat with Scribe Sennedjem
   const sendChatMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -670,6 +1039,19 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking, bookings =
     setChatMessages(prev => [...prev, userMsg]);
     setChatInput("");
     setIsChatLoading(true);
+
+    // Detect spreadsheet sync request in chat input!
+    const sheetRegex = /(?:https:\/\/docs\.google\.com\/spreadsheets\/d\/([a-zA-Z0-9-_]+)|(?:pull|sync|import)\s+(?:from\s+)?(?:sheet|spreadsheet)\s+([a-zA-Z0-9-_:\/.]+))/i;
+    const sheetMatch = queryText.match(sheetRegex);
+    if (sheetMatch) {
+       const urlOrId = sheetMatch[1] || sheetMatch[2];
+       if (urlOrId && (urlOrId.startsWith('http') || urlOrId.length > 15)) {
+         setTimeout(() => {
+           handleSyncFromSpreadsheet(urlOrId);
+         }, 400);
+         return;
+       }
+    }
 
     // Save CRM Lead Log
     try {
@@ -689,7 +1071,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking, bookings =
 
     try {
       // Create simplified history
-      const history = chatMessages.slice(-6).map(m => ({
+      const history = [...chatMessages, userMsg].slice(-6).map(m => ({
         role: m.role,
         text: m.text
       }));
@@ -701,7 +1083,9 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking, bookings =
         },
         body: JSON.stringify({
           message: userMsg.text,
-          chatHistory: history
+          chatHistory: history,
+          excursions,
+          bookings
         })
       });
 
@@ -1495,11 +1879,76 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking, bookings =
             exit={{ opacity: 0, y: -10 }}
             className="flex flex-col h-[550px]"
           >
-            <div className="text-center mb-4">
+            <div className="text-center mb-3">
               <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">{language === 'de' ? 'KI-Chat' : language === 'pl' ? 'Czat AI' : language === 'cs' ? 'AI Chat' : 'AI Chat'}</span>
               <h2 className="font-serif text-2xl font-bold text-[#e6c280] mt-1 uppercase">
                 {language === 'de' ? 'Mit KI-Reiseführer chatten' : language === 'pl' ? 'Rozmawiaj z przewodnikiem AI' : language === 'cs' ? 'Chatovat s AI průvodcem' : 'Chat with AI Travel Guide'}
               </h2>
+            </div>
+
+            {/* Spreadsheet Sync Header & Control */}
+            <div className="bg-[#1c1611]/80 border border-[#d4af37]/30 rounded-xl p-3 mb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg text-[#d4af37]">𓏞</span>
+                  <span className="text-xs font-serif font-bold text-[#e6c280] uppercase tracking-wider">
+                    {language === 'de' ? 'Ausflugstabelle synchronisieren' : language === 'pl' ? 'Synchronizuj tabelę wycieczek' : 'Google Sheets Excursions Sync'}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsSyncExpanded(!isSyncExpanded)}
+                  className="text-[10px] text-[#d4af37] hover:text-[#e6c280] bg-[#241c14] border border-[#d4af37]/20 rounded-lg px-2.5 py-1 transition-all cursor-pointer select-none font-mono"
+                >
+                  {isSyncExpanded ? '𓋼 Hide' : '𓌝 Open'}
+                </button>
+              </div>
+
+              <AnimatePresence>
+                {isSyncExpanded && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden mt-3 pt-3 border-t border-[#d4af37]/15 space-y-2"
+                  >
+                    <p className="text-[11px] text-stone-400 leading-relaxed">
+                      {language === 'de' 
+                        ? 'Geben Sie eine Google Sheets-ID oder eine Freigabe-URL ein, um Ausflüge live aus der Tabelle zu importieren:' 
+                        : language === 'pl' 
+                        ? 'Wprowadź identyfikator arkusza Google Sheets lub link, aby zaimportować wycieczki bezpośrednio:' 
+                        : 'Enter a public Google Sheets ID or shared URL to synchronize tours directly into the Scribe Oracle context:'}
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={sheetUrlInput}
+                        onChange={(e) => setSheetUrlInput(e.target.value)}
+                        placeholder="e.g. 1uK9PzW6qH..."
+                        className="flex-1 bg-[#120e0a] border border-[#d4af37]/35 rounded-lg px-3 py-1.5 text-xs text-stone-200 placeholder-stone-600 focus:outline-none focus:ring-1 focus:ring-[#d4af37]/50"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleSyncFromSpreadsheet()}
+                        disabled={isSyncingSheet}
+                        className="bg-[#d4af37] hover:bg-[#c5a059] text-[#140f0a] px-3 py-1.5 rounded-lg text-xs font-serif font-bold transition-all disabled:opacity-50 flex items-center gap-1 cursor-pointer select-none"
+                      >
+                        {isSyncingSheet ? (
+                          <span className="animate-spin text-[10px]">𓋹</span>
+                        ) : (
+                          <span>𓎬 Sync</span>
+                        )}
+                      </button>
+                    </div>
+                    {sheetSyncError && (
+                      <p className="text-[10px] text-rose-400 font-mono italic">{sheetSyncError}</p>
+                    )}
+                    {sheetSyncSuccess && (
+                      <p className="text-[10px] text-emerald-400 font-mono italic">✓ Sync of sacred scrolls completed successfully!</p>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Chat Messages area */}
@@ -1512,15 +1961,15 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking, bookings =
                   <div
                     className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-md relative ${
                       msg.role === 'user'
-                        ? 'bg-gradient-to-br from-[#d4af37] to-[#c5a059] text-[#140f0a] rounded-tr-none'
+                        ? 'bg-gradient-to-br from-[#d4af37] to-[#c5a059] text-[#140f0a] rounded-tr-none font-medium'
                         : 'bg-[#241c14] border border-[#d4af37]/20 text-stone-200 rounded-tl-none'
                     }`}
                   >
                     {/* Timestamp */}
-                    <div className={`text-[9px] font-mono mb-1 ${msg.role === 'user' ? 'text-[#140f0a]/60' : 'text-stone-500'}`}>
+                    <div className={`text-[9px] font-mono mb-1.5 ${msg.role === 'user' ? 'text-[#140f0a]/60' : 'text-stone-500'}`}>
                       {msg.role === 'user' ? (language === 'de' ? 'Reisender' : language === 'pl' ? 'Podróżnik' : language === 'cs' ? 'Cestovatel' : 'Traveler') : (language === 'de' ? 'Schreiber Sennedjem' : language === 'pl' ? 'Pisarz Sennedjem' : language === 'cs' ? 'Písař Sennedjem' : 'Scribe Sennedjem')} • {msg.timestamp}
                     </div>
-                    <p>{msg.text}</p>
+                    {formatScribeMessage(msg.text, msg.role === 'user')}
                   </div>
                 </div>
               ))}
@@ -1569,6 +2018,172 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking, bookings =
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* Quick Suggestions Chips */}
+            <div className="mb-3">
+              <p className="text-[10px] font-mono text-[#d4af37]/75 uppercase tracking-wider mb-2 select-none">
+                {language === 'de' ? '𓏞 Scribe-Konsultationen:' : language === 'pl' ? '𓏞 Konsultacje pisarza:' : language === 'cs' ? '𓏞 Konzultace písaře:' : '𓏞 Scribe Consultations:'}
+              </p>
+              <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
+                {(language === 'de' ? [
+                  { text: "𓋹 Meine Buchungen prüfen", prompt: "Bitte zeige meine aktiven Caravan-Buchungen an." },
+                  { text: "𓂀 Hieroglyphen-Name", prompt: "Kannst du meinen Namen in Hieroglyphen übersetzen?" },
+                  { text: "𓆟 Rotes Meer Tauchen", prompt: "Welche Tauchabenteuer am Roten Meer empfiehlst du?" },
+                  { text: "𓃘 Wüsten-Safaris", prompt: "Erzähle mir von den Wüsten-Quad- und Kamelsafaris." }
+                ] : language === 'pl' ? [
+                  { text: "𓋹 Sprawdź rezerwacje", prompt: "Proszę pokaż moje aktywne rezerwacje karawanowe." },
+                  { text: "𓂀 Imię w hieroglifach", prompt: "Czy możesz przetłumaczyć moje imię na hieroglify?" },
+                  { text: "𓆟 Nurkowanie Morze Czerwone", prompt: "Jakie przygody z nurkowaniem w Morzu Czerwonym polecasz?" },
+                  { text: "𓃘 Safari pustynne", prompt: "Opowiedz mi o quadowym i wielbłądzim safari na pustyni." }
+                ] : language === 'cs' ? [
+                  { text: "𓋹 Zkontrolovat rezervace", prompt: "Prosím, ukaž moje aktivní rezervace karavan." },
+                  { text: "𓂀 Jméno v hieroglyfech", prompt: "Můžeš přeložit mé jméno do hieroglyfů?" },
+                  { text: "𓆟 Potápění v Rudém moři", prompt: "Jaká dobrodružství při potápění v Rudém moři doporučuješ?" },
+                  { text: "𓃘 Pouštní safari", prompt: "Řekni mi o safari na čtyřkolkách a velbloudech v poušti." }
+                ] : [
+                  { text: "𓋹 Check my bookings", prompt: "Please show my active caravan bookings." },
+                  { text: "𓂀 Hieroglyph Name", prompt: "Can you translate my name into hieroglyphs?" },
+                  { text: "𓆟 Red Sea Diving", prompt: "What Red Sea diving adventures do you recommend?" },
+                  { text: "𓃘 Desert Safaris", prompt: "Tell me about the desert quad and camel safaris." }
+                ]).map((sug, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => triggerQuickPrompt(sug.prompt)}
+                    disabled={isChatLoading}
+                    className="text-xs bg-[#241c14] hover:bg-[#d4af37]/15 text-[#e6c280] border border-[#d4af37]/30 rounded-full px-3 py-1 transition-all hover:border-[#d4af37]/70 disabled:opacity-50 disabled:pointer-events-none cursor-pointer whitespace-nowrap active:scale-95"
+                  >
+                    {sug.text}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Interactive WhatsApp Portals & Booking Form */}
+            <div className="mb-3 space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowBookingForm(!showBookingForm);
+                    if (!waBookName) {
+                      setWaBookName(localStorage.getItem('kemet_traveler_name') || '');
+                    }
+                    if (!waBookExcursion && excursions.length > 0) {
+                      setWaBookExcursion(excursions[0].id);
+                    }
+                  }}
+                  className={`py-2 px-3 rounded-xl border text-xs font-serif font-bold transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-95 cursor-pointer select-none ${
+                    showBookingForm
+                      ? 'bg-[#d4af37] text-[#140f0a] border-[#d4af37]'
+                      : 'bg-[#241c14] hover:bg-[#2f241a] text-[#d4af37] border-[#d4af37]/35'
+                  }`}
+                >
+                  <span>𓎬</span>
+                  <span>{language === 'de' ? 'Direkt buchen (WhatsApp)' : language === 'pl' ? 'Zarezerwuj (WhatsApp)' : 'Book Caravan (WhatsApp)'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleWaSupportClick}
+                  className="bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-stone-100 border border-emerald-500/20 py-2 px-3 rounded-xl text-xs font-serif font-bold transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-95 cursor-pointer select-none"
+                >
+                  <span>𓀚</span>
+                  <span>{language === 'de' ? 'Berater kontaktieren' : language === 'pl' ? 'Kontakt z doradcą' : 'Contact Real Person'}</span>
+                </button>
+              </div>
+
+              <AnimatePresence>
+                {showBookingForm && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 15 }}
+                    className="bg-[#241c14] border border-[#d4af37]/35 rounded-xl p-4 space-y-3 shadow-xl"
+                  >
+                    <div className="flex justify-between items-center pb-2 border-b border-stone-800">
+                      <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-wider">𓋹 Sacred Booking Details</span>
+                      <button
+                        type="button"
+                        onClick={() => setShowBookingForm(false)}
+                        className="text-[10px] text-stone-500 hover:text-[#d4af37]"
+                      >
+                        ✕ Close
+                      </button>
+                    </div>
+
+                    <form onSubmit={handleWaBookingSubmit} className="space-y-2.5">
+                      <div>
+                        <label className="block text-[10px] uppercase font-mono text-[#e6c280] mb-1">Traveler Name</label>
+                        <input
+                          type="text"
+                          required
+                          value={waBookName}
+                          onChange={(e) => setWaBookName(e.target.value)}
+                          placeholder="Your Name (e.g., Cleopatra)"
+                          className="w-full bg-[#120e0a] border border-[#d4af37]/25 rounded-lg px-3 py-1.5 text-xs text-stone-200 placeholder-stone-600 focus:outline-none focus:ring-1 focus:ring-[#d4af37]/50"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-[10px] uppercase font-mono text-[#e6c280] mb-1">Select Trip</label>
+                          <select
+                            value={waBookExcursion}
+                            onChange={(e) => setWaBookExcursion(e.target.value)}
+                            className="w-full bg-[#120e0a] border border-[#d4af37]/25 rounded-lg px-2 py-1.5 text-xs text-stone-200 focus:outline-none focus:ring-1 focus:ring-[#d4af37]/50"
+                          >
+                            {excursions.map(ex => (
+                              <option key={ex.id} value={ex.id}>{ex.title} (${ex.price})</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] uppercase font-mono text-[#e6c280] mb-1">Travel Date</label>
+                          <input
+                            type="date"
+                            required
+                            value={waBookDate}
+                            onChange={(e) => setWaBookDate(e.target.value)}
+                            className="w-full bg-[#120e0a] border border-[#d4af37]/25 rounded-lg px-2 py-1.5 text-xs text-stone-200 focus:outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center pt-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] uppercase font-mono text-[#e6c280]">Guests:</span>
+                          <button
+                            type="button"
+                            onClick={() => setWaBookGuests(g => Math.max(1, g - 1))}
+                            className="bg-[#120e0a] text-[#d4af37] border border-stone-800 w-6 h-6 rounded flex items-center justify-center text-xs"
+                          >
+                            -
+                          </button>
+                          <span className="text-xs font-mono font-bold text-stone-200 px-1">{waBookGuests}</span>
+                          <button
+                            type="button"
+                            onClick={() => setWaBookGuests(g => Math.min(20, g + 1))}
+                            className="bg-[#120e0a] text-[#d4af37] border border-stone-800 w-6 h-6 rounded flex items-center justify-center text-xs"
+                          >
+                            +
+                          </button>
+                        </div>
+
+                        <button
+                          type="submit"
+                          className="bg-gradient-to-r from-[#d4af37] to-[#b08e23] hover:from-[#e6c280] text-[#140f0a] px-4 py-1.5 rounded-lg text-xs font-serif font-black transition-all active:scale-95 cursor-pointer flex items-center gap-1"
+                        >
+                          <span>𓋹</span>
+                          <span>{language === 'de' ? 'Über WhatsApp senden' : language === 'pl' ? 'Wyślij przez WhatsApp' : 'Reserve & Redirect'}</span>
+                        </button>
+                      </div>
+                    </form>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Input Form */}

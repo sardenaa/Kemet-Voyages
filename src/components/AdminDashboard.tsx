@@ -37,13 +37,16 @@ import {
   LogOut,
   ExternalLink,
   Lock,
-  Unlock
+  Unlock,
+  Camera,
+  QrCode
 } from 'lucide-react';
 import { Booking, Excursion, Review, ScribeMessage } from '../types';
 import { useLanguage } from './LanguageContext';
 import { initAuth, googleSignIn, logout, getAccessToken } from '../lib/firebaseAuth';
 import { createKemetSpreadsheet, syncTablesToSpreadsheet, importExcursionsFromSpreadsheet, importBookingsFromSpreadsheet } from '../lib/googleSheets';
 import BookingAnalytics from './BookingAnalytics';
+import TicketScanner from './TicketScanner';
 
 // Initial Excursions from Catalog for fallback
 const INITIAL_EXCURSIONS_DATA: Excursion[] = [
@@ -233,6 +236,7 @@ interface AdminDashboardProps {
   onUpdateBookingStatus: (id: string, status: Booking['status']) => void;
   onCancelBooking: (id: string) => void;
   onUpdateBookingsList: (updated: Booking[]) => void;
+  onVerifyCheckIn?: (id: string) => void;
 }
 
 type CRMTab = 'dashboard' | 'caravans' | 'nobles' | 'offerings' | 'testimonies' | 'oracle' | 'subscribers' | 'sheets' | 'analytics';
@@ -241,10 +245,12 @@ export default function AdminDashboard({
   bookings,
   onUpdateBookingStatus,
   onCancelBooking,
-  onUpdateBookingsList
+  onUpdateBookingsList,
+  onVerifyCheckIn
 }: AdminDashboardProps) {
   const { language, t } = useLanguage();
   const [activeTab, setActiveTab] = useState<CRMTab>('dashboard');
+  const [isScannerOpen, setIsScannerOpen] = useState<boolean>(false);
 
   // Google Sheets integration state
   const [gUser, setGUser] = useState<any>(null);
@@ -1172,24 +1178,35 @@ export default function AdminDashboard({
           </div>
         </div>
 
-        {/* Live Feedback Toast inside the CRM */}
-        <AnimatePresence>
-          {notification && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className={`px-4 py-2 rounded-xl text-xs font-mono uppercase tracking-wider flex items-center gap-2 border shadow-lg ${
-                notification.type === 'success'
-                  ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400'
-                  : 'bg-amber-500/15 border-amber-500/40 text-amber-400'
-              }`}
-            >
-              <CheckCircle className="w-4 h-4" />
-              {notification.text}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Right Header Action Buttons & Toast */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <button
+            onClick={() => setIsScannerOpen(true)}
+            className="bg-gradient-to-r from-[#d4af37] to-[#b08e23] hover:from-[#fbf5e6] hover:to-[#d4af37] text-[#140f0a] font-serif font-black text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl shadow-md flex items-center gap-2 cursor-pointer transition-all border border-[#d4af37]"
+          >
+            <Camera className="w-4 h-4" />
+            <span>Scan Ticket QR</span>
+          </button>
+
+          {/* Live Feedback Toast inside the CRM */}
+          <AnimatePresence>
+            {notification && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className={`px-4 py-2 rounded-xl text-xs font-mono uppercase tracking-wider flex items-center gap-2 border shadow-lg ${
+                  notification.type === 'success'
+                    ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400'
+                    : 'bg-amber-500/15 border-amber-500/40 text-amber-400'
+                }`}
+              >
+                <CheckCircle className="w-4 h-4" />
+                {notification.text}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
       {/* CRM Navigation Tabs */}
@@ -1565,17 +1582,27 @@ export default function AdminDashboard({
                   <p className="text-stone-400 text-xs">Manage active customer registrations and high priest sealing approvals.</p>
                 </div>
 
-                {/* Status tally legend */}
-                <div className="flex gap-2 text-[9px] font-mono uppercase tracking-widest">
-                  <span className="bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-full px-2 py-0.5">
-                    {bookings.filter(b => b.status === 'Pending Oracle Approval').length} Pending
-                  </span>
-                  <span className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-full px-2 py-0.5">
-                    {bookings.filter(b => b.status === 'Confirmed by High Priest').length} Confirmed
-                  </span>
-                  <span className="bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded-full px-2 py-0.5">
-                    {bookings.filter(b => b.status === 'Completed').length} Completed
-                  </span>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <button
+                    onClick={() => setIsScannerOpen(true)}
+                    className="bg-gradient-to-r from-[#d4af37] to-[#b08e23] hover:from-[#fbf5e6] hover:to-[#d4af37] text-[#140f0a] font-serif font-bold text-xs uppercase tracking-wider px-3.5 py-2 rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer transition-all border border-[#d4af37]"
+                  >
+                    <Camera className="w-4 h-4" />
+                    <span>Scan Ticket QR</span>
+                  </button>
+
+                  {/* Status tally legend */}
+                  <div className="flex gap-2 text-[9px] font-mono uppercase tracking-widest">
+                    <span className="bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-full px-2 py-0.5">
+                      {bookings.filter(b => b.status === 'Pending Oracle Approval').length} Pending
+                    </span>
+                    <span className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-full px-2 py-0.5">
+                      {bookings.filter(b => b.status === 'Confirmed by High Priest').length} Confirmed
+                    </span>
+                    <span className="bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded-full px-2 py-0.5">
+                      {bookings.filter(b => b.status === 'Completed').length} Completed
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -3168,6 +3195,28 @@ export default function AdminDashboard({
         )}
 
       </div>
+
+      {/* TICKET QR SCANNER MODAL FOR ADMINS */}
+      <AnimatePresence>
+        {isScannerOpen && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div className="max-w-xl w-full">
+              <TicketScanner
+                bookings={bookings}
+                onVerifyCheckIn={(bookingId) => {
+                  if (onVerifyCheckIn) {
+                    onVerifyCheckIn(bookingId);
+                  } else {
+                    onUpdateBookingStatus(bookingId, 'Completed');
+                  }
+                  triggerNotification(`Ticket #${bookingId.slice(-6).toUpperCase()} verified & checked-in!`);
+                }}
+                onClose={() => setIsScannerOpen(false)}
+              />
+            </div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

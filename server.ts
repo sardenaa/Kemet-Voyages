@@ -575,6 +575,42 @@ async function startServer() {
     }
   });
 
+  app.post("/api/excursions/sync-public-sheet", (req, res) => {
+    try {
+      const bulkData = req.body;
+      if (!Array.isArray(bulkData)) {
+        return res.status(400).json({ error: "Sacred excursions list must be a contiguous array." });
+      }
+
+      const db = loadDb();
+      const parsedExcursions = bulkData.map((ex: any, index: number) => {
+        return {
+          id: ex.id ? sanitizeString(ex.id, 50) : `ex-sheet-${Date.now()}-${index}`,
+          title: sanitizeString(ex.title, 100),
+          tagline: sanitizeString(ex.tagline, 150),
+          category: sanitizeString(ex.category, 50) || "diving",
+          duration: sanitizeString(ex.duration, 50) || "Full Day",
+          price: Math.max(1, Number(ex.price) || 100),
+          rating: Math.min(5, Math.max(1, Number(ex.rating) || 5.0)),
+          location: sanitizeString(ex.location, 150) || "Red Sea, Egypt",
+          image: sanitizeString(ex.image, 250) || "/src/assets/images/egypt_sea_diving_1784070366165.jpg",
+          description: sanitizeString(ex.description, 1000) || "Explore the grand wonders of Kemet.",
+          inclusions: Array.isArray(ex.inclusions) ? ex.inclusions.map((i: any) => sanitizeString(i, 200)) : [],
+          highlights: Array.isArray(ex.highlights) ? ex.highlights.map((h: any) => sanitizeString(h, 200)) : [],
+          ancientLore: sanitizeString(ex.ancientLore, 1000) || "This ancient land holds great divine alignment."
+        };
+      }).filter(e => e.title);
+
+      if (parsedExcursions.length > 0) {
+        db.excursions = parsedExcursions;
+        saveDb(db);
+      }
+      res.json(db.excursions);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
   // ==========================================
   // CARAVAN BOOKINGS ENDPOINTS
   // ==========================================
@@ -889,7 +925,7 @@ Respond ONLY with valid JSON. Do not wrap in markdown blocks, do not write anyth
 
       const ai = getAI();
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-3.6-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -911,13 +947,44 @@ Respond ONLY with valid JSON. Do not wrap in markdown blocks, do not write anyth
   app.post("/api/scribe-chat", geminiRateLimiter, async (req, res) => {
     try {
       const message = sanitizeString(req.body.message, 1000);
-      const { chatHistory } = req.body;
+      const { chatHistory, excursions, bookings } = req.body;
       const ai = getAI();
+
+      // Fetch latest server database state to enrich the Scribe's context
+      const db = loadDb();
+      const availableExcursions = excursions || db.excursions;
+      const userBookings = bookings || db.bookings;
+
+      let contextString = "";
+      if (availableExcursions && availableExcursions.length > 0) {
+        contextString += "\nAVAILABLE EXCURSIONS IN OUR CATALOG:\n";
+        availableExcursions.forEach((ex: any) => {
+          contextString += `- ID: "${ex.id}"\n  Title: "${ex.title}"\n  Category: "${ex.category}"\n  Price: $${ex.price}\n  Duration: "${ex.duration}"\n  Highlights: ${ex.highlights?.join(', ') || ''}\n  Ancient Lore: "${ex.ancientLore || ''}"\n`;
+        });
+      }
+
+      if (userBookings && userBookings.length > 0) {
+        contextString += "\nTHE USER'S CURRENT BOOKINGS (CARAVAN LEDGER):\n";
+        userBookings.forEach((b: any) => {
+          contextString += `- Booking ID: "${b.id}"\n  Excursion Title: "${b.excursionTitle}" (ID: "${b.excursionId}")\n  Traveler Name: "${b.travelerName}"\n  Traveler Email: "${b.travelerEmail}"\n  Scheduled Date: "${b.date}"\n  Guests: ${b.numberOfGuests}\n  Total Cost: $${b.totalCost}\n  Status: "${b.status}"\n  Special Requests: "${b.specialRequests || 'None'}"\n`;
+        });
+      } else {
+        contextString += "\nThe traveler currently has no active bookings in our ledger.\n";
+      }
 
       const systemInstruction = `You are Sennedjem, the wise Royal Scribe of Kemet. You speak in a highly sophisticated, polite, and atmospheric Pharaonic style. You use terms like 'noble traveler', 'Kemet', 'the gift of the Nile', 'the golden sun of Ra', 'by the grace of Isis'.
 You are an expert on Egyptian mythology, history, desert safaris, and the secrets of the Red Sea (Nun's great waters).
-If the user asks to translate a name or word into hieroglyphs or to explain its meaning, do so beautifully and explain what ancient symbols represent it (e.g., Scarab for transformation, Ankh for life, Eye of Horus for protection).
-Keep your responses relatively concise (1-2 short paragraphs) but highly immersive and flavorful.`;
+
+Here is the real-time context of our sanctuary's excursions and the traveler's active bookings:
+${contextString}
+
+Guidelines for your responses:
+1. Speak as a wise, poetic counselor. Under no circumstances should you break character.
+2. If the user asks for recommendations, refer to the available excursions listed above by name and customize your suggestions based on their interests. Mention the price or duration if relevant to help them plan.
+3. If the user asks about their bookings or status, consult the "CURRENT BOOKINGS" above. Acknowledge their traveler name, the date of their journey, and reassure them that the High Priests are aligning the stars for their adventure.
+4. If they ask about a packing list, look up what excursions they have booked or are interested in, and give them advice specifically tailored to those categories (e.g. reef-safe biodegradable sunscreen for diving, a shemagh/head scarf for desert safari, or modest clothes for temples).
+5. If the user asks to translate a name or word into hieroglyphs or to explain its meaning, do so beautifully and explain what ancient symbols represent it (e.g., Scarab for transformation, Ankh for life, Eye of Horus for protection).
+6. Keep your responses relatively concise (1-2 short paragraphs) but highly immersive, flavorful, and formatted using clean, readable markdown (bold key terms, bullet points for lists).`;
 
       let prompt = "";
       if (chatHistory && Array.isArray(chatHistory)) {
@@ -934,7 +1001,7 @@ Keep your responses relatively concise (1-2 short paragraphs) but highly immersi
       prompt += `Traveler: ${message}\nScribe Sennedjem:`;
 
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-3.6-flash",
         contents: prompt,
         config: {
           systemInstruction,
@@ -943,8 +1010,8 @@ Keep your responses relatively concise (1-2 short paragraphs) but highly immersi
 
       // Save to Oracle chats log for administrative insight
       try {
-        const db = loadDb();
-        db.oracle_logs.unshift({
+        const dbState = loadDb();
+        dbState.oracle_logs.unshift({
           id: `log-${Date.now()}`,
           name: "Anonymous Traveler",
           email: "Session Chat Guest",
@@ -952,8 +1019,8 @@ Keep your responses relatively concise (1-2 short paragraphs) but highly immersi
           time: new Date().toISOString().replace('T', ' ').substring(0, 16)
         });
         // keep logs at max 50
-        if (db.oracle_logs.length > 50) db.oracle_logs = db.oracle_logs.slice(0, 50);
-        saveDb(db);
+        if (dbState.oracle_logs.length > 50) dbState.oracle_logs = dbState.oracle_logs.slice(0, 50);
+        saveDb(dbState);
       } catch (logErr) {
         // ignore log error
       }
