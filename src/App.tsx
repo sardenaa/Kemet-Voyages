@@ -46,7 +46,7 @@ export default function App() {
 
   const [isAdminMode, setIsAdminMode] = useState<boolean>(false);
   const [activeStage, setActiveStage] = useState<'browsing' | 'itinerary' | 'finalizing'>('browsing');
-  const [activePage, setActivePage] = useState<'tours' | 'map' | 'scribe' | 'gallery' | 'cartouche' | 'faq' | 'bookings'>('tours');
+  const [activePage, setActivePage] = useState<'tours' | 'map' | 'scribe' | 'gallery' | 'cartouche' | 'faq' | 'bookings' | 'admin'>('tours');
   const [isAdminVerified, setIsAdminVerified] = useState<boolean>(() => {
     return localStorage.getItem('kemet_admin_verified') === 'true';
   });
@@ -389,31 +389,34 @@ export default function App() {
   };
 
   const scrollToSection = (id: string) => {
-    if (id === 'excursions-section') {
+    if (id === 'excursions-section' || id === 'tours') {
       setActivePage('tours');
-    } else if (id === 'map-section') {
+    } else if (id === 'map-section' || id === 'map') {
       setActivePage('map');
-    } else if (id === 'scribe-section') {
+    } else if (id === 'scribe-section' || id === 'scribe') {
       setActivePage('scribe');
-    } else if (id === 'gallery-section') {
+    } else if (id === 'gallery-section' || id === 'gallery') {
       setActivePage('gallery');
-    } else if (id === 'cartouche-section') {
+    } else if (id === 'cartouche-section' || id === 'cartouche') {
       setActivePage('cartouche');
-    } else if (id === 'faq-section') {
+    } else if (id === 'faq-section' || id === 'faq') {
       setActivePage('faq');
-    } else if (id === 'ledger-section') {
+    } else if (id === 'ledger-section' || id === 'bookings') {
       setActivePage('bookings');
+    } else if (id === 'admin-section' || id === 'admin') {
+      setActivePage('admin');
+      setIsAdminMode(true);
     }
 
-    // Scroll with motion animation & smooth alignment
+    // Scroll with motion animation & smooth alignment directly to screen main view
     setTimeout(() => {
-      const targetEl = document.getElementById(id) || document.getElementById('main-content-section');
+      const targetEl = document.getElementById('main-content-section');
       if (targetEl) {
         targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } else {
-        window.scrollTo({ top: 400, behavior: 'smooth' });
+        window.scrollTo({ top: 300, behavior: 'smooth' });
       }
-    }, 60);
+    }, 50);
   };
 
   return (
@@ -475,97 +478,133 @@ export default function App() {
       {/* Main Container */}
       <div className="relative">
         
-        {/* HERO BANNER SECTION */}
-        <header className="relative h-[85vh] flex items-center justify-center overflow-hidden border-b-4 border-[#d4af37] shadow-[0_15px_30px_rgba(212,175,55,0.08)]">
-          
-          {/* Hero Image Background */}
-          <div className="absolute inset-0 overflow-hidden">
-            <img
-              src={theme === 'nile' ? "/src/assets/images/nile_midnight_bg_1784129212752.jpg" : "/src/assets/images/egypt_red_sea_hero_1784070351173.jpg"}
-              alt={theme === 'nile' ? "Nile River Midnight View" : "Ancient Egypt Red Sea Coast"}
-              className="w-full h-full object-cover object-bottom transition-transform duration-75 ease-out"
-              style={{
-                transform: theme === 'nile'
-                  ? `translateX(${scrollY * 0.08}px) scale(1.15)`
-                  : `translateX(${scrollY * 0.04}px) scale(1.1)`,
-              }}
-              referrerPolicy="no-referrer"
-            />
-            {/* Dark, glowing gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-b from-[#100c08]/60 via-[#100c08]/30 to-[#100c08] z-0"></div>
-            <div className="absolute inset-0 bg-gradient-to-r from-[#100c08] via-transparent to-[#100c08] opacity-80 z-0"></div>
-          </div>
-
-          {/* Hero Content */}
-          <div className="relative z-10 w-full max-w-5xl mx-auto px-6 text-center space-y-6">
+        {/* HERO BANNER / COMPACT SCREEN HEADER BANNER */}
+        {activePage === 'tours' ? (
+          <header className="relative h-[85vh] flex items-center justify-center overflow-hidden border-b-4 border-[#d4af37] shadow-[0_15px_30px_rgba(212,175,55,0.08)]">
             
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1 }}
-              className="inline-flex items-center gap-2 bg-[#140f0c]/90 border border-[#d4af37]/45 rounded-full px-5 py-1.5 shadow-[0_0_15px_rgba(212,175,55,0.15)] backdrop-blur-md"
-            >
-              <Sparkles className="text-[#d4af37] w-4 h-4 animate-pulse" />
-              <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#e6c280]">
-                {t('hero_sub', 'Experience Ancient Egypt')}
-              </span>
-              <Sparkles className="text-[#d4af37] w-4 h-4 animate-pulse" />
-            </motion.div>
+            {/* Hero Image Background */}
+            <div className="absolute inset-0 overflow-hidden">
+              <img
+                src={theme === 'nile' ? "/src/assets/images/nile_midnight_bg_1784129212752.jpg" : "/src/assets/images/egypt_red_sea_hero_1784070351173.jpg"}
+                alt={theme === 'nile' ? "Nile River Midnight View" : "Ancient Egypt Red Sea Coast"}
+                className="w-full h-full object-cover object-bottom transition-transform duration-75 ease-out"
+                style={{
+                  transform: theme === 'nile'
+                    ? `translateX(${scrollY * 0.08}px) scale(1.15)`
+                    : `translateX(${scrollY * 0.04}px) scale(1.1)`,
+                }}
+                referrerPolicy="no-referrer"
+              />
+              {/* Dark, glowing gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-b from-[#100c08]/60 via-[#100c08]/30 to-[#100c08] z-0"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-[#100c08] via-transparent to-[#100c08] opacity-80 z-0"></div>
+            </div>
 
-            <div className="space-y-2">
-              <motion.h1
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 1.2, delay: 0.2 }}
-                className="font-serif text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-[#fbf5e6] via-[#d4af37] to-[#8e6b12] uppercase tracking-wider drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] leading-none"
+            {/* Hero Content */}
+            <div className="relative z-10 w-full max-w-5xl mx-auto px-6 text-center space-y-6">
+              
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1 }}
+                className="inline-flex items-center gap-2 bg-[#140f0c]/90 border border-[#d4af37]/45 rounded-full px-5 py-1.5 shadow-[0_0_15px_rgba(212,175,55,0.15)] backdrop-blur-md"
               >
-                {t('hero_title', 'Kemet Tours')}
-              </motion.h1>
+                <Sparkles className="text-[#d4af37] w-4 h-4 animate-pulse" />
+                <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#e6c280]">
+                  {t('hero_sub', 'Experience Ancient Egypt')}
+                </span>
+                <Sparkles className="text-[#d4af37] w-4 h-4 animate-pulse" />
+              </motion.div>
+
+              <div className="space-y-2">
+                <motion.h1
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 1.2, delay: 0.2 }}
+                  className="font-serif text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-[#fbf5e6] via-[#d4af37] to-[#8e6b12] uppercase tracking-wider drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] leading-none"
+                >
+                  {t('hero_title', 'Kemet Tours')}
+                </motion.h1>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 1.2, delay: 0.4 }}
+                  className="font-serif text-base md:text-xl text-[#e6c280]/80 tracking-widest uppercase drop-shadow-md"
+                >
+                  {t('hero_powered', 'Powered by Mas international Agency')}
+                </motion.p>
+              </div>
+
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 1.2, delay: 0.4 }}
-                className="font-serif text-base md:text-xl text-[#e6c280]/80 tracking-widest uppercase drop-shadow-md"
+                transition={{ duration: 1.2, delay: 0.6 }}
+                className="text-stone-300 text-sm md:text-base max-w-xl mx-auto leading-relaxed font-sans drop-shadow"
               >
-                {t('hero_powered', 'Powered by Mas international Agency')}
+                {t('hero_desc', 'Explore world-class Red Sea coral reefs, experience desert quad and camel safaris, and discover the historic temples and tombs of Luxor with our personalized travel planner.')}
               </motion.p>
+
+              {/* Quick action buttons */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 0.8 }}
+                className="flex flex-wrap gap-4 justify-center pt-4"
+              >
+                <button
+                  onClick={() => scrollToSection('excursions-section')}
+                  className="bg-gradient-to-r from-[#d4af37] to-[#b08e23] hover:from-[#f3e5c8] hover:to-[#d4af37] text-[#140f0a] font-serif font-black text-sm uppercase tracking-widest px-8 py-3.5 rounded-xl shadow-lg shadow-[#d4af37]/25 hover:scale-105 transition-all duration-300 cursor-pointer"
+                >
+                  {t('hero_explore', 'Explore Tours')}
+                </button>
+                <button
+                  onClick={() => scrollToSection('scribe-section')}
+                  className="bg-[#140f0a]/90 hover:bg-[#201710] border border-[#d4af37]/50 text-[#e6c280] font-serif font-bold text-sm uppercase tracking-widest px-8 py-3.5 rounded-xl backdrop-blur-sm transition-all duration-300 cursor-pointer hover:border-amber-300"
+                >
+                  {t('hero_chat_ai', 'Chat with AI Assistant')}
+                </button>
+              </motion.div>
             </div>
 
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1.2, delay: 0.6 }}
-              className="text-stone-300 text-sm md:text-base max-w-xl mx-auto leading-relaxed font-sans drop-shadow"
-            >
-              {t('hero_desc', 'Explore world-class Red Sea coral reefs, experience desert quad and camel safaris, and discover the historic temples and tombs of Luxor with our personalized travel planner.')}
-            </motion.p>
+            {/* Golden Bottom Border Corner Accents */}
+            <div className="absolute bottom-4 left-4 text-[#d4af37] font-serif text-sm select-none pointer-events-none opacity-40">𓋹 𓎬</div>
+            <div className="absolute bottom-4 right-4 text-[#d4af37] font-serif text-sm select-none pointer-events-none opacity-40">𓅃 𓉐</div>
+          </header>
+        ) : (
+          <div className="relative py-8 px-6 bg-[#140f0c]/80 border-b-2 border-[#d4af37]/30 shadow-md backdrop-blur-sm">
+            <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+              <div className="flex items-center gap-3">
+                <span className="text-[#d4af37] text-3xl font-serif">
+                  {activePage === 'map' ? '𓉶' : activePage === 'scribe' ? '𓋹' : activePage === 'gallery' ? '𓅓' : activePage === 'cartouche' ? '𓉐' : activePage === 'faq' ? '𓇚' : activePage === 'bookings' ? '𓎬' : '𓂀'}
+                </span>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-widest">Kemet Tours Screen</span>
+                    <span className="text-stone-600">•</span>
+                    <span className="text-[10px] font-mono text-stone-400 uppercase">Powered by Mas international Agency</span>
+                  </div>
+                  <h1 className="font-serif text-2xl md:text-3xl font-bold text-[#e6c280] uppercase tracking-wide">
+                    {activePage === 'map' && 'Ancient Interactive Map'}
+                    {activePage === 'scribe' && 'AI Travel Planner & Assistant'}
+                    {activePage === 'gallery' && 'Egyptology Photo Gallery'}
+                    {activePage === 'cartouche' && 'Hieroglyphic Name Cartouche'}
+                    {activePage === 'faq' && 'Scribes Sanctuary & FAQs'}
+                    {activePage === 'bookings' && 'My Bookings & Reviews'}
+                    {activePage === 'admin' && 'High Priest Admin Portal'}
+                  </h1>
+                </div>
+              </div>
 
-            {/* Quick action buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.8 }}
-              className="flex flex-wrap gap-4 justify-center pt-4"
-            >
               <button
                 onClick={() => scrollToSection('excursions-section')}
-                className="bg-gradient-to-r from-[#d4af37] to-[#b08e23] hover:from-[#f3e5c8] hover:to-[#d4af37] text-[#140f0a] font-serif font-black text-sm uppercase tracking-widest px-8 py-3.5 rounded-xl shadow-lg shadow-[#d4af37]/25 hover:scale-105 transition-all duration-300 cursor-pointer"
+                className="bg-[#241a10] hover:bg-[#382818] text-[#e6c280] border border-[#d4af37]/40 px-4 py-2 rounded-xl text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer shadow-sm"
               >
-                {t('hero_explore', 'Explore Tours')}
+                <span>𓆛</span>
+                <span>Back to Expeditions</span>
               </button>
-              <button
-                onClick={() => scrollToSection('scribe-section')}
-                className="bg-[#140f0a]/90 hover:bg-[#201710] border border-[#d4af37]/50 text-[#e6c280] font-serif font-bold text-sm uppercase tracking-widest px-8 py-3.5 rounded-xl backdrop-blur-sm transition-all duration-300 cursor-pointer hover:border-amber-300"
-              >
-                {t('hero_chat_ai', 'Chat with AI Assistant')}
-              </button>
-            </motion.div>
+            </div>
           </div>
-
-          {/* Golden Bottom Border Corner Accents */}
-          <div className="absolute bottom-4 left-4 text-[#d4af37] font-serif text-sm select-none pointer-events-none opacity-40">𓋹 𓎬</div>
-          <div className="absolute bottom-4 right-4 text-[#d4af37] font-serif text-sm select-none pointer-events-none opacity-40">𓅃 𓉐</div>
-        </header>
+        )}
 
         {/* EMBEDDED NAVIGATION BAR */}
         <nav className="sticky top-0 bg-[#140f0c]/90 border-b border-[#d4af37]/25 py-3.5 px-6 z-40 backdrop-blur-md">
@@ -578,7 +617,7 @@ export default function App() {
                 whileHover="hover"
                 whileTap="tap"
                 className="flex items-center gap-2 cursor-pointer group"
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                onClick={() => scrollToSection('excursions-section')}
               >
                 <motion.span
                   variants={{
@@ -596,24 +635,18 @@ export default function App() {
               </motion.div>
 
               {/* Anchors & Toggle */}
-              <div className="flex flex-wrap items-center justify-center gap-4 md:gap-5 text-xs font-mono uppercase tracking-widest">
-                {!isAdminMode && [
-                  { label: t('nav_tours', '𓆛 Tours & Excursions'), target: 'excursions-section' },
-                  { label: t('nav_map', '𓉶 Ancient Map'), target: 'map-section' },
-                  { label: t('nav_ai_planner', '𓋹 AI Travel Planner'), target: 'scribe-section' },
-                  { label: t('nav_gallery', '𓅓 Photo Gallery'), target: 'gallery-section' },
-                  { label: t('nav_cartouche', '𓉐 Name Translator'), target: 'cartouche-section' },
-                  { label: t('nav_faq', '𓇚 Questions & Answers'), target: 'faq-section' },
-                  { label: t('nav_bookings', '𓎬 My Bookings'), target: 'ledger-section' }
+              <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 text-xs font-mono uppercase tracking-widest">
+                {[
+                  { label: t('nav_tours', '𓆛 Tours & Excursions'), id: 'tours', target: 'excursions-section' },
+                  { label: t('nav_map', '𓉶 Ancient Map'), id: 'map', target: 'map-section' },
+                  { label: t('nav_ai_planner', '𓋹 AI Travel Planner'), id: 'scribe', target: 'scribe-section' },
+                  { label: t('nav_gallery', '𓅓 Photo Gallery'), id: 'gallery', target: 'gallery-section' },
+                  { label: t('nav_cartouche', '𓉐 Name Translator'), id: 'cartouche', target: 'cartouche-section' },
+                  { label: t('nav_faq', '𓇚 Questions & Answers'), id: 'faq', target: 'faq-section' },
+                  { label: t('nav_bookings', '𓎬 My Bookings'), id: 'bookings', target: 'ledger-section' },
+                  { label: t('nav_admin', '𓂀 Admin Portal'), id: 'admin', target: 'admin-section' }
                 ].map((item) => {
-                  const isItemActive = 
-                    (item.target === 'excursions-section' && activePage === 'tours') ||
-                    (item.target === 'map-section' && activePage === 'map') ||
-                    (item.target === 'scribe-section' && activePage === 'scribe') ||
-                    (item.target === 'gallery-section' && activePage === 'gallery') ||
-                    (item.target === 'cartouche-section' && activePage === 'cartouche') ||
-                    (item.target === 'faq-section' && activePage === 'faq') ||
-                    (item.target === 'ledger-section' && activePage === 'bookings');
+                  const isItemActive = activePage === item.id;
                   const text = item.label;
                   const firstSpaceIdx = text.indexOf(' ');
                   const glyph = firstSpaceIdx !== -1 ? text.substring(0, firstSpaceIdx) : '';
@@ -625,7 +658,7 @@ export default function App() {
                       onClick={() => scrollToSection(item.target)}
                       whileHover="hover"
                       whileTap="tap"
-                      className={`${isItemActive ? 'text-[#d4af37] font-bold' : 'text-stone-400'} hover:text-[#d4af37] transition-all duration-300 cursor-pointer flex items-center gap-1.5`}
+                      className={`${isItemActive ? 'text-[#d4af37] font-bold bg-[#281d14] px-3 py-1.5 rounded-lg border border-[#d4af37]/40 shadow-sm' : 'text-stone-400 px-2.5 py-1.5'} hover:text-[#d4af37] transition-all duration-300 cursor-pointer flex items-center gap-1.5`}
                     >
                       {glyph && (
                         <motion.span
@@ -906,6 +939,26 @@ export default function App() {
                     </p>
                   </div>
                   <BookingManager bookings={bookings} excursions={excursions} onCancelBooking={handleCancelBooking} onVerifyCheckIn={handleVerifyCheckIn} />
+                </motion.div>
+              )}
+
+              {activePage === 'admin' && (
+                <motion.div
+                  key="admin"
+                  id="admin-section"
+                  initial={{ opacity: 0, y: 30, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.98 }}
+                  transition={{ duration: 0.45, ease: 'easeOut' }}
+                  className="space-y-8 scroll-mt-28"
+                >
+                  <AdminDashboard
+                    bookings={bookings}
+                    onUpdateBookingStatus={handleUpdateBookingStatus}
+                    onCancelBooking={handleCancelBooking}
+                    onUpdateBookingsList={handleUpdateBookingsList}
+                    onVerifyCheckIn={handleVerifyCheckIn}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>

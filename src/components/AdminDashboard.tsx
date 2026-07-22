@@ -299,9 +299,8 @@ export default function AdminDashboard({
   }, [bookings.length, prevBookingsCount]);
 
   // Handle explicit real-time refresh from server & sheets
-  const handleFetchAndSyncRealtimeSheet = async () => {
+  const handleFetchAndSyncRealtimeSheet = React.useCallback(async () => {
     setIsRealTimeSyncing(true);
-    setRealTimeSyncToast("Synchronizing with 'Kemet Bookings' Google Sheet...");
     try {
       const passcode = localStorage.getItem('kemet_admin_passcode') || 'pharaoh';
       const res = await fetch('/api/bookings', {
@@ -311,19 +310,24 @@ export default function AdminDashboard({
         const latestBookings = await res.json();
         onUpdateBookingsList(latestBookings);
         setLastSheetSyncTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
-        setRealTimeSyncToast(`✓ 'Kemet Bookings' Sheet verified & synced! (${latestBookings.length} bookings)`);
-      } else {
-        setRealTimeSyncToast("✓ Sheet connection active!");
       }
     } catch (e) {
-      setRealTimeSyncToast("✓ Sheet connection active!");
+      // silent catch for background auto-sync
     } finally {
       setTimeout(() => {
         setIsRealTimeSyncing(false);
-        setTimeout(() => setRealTimeSyncToast(null), 4000);
       }, 1000);
     }
-  };
+  }, [onUpdateBookingsList]);
+
+  // Periodic Auto-Sync for Admin Dashboard
+  useEffect(() => {
+    handleFetchAndSyncRealtimeSheet();
+    const interval = setInterval(() => {
+      handleFetchAndSyncRealtimeSheet();
+    }, 30000); // Auto sync every 30 seconds
+    return () => clearInterval(interval);
+  }, [handleFetchAndSyncRealtimeSheet]);
 
   // Handle Google OAuth initialization
   useEffect(() => {
@@ -1232,39 +1236,39 @@ export default function AdminDashboard({
 
         {/* Right Header Action Buttons & Toast */}
         <div className="flex items-center gap-3 flex-wrap">
-          {/* Real-Time Google Sheet Visual Sync Indicator Badge */}
-          <div className="bg-[#18130e] border border-[#d4af37]/40 rounded-xl px-3.5 py-2 flex items-center gap-3 shadow-lg">
-            <div className="relative flex items-center justify-center">
-              <span className={`w-3 h-3 rounded-full ${isRealTimeSyncing ? 'bg-amber-400 animate-ping' : 'bg-emerald-400 animate-pulse'}`} />
-              <span className={`absolute w-2.5 h-2.5 rounded-full ${isRealTimeSyncing ? 'bg-amber-400' : 'bg-emerald-400'}`} />
+          {/* Small Subtle Real-Time Google Sheets Sync Status Indicator Icon */}
+          <div 
+            className="bg-[#18130e] border border-[#d4af37]/35 rounded-xl px-3 py-1.5 flex items-center gap-2.5 shadow-md"
+            title={isRealTimeSyncing ? "Syncing real-time Google Sheets data..." : `Google Sheets synced up to date (Last: ${lastSheetSyncTime})`}
+          >
+            <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-[#241a11] border border-[#d4af37]/25">
+              {isRealTimeSyncing ? (
+                <RefreshCw className="w-3.5 h-3.5 text-amber-400 animate-spin" />
+              ) : (
+                <Check className="w-3.5 h-3.5 text-emerald-400 font-bold" />
+              )}
             </div>
             
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5">
-                <FileSpreadsheet className="w-3.5 h-3.5 text-[#d4af37]" />
+                <FileSpreadsheet className="w-3 h-3 text-[#d4af37]" />
                 <span className="text-[10px] font-mono font-bold text-[#e6c280] uppercase tracking-wider">
-                  Kemet Bookings Sheet
+                  Sync Status
                 </span>
-                <span className="bg-emerald-500/20 text-emerald-400 text-[8px] font-mono font-bold px-1.5 py-0.2 rounded border border-emerald-500/30 uppercase tracking-widest">
-                  {isRealTimeSyncing ? 'SYNCING...' : 'LIVE SPREADSHEET'}
+                <span className={`text-[9px] font-mono font-bold uppercase tracking-widest px-1.5 py-0.2 rounded border ${
+                  isRealTimeSyncing 
+                    ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' 
+                    : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                }`}>
+                  {isRealTimeSyncing ? 'Syncing...' : 'Up to date'}
                 </span>
               </div>
-              <span className="text-[9px] font-mono text-stone-400 flex items-center gap-1 mt-0.5">
-                <span>{bookings.length} entries synced</span>
+              <span className="text-[8px] font-mono text-stone-400 flex items-center gap-1 mt-0.5">
+                <span>Google Sheets</span>
                 <span>•</span>
-                <span className="text-stone-500">Updated: {lastSheetSyncTime}</span>
+                <span className="text-stone-300 font-semibold">{lastSheetSyncTime}</span>
               </span>
             </div>
-
-            <button
-              onClick={handleFetchAndSyncRealtimeSheet}
-              disabled={isRealTimeSyncing}
-              className="ml-1 bg-[#281e14] hover:bg-[#3d2e1f] text-[#d4af37] border border-[#d4af37]/35 px-2.5 py-1.5 rounded-lg text-[10px] font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm disabled:opacity-50"
-              title="Verify and sync real-time 'Kemet Bookings' sheet"
-            >
-              <RefreshCw className={`w-3 h-3 ${isRealTimeSyncing ? 'animate-spin text-amber-400' : ''}`} />
-              <span>Sync</span>
-            </button>
           </div>
 
           <button

@@ -326,6 +326,30 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
                   <span className="text-[9px] font-sans text-stone-500">View trip statuses & details</span>
                 </motion.button>
 
+                {/* 7. Admin Portal */}
+                <motion.button
+                  whileHover="hover"
+                  whileTap="tap"
+                  onClick={() => handleNavClick('admin-section')}
+                  className={`flex flex-col items-start gap-2 p-4 rounded-2xl text-left transition-all cursor-pointer border ${
+                    activePage === 'admin'
+                      ? 'bg-[#2a2016]/80 border-[#d4af37] shadow-[0_0_12px_rgba(212,175,55,0.15)]'
+                      : 'bg-[#1c1510] border-[#d4af37]/15 hover:border-[#d4af37]/45'
+                  }`}
+                >
+                  <motion.div
+                    variants={{
+                      hover: { scale: 1.3, rotate: 12, y: -2 },
+                      tap: { scale: 0.85, rotate: -8 }
+                    }}
+                    transition={{ type: 'spring', stiffness: 450, damping: 10 }}
+                  >
+                    <ShieldAlert className="w-5 h-5 text-[#d4af37]" />
+                  </motion.div>
+                  <span className="font-serif text-xs font-bold text-[#e6c280] uppercase">Admin Portal</span>
+                  <span className="text-[9px] font-sans text-stone-500">Real-time Sheets & CRM</span>
+                </motion.button>
+
               </div>
 
               {/* WhatsApp Quick Chat Integration */}

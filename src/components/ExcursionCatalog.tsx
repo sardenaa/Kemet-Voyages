@@ -517,21 +517,10 @@ export default function ExcursionCatalog({ onAddBooking, excursions }: CatalogPr
   const [isSyncingSheet, setIsSyncingSheet] = useState<boolean>(false);
   const [syncSheetMessage, setSyncSheetMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const handleSyncGoogleSheet = async () => {
+  const performAutoSyncGoogleSheet = React.useCallback(async () => {
     setIsSyncingSheet(true);
-    setSyncSheetMessage(null);
     try {
-      let token = await getAccessToken();
-      if (!token) {
-        try {
-          const authRes = await googleSignIn();
-          if (authRes) {
-            token = authRes.accessToken;
-          }
-        } catch (authErr) {
-          console.warn("Google sign-in skipped or cancelled:", authErr);
-        }
-      }
+      let token = await getAccessToken().catch(() => null);
 
       const res = await fetch('/api/excursions/fetch-google-sheet', {
         method: 'POST',
@@ -545,32 +534,28 @@ export default function ExcursionCatalog({ onAddBooking, excursions }: CatalogPr
         })
       });
 
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setSyncSheetMessage({
-          type: 'success',
-          text: language === 'de' ? `Erfolgreich ${data.count} Ausflüge aus Google Sheet synchronisiert!` :
-                language === 'pl' ? `Pomyślnie zsynchronizowano ${data.count} wycieczek z Arkusza Google!` :
-                `Successfully synced ${data.count} excursions from Google Sheet!`
-        });
-        localStorage.setItem('kemet_excursions', JSON.stringify(data.excursions));
-        window.dispatchEvent(new Event('kemet_excursions_updated'));
-      } else {
-        setSyncSheetMessage({
-          type: 'error',
-          text: data.error || (language === 'de' ? 'Synchronisierung fehlgeschlagen.' : 'Failed to sync with Google Sheet.')
-        });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.excursions) && data.excursions.length > 0) {
+          localStorage.setItem('kemet_excursions', JSON.stringify(data.excursions));
+          window.dispatchEvent(new Event('kemet_excursions_updated'));
+        }
       }
     } catch (err: any) {
-      setSyncSheetMessage({
-        type: 'error',
-        text: err.message || 'Error connecting to Google Sheets endpoint.'
-      });
+      console.warn("Silent background Google Sheet auto-sync notice:", err);
     } finally {
       setIsSyncingSheet(false);
-      setTimeout(() => setSyncSheetMessage(null), 6000);
     }
-  };
+  }, []);
+
+  // Run Auto-Sync on mount & periodically
+  useEffect(() => {
+    performAutoSyncGoogleSheet();
+    const interval = setInterval(() => {
+      performAutoSyncGoogleSheet();
+    }, 45000); // Auto sync every 45 seconds
+    return () => clearInterval(interval);
+  }, [performAutoSyncGoogleSheet]);
 
   const handleToggleCompare = (exId: string) => {
     setSelectedCompareIds(prev => {
@@ -947,21 +932,6 @@ Please seal my booking with the High Priest approval!`;
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2.5 w-full lg:w-auto">
-          <button
-            onClick={handleSyncGoogleSheet}
-            disabled={isSyncingSheet}
-            className="px-4 py-2.5 rounded-xl text-xs font-mono uppercase tracking-widest transition-all duration-300 cursor-pointer flex items-center justify-center gap-2 border bg-[#1a140f] border-[#d4af37]/35 text-[#e6c280] hover:bg-[#281d13] hover:border-[#d4af37]/60 active:scale-95 disabled:opacity-50"
-            title="Sync live excursion data from linked Google Sheet"
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
-            <span>
-              {isSyncingSheet 
-                ? (language === 'de' ? 'Synchronisiere...' : language === 'pl' ? 'Synchronizacja...' : 'Syncing Sheet...') 
-                : (language === 'de' ? 'Google Sheet Abgleichen' : language === 'pl' ? 'Synchronizuj Arkusz' : 'Sync Google Sheet')}
-            </span>
-            <RefreshCw className={`w-3 h-3 text-[#d4af37] ${isSyncingSheet ? 'animate-spin' : ''}`} />
-          </button>
-
           <button
             onClick={() => {
               setIsComparisonMode(!isComparisonMode);
