@@ -15,6 +15,7 @@ import ScarabCelebration from './components/ScarabCelebration';
 import PapyrusScrollCelebration from './components/PapyrusScrollCelebration';
 import AncientSitesMap from './components/AncientSitesMap';
 import { useLanguage } from './components/LanguageContext';
+import { getAccessToken } from './lib/firebaseAuth';
 
 export default function App() {
   const { language, setLanguage, t } = useLanguage();
@@ -64,22 +65,52 @@ export default function App() {
     return () => window.removeEventListener('click', handleOutsideClick);
   }, [isLangDropdownOpen]);
 
-  // Sync with secure server database on mount and when admin status changes
-  useEffect(() => {
-    const syncData = async () => {
-      try {
-        const resEx = await fetch('/api/excursions');
-        if (resEx.ok) {
-          const exData = await resEx.json();
-          setExcursions(exData);
-          localStorage.setItem('kemet_excursions', JSON.stringify(exData));
+  // Fetch excursion data directly from Google Sheet on application load
+  const fetchExcursionsFromGoogleSheet = async () => {
+    try {
+      const token = await getAccessToken();
+      const res = await fetch('/api/excursions/fetch-google-sheet', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          accessToken: token || ''
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.excursions && Array.isArray(data.excursions) && data.excursions.length > 0) {
+          setExcursions(data.excursions);
+          localStorage.setItem('kemet_excursions', JSON.stringify(data.excursions));
           window.dispatchEvent(new Event('kemet_excursions_updated'));
+          return;
         }
-      } catch (err) {
-        console.error("Failed to load excursions from sacred server registry:", err);
       }
+    } catch (err) {
+      console.warn("Direct Google Sheet fetch failed on load, falling back to server registry:", err);
+    }
 
-      if (isAdminVerified) {
+    try {
+      const resEx = await fetch('/api/excursions');
+      if (resEx.ok) {
+        const exData = await resEx.json();
+        setExcursions(exData);
+        localStorage.setItem('kemet_excursions', JSON.stringify(exData));
+        window.dispatchEvent(new Event('kemet_excursions_updated'));
+      }
+    } catch (err) {
+      console.error("Failed to load excursions from sacred server registry:", err);
+    }
+  };
+
+  // Sync with Google Sheets and secure server database on mount and when admin status changes
+  useEffect(() => {
+    fetchExcursionsFromGoogleSheet();
+
+    if (isAdminVerified) {
+      const loadAdminBookings = async () => {
         const passcode = localStorage.getItem('kemet_admin_passcode') || 'pharaoh';
         try {
           const resBk = await fetch('/api/bookings', {
@@ -95,9 +126,9 @@ export default function App() {
         } catch (err) {
           console.error("Failed to load bookings ledger from server:", err);
         }
-      }
-    };
-    syncData();
+      };
+      loadAdminBookings();
+    }
   }, [isAdminVerified]);
   const [passcodeInput, setPasscodeInput] = useState<string>('');
   const [passcodeError, setPasscodeError] = useState<string>('');
@@ -258,10 +289,17 @@ export default function App() {
   // Handle adding a new booking from the catalog
   const handleAddBooking = async (newBooking: Booking) => {
     try {
+      const token = await getAccessToken();
       const response = await fetch('/api/bookings', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newBooking)
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          ...newBooking,
+          accessToken: token || ''
+        })
       });
       if (response.ok) {
         const savedBooking = await response.json();
@@ -678,98 +716,6 @@ export default function App() {
                     </>
                   )}
                 </button>
-
-                <button
-                  onClick={() => setIsAdminMode(!isAdminMode)}
-                  className={`px-3 py-1.5 rounded-lg border font-bold transition-all duration-300 cursor-pointer uppercase flex items-center gap-1.5 ${
-                    isAdminMode
-                      ? 'bg-[#d4af37] text-[#140f0a] border-[#d4af37]'
-                      : 'bg-[#241a10]/60 text-[#e6c280] border-[#d4af37]/40 hover:border-[#d4af37]'
-                  }`}
-                >
-                  {isAdminMode ? t('nav_traveler', '𓀚 Traveler View') : t('nav_admin', '𓋹 Admin Dashboard')}
-                </button>
-              </div>
-            </div>
-
-            {/* Stage Progress Tracker */}
-            <div className={`pt-3 border-t border-[#d4af37]/10 flex-col items-center justify-center admin-stage-tracker ${isAdminMode ? 'flex' : 'hidden'}`}>
-              <div className="flex items-center gap-2 mb-3 mt-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span className="text-[9px] font-mono text-[#d4af37] uppercase tracking-[0.25em]">
-                  𓂀 {language === 'de' ? 'Echtzeit-Phasenmonitor für aktive Reisende' : language === 'pl' ? 'Monitor fazy aktywnych podróżnych w czasie rzeczywistym' : language === 'cs' ? 'Sledování aktivních cestovatelů v reálném čase' : 'Real-Time Active Traveler Stage Monitor'} 𓋹
-                </span>
-              </div>
-              
-              <div className="w-full max-w-xl flex items-center justify-between text-[10px] font-mono uppercase tracking-[0.15em] relative py-1">
-                {/* Progress Line Background */}
-                <div className="absolute top-[14px] left-[30px] right-[30px] h-[1.5px] bg-stone-800/80 z-0"></div>
-                {/* Active Progress Line */}
-                <div 
-                  className="absolute top-[14px] left-[30px] h-[1.5px] bg-[#d4af37] z-0 transition-all duration-500 ease-in-out"
-                  style={{
-                    width: activeStage === 'browsing' ? '0%' : activeStage === 'itinerary' ? '50%' : '100%'
-                  }}
-                ></div>
-
-                {/* Steps */}
-                {[
-                  { id: 'browsing', label: language === 'de' ? 'Touren durchstöbern' : language === 'pl' ? 'Przeglądanie wycieczek' : language === 'cs' ? 'Prohlížení výletů' : 'Browsing Tours', glyph: '𓆛', target: 'excursions-section', baseUsers: 4 },
-                  { id: 'itinerary', label: language === 'de' ? 'Reiseplan erstellen' : language === 'pl' ? 'Tworzenie planu podróży' : language === 'cs' ? 'Plánování itineráře' : 'Building Itinerary', glyph: '𓋹', target: 'scribe-section', baseUsers: 2 },
-                  { id: 'finalizing', label: language === 'de' ? 'Buchungen abschließen' : language === 'pl' ? 'Finalizowanie rezerwacji' : language === 'cs' ? 'Dokončení rezervací' : 'Finalizing Bookings', glyph: '𓎬', target: 'ledger-section', baseUsers: 1 }
-                ].map((step, idx) => {
-                  const isCompleted = 
-                    (activeStage === 'itinerary' && idx === 0) ||
-                    (activeStage === 'finalizing' && (idx === 0 || idx === 1));
-                  const isActive = activeStage === step.id;
-
-                  // Active users counts: simulated base + 1 if the current visitor (admin simulating) is on this section
-                  const currentCount = step.baseUsers + (isActive ? 1 : 0);
-
-                  return (
-                    <button
-                      key={step.id}
-                      onClick={() => scrollToSection(step.target)}
-                      className="relative z-10 flex flex-col items-center group focus:outline-none cursor-pointer"
-                      title={language === 'de' ? `Gehe zu ${step.label}` : language === 'pl' ? `Idź do ${step.label}` : language === 'cs' ? `Přejít na ${step.label}` : `Go to ${step.label}`}
-                    >
-                      {/* Step Bubble */}
-                      <div 
-                        className={`w-7 h-7 rounded-full flex items-center justify-center border font-serif text-xs transition-all duration-500 ${
-                          isActive 
-                            ? 'bg-[#d4af37] text-[#140f0a] border-[#d4af37] scale-110 shadow-md shadow-[#d4af37]/35' 
-                            : isCompleted
-                              ? 'bg-[#241a10] text-[#d4af37] border-[#d4af37]'
-                              : 'bg-[#140f0c] text-stone-500 border-stone-800/80 hover:border-stone-600'
-                        }`}
-                      >
-                        {step.glyph}
-                      </div>
-                      
-                      {/* Step Label */}
-                      <span 
-                        className={`mt-1.5 text-[8.5px] font-bold tracking-wider transition-all duration-300 ${
-                          isActive 
-                            ? 'text-[#e6c280]' 
-                            : isCompleted 
-                              ? 'text-[#d4af37]/80' 
-                              : 'text-stone-500 group-hover:text-stone-400'
-                        }`}
-                      >
-                        {step.label}
-                      </span>
-
-                      {/* Active Users Tag */}
-                      <span className={`mt-1 px-1.5 py-0.5 rounded-md text-[7px] font-mono tracking-normal font-bold border transition-all duration-300 ${
-                        isActive
-                          ? 'bg-emerald-950/80 text-emerald-400 border-emerald-500/20 shadow-[0_0_8px_rgba(16,185,129,0.1)]'
-                          : 'bg-stone-900/40 text-stone-500 border-stone-800/60'
-                      }`}>
-                        {currentCount} {language === 'de' ? 'Aktiv' : language === 'pl' ? 'Aktywny(ch)' : language === 'cs' ? 'Aktivní' : 'Active'} {isActive && (language === 'de' ? '• Aktuell' : language === 'pl' ? '• Bieżący' : language === 'cs' ? '• Aktuální' : '• Current')}
-                      </span>
-                    </button>
-                  );
-                })}
               </div>
             </div>
           </div>
@@ -778,143 +724,8 @@ export default function App() {
         {/* MAIN BODY CONTENTS */}
         <main className="max-w-7xl mx-auto px-4 md:px-6 py-12 relative" id="main-content-section">
           
-          {isAdminMode ? (
-            !isAdminVerified ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="max-w-md mx-auto bg-[#14100c] border border-[#d4af37]/40 rounded-2xl p-8 space-y-6 text-center shadow-2xl relative overflow-hidden my-12"
-              >
-                {/* Background ambient glow */}
-                <div className="absolute top-0 left-0 w-32 h-32 bg-[#d4af37]/5 rounded-full blur-2xl pointer-events-none"></div>
-                <div className="absolute bottom-0 right-0 w-32 h-32 bg-[#d4af37]/5 rounded-full blur-2xl pointer-events-none"></div>
-
-                <div className="flex justify-center">
-                  <div className="bg-gradient-to-br from-[#d4af37] to-[#8e6b12] p-4 rounded-full border border-[#d4af37]/30 shadow-lg animate-pulse">
-                    <span className="text-[#140f0a] font-serif text-3xl">𓀚</span>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.25em] block">{language === 'de' ? 'Sperrbereich' : language === 'pl' ? 'Obszar Zastrzeżony' : language === 'cs' ? 'Vyhrazená oblast' : 'Restricted Area'}</span>
-                  <h3 className="font-serif text-2xl font-black text-[#e6c280] uppercase tracking-wide">
-                    {language === 'de' ? 'Admin-Dashboard-Zugriff' : language === 'pl' ? 'Dostęp do Panelu Administratora' : language === 'cs' ? 'Přístup k administrátorskému panelu' : 'Admin Dashboard Access'}
-                  </h3>
-                  <p className="text-stone-400 text-xs leading-relaxed">
-                    {language === 'de' ? 'Der Zugriff ist autorisierten Reiseadministratoren vorbehalten. Bitte geben Sie den Admin-Passcode ein, um das Dashboard anzuzeigen.' : language === 'pl' ? 'Dostęp jest zastrzeżony dla upoważnionych administratorów podróży. Wprowadź hasło administratora, aby wyświetlić panel.' : language === 'cs' ? 'Přístup je vyhrazen pro oprávněné administrátory. Pro zobrazení panelu zadejte administrátorské heslo.' : 'Access is restricted to authorized travel administrators. Please enter the admin passcode to view the dashboard.'}
-                  </p>
-                </div>
-
-                <form
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    try {
-                      const response = await fetch('/api/admin/verify', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ passcode: passcodeInput })
-                      });
-                      const data = await response.json();
-                      if (response.ok && data.success) {
-                        setIsAdminVerified(true);
-                        localStorage.setItem('kemet_admin_verified', 'true');
-                        localStorage.setItem('kemet_admin_passcode', passcodeInput.trim());
-                        setPasscodeError('');
-                        setPasscodeInput('');
-                        triggerCelebration(); // Celebrate!
-                      } else {
-                        setPasscodeError(data.error || (language === 'de' ? 'Ungültiger Passcode. Bitte versuchen Sie es erneut.' : language === 'pl' ? 'Nieprawidłowe hasło. Spróbuj ponownie.' : language === 'cs' ? 'Nesprávné heslo. Zkuste to prosím znovu.' : 'Incorrect passcode. Please try again.'));
-                      }
-                    } catch (err) {
-                      setPasscodeError(language === 'de' ? 'Der Server für die göttliche Verifizierung ist offline. Bitte versuchen Sie es erneut.' : language === 'pl' ? 'Serwer weryfikacji jest offline. Spróbuj ponownie.' : language === 'cs' ? 'Ověřovací server je offline. Zkuste to prosím znovu.' : 'Divine verification server is offline. Please try again.');
-                    }
-                  }}
-                  className="space-y-4 text-left"
-                >
-                  <div>
-                    <label className="text-[9px] font-mono text-stone-500 uppercase tracking-widest block mb-1">{language === 'de' ? 'Admin-Passcode eingeben' : language === 'pl' ? 'Wprowadź hasło administratora' : language === 'cs' ? 'Zadejte administrátorské heslo' : 'Enter Admin Passcode'}</label>
-                    <input
-                      type="password"
-                      placeholder="e.g. pharaoh"
-                      value={passcodeInput}
-                      onChange={(e) => setPasscodeInput(e.target.value)}
-                      className="w-full bg-[#1c1611] border border-stone-800 rounded-xl px-4 py-3 text-xs text-stone-200 font-mono text-center focus:outline-none focus:border-[#d4af37]/60 shadow-inner"
-                    />
-                    {passcodeError && (
-                      <p className="text-red-400 text-[10px] font-mono mt-1.5 text-center italic">{passcodeError}</p>
-                    )}
-                  </div>
-
-                  <div className="flex gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setIsAdminMode(false)}
-                      className="flex-1 bg-[#1a1511] hover:bg-stone-900 border border-stone-800 text-stone-400 py-2.5 rounded-xl text-[10px] font-mono uppercase tracking-widest transition-colors cursor-pointer"
-                    >
-                      {language === 'de' ? 'Abbrechen' : language === 'pl' ? 'Anuluj' : language === 'cs' ? 'Zrušit' : 'Cancel'}
-                    </button>
-                    <button
-                      type="submit"
-                      className="flex-1 bg-gradient-to-r from-[#d4af37] to-[#b59228] hover:from-[#e3be44] hover:to-[#cfa72d] text-[#140f0a] font-bold py-2.5 rounded-xl text-[10px] font-mono uppercase tracking-widest transition-colors shadow-md cursor-pointer"
-                    >
-                      {language === 'de' ? 'Admin verifizieren' : language === 'pl' ? 'Zweryfikuj administratora' : language === 'cs' ? 'Ověřit administrátora' : 'Verify Admin'}
-                    </button>
-                  </div>
-                </form>
-
-                <p className="text-[9px] text-stone-600 font-mono italic">
-                  {language === 'de' ? 'Hinweis: pharaoh' : language === 'pl' ? 'Wskazówka: pharaoh' : language === 'cs' ? 'Nápověda: pharaoh' : 'Hint: pharaoh'}
-                </p>
-              </motion.div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="space-y-6 scroll-mt-28"
-                id="admin-dashboard-section"
-              >
-                <div className="flex flex-col sm:flex-row gap-3 justify-between items-center bg-[#15110d] border border-[#d4af37]/35 rounded-2xl p-4 mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[#d4af37] text-lg">𓀚</span>
-                    <span className="text-xs font-mono text-[#e6c280] uppercase tracking-wider">
-                      {language === 'de' ? 'Administrative Freigabestufe: Hohepriester aktiv' : language === 'pl' ? 'Poziom uprawnień administracyjnych: Arcykapłan aktywny' : language === 'cs' ? 'Úroveň oprávnění: Velekněz aktivní' : 'Administrative Clearance Level: High Priest Active'}
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        setIsAdminVerified(false);
-                        localStorage.removeItem('kemet_admin_verified');
-                        triggerCelebration();
-                      }}
-                      className="bg-red-950/40 text-red-400 hover:bg-red-900/20 border border-red-500/20 px-3 py-1.5 rounded-xl text-[10px] font-mono uppercase tracking-wider cursor-pointer"
-                      title={language === 'de' ? 'Dashboard-Zugangsdaten sperren' : language === 'pl' ? 'Zablokuj panel administratora' : language === 'cs' ? 'Uzamknout administrátorský panel' : 'Lock dashboard control credentials'}
-                    >
-                      {language === 'de' ? 'Heiligtum sperren' : language === 'pl' ? 'Zablokuj Sanktuarium' : language === 'cs' ? 'Uzamknout svatyni' : 'Lock Sanctuary'}
-                    </button>
-                    <button
-                      onClick={() => setIsAdminMode(false)}
-                      className="bg-[#2a2016] text-[#e6c280] hover:bg-[#3d2f21] border border-[#d4af37]/40 px-3 py-1.5 rounded-xl text-[10px] font-mono uppercase tracking-wider cursor-pointer"
-                    >
-                      {language === 'de' ? 'Zurück zum Entdecker-Modus' : language === 'pl' ? 'Powrót do trybu odkrywcy' : language === 'cs' ? 'Návrat do režimu objevitele' : 'Return to Explorer Mode'}
-                    </button>
-                  </div>
-                </div>
-
-                <AdminDashboard
-                  bookings={bookings}
-                  onUpdateBookingStatus={handleUpdateBookingStatus}
-                  onCancelBooking={handleCancelBooking}
-                  onUpdateBookingsList={handleUpdateBookingsList}
-                  onVerifyCheckIn={handleVerifyCheckIn}
-                />
-              </motion.div>
-            )
-          ) : (
-            <AnimatePresence mode="wait">
-              {activePage === 'tours' && (
+          <AnimatePresence mode="wait">
+            {activePage === 'tours' && (
                 <motion.div
                   key="tours"
                   id="excursions-section"
@@ -1098,7 +909,6 @@ export default function App() {
                 </motion.div>
               )}
             </AnimatePresence>
-          )}
 
         </main>
 

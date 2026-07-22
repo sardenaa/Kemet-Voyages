@@ -31,6 +31,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { Booking, Excursion } from '../types';
+import KemetBookingsTrendsChart from './KemetBookingsTrendsChart';
 
 interface BookingAnalyticsProps {
   bookings: Booking[];
@@ -632,6 +633,9 @@ export default function BookingAnalytics({ bookings, excursions }: BookingAnalyt
         </div>
 
       </div>
+
+      {/* Google Sheets Trends Chart Component */}
+      <KemetBookingsTrendsChart bookings={bookings} excursions={excursions} />
 
     </div>
   );

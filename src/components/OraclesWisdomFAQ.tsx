@@ -681,8 +681,12 @@ export default function OraclesWisdomFAQ() {
                   {filteredFAQs.map((faq) => {
                     const isExpanded = expandedId === faq.id;
                     return (
-                      <div
+                      <motion.div
                         key={faq.id}
+                        initial={{ opacity: 0, y: 25 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: '-20px' }}
+                        transition={{ duration: 0.45, ease: 'easeOut' }}
                         className={`border rounded-xl overflow-hidden transition-all duration-300 ${
                           isExpanded
                             ? 'border-[#d4af37] bg-[#1e150f]'
@@ -755,7 +759,7 @@ export default function OraclesWisdomFAQ() {
                           )}
                         </AnimatePresence>
 
-                      </div>
+                      </motion.div>
                     );
                   })}
                 </div>

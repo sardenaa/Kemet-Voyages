@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, Calendar, Compass, User, Zap, Send, MessageCircle, HelpCircle, Loader2, BookOpen, Printer, X, CheckSquare, Square, Copy, Check } from 'lucide-react';
 import { Booking, CustomItinerary, ScribeMessage, Excursion } from '../types';
 import { useLanguage } from './LanguageContext';
+import { getAccessToken } from '../lib/firebaseAuth';
 
 interface ScribeOracleProps {
   onScribeSuccess?: () => void;
@@ -980,16 +981,20 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking, bookings =
         text: m.text
       }));
 
+      const token = await getAccessToken();
+
       const response = await fetch('/api/scribe-chat', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         body: JSON.stringify({
           message: promptText,
           chatHistory: history,
           excursions,
-          bookings
+          bookings,
+          accessToken: token || ''
         })
       });
 
@@ -998,6 +1003,10 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking, bookings =
       }
 
       const data = await response.json();
+      if (data.bookingCreated && onAddBooking) {
+        await onAddBooking(data.bookingCreated);
+      }
+
       setChatMessages(prev => [...prev, {
         id: `scribe-${Date.now()}`,
         role: 'assistant',
@@ -1076,16 +1085,20 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking, bookings =
         text: m.text
       }));
 
+      const token = await getAccessToken();
+
       const response = await fetch('/api/scribe-chat', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         body: JSON.stringify({
           message: userMsg.text,
           chatHistory: history,
           excursions,
-          bookings
+          bookings,
+          accessToken: token || ''
         })
       });
 
@@ -1094,6 +1107,10 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking, bookings =
       }
 
       const data = await response.json();
+      if (data.bookingCreated && onAddBooking) {
+        await onAddBooking(data.bookingCreated);
+      }
+
       setChatMessages(prev => [...prev, {
         id: `scribe-${Date.now()}`,
         role: 'assistant',
@@ -1886,70 +1903,7 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking, bookings =
               </h2>
             </div>
 
-            {/* Spreadsheet Sync Header & Control */}
-            <div className="bg-[#1c1611]/80 border border-[#d4af37]/30 rounded-xl p-3 mb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg text-[#d4af37]">𓏞</span>
-                  <span className="text-xs font-serif font-bold text-[#e6c280] uppercase tracking-wider">
-                    {language === 'de' ? 'Ausflugstabelle synchronisieren' : language === 'pl' ? 'Synchronizuj tabelę wycieczek' : 'Google Sheets Excursions Sync'}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsSyncExpanded(!isSyncExpanded)}
-                  className="text-[10px] text-[#d4af37] hover:text-[#e6c280] bg-[#241c14] border border-[#d4af37]/20 rounded-lg px-2.5 py-1 transition-all cursor-pointer select-none font-mono"
-                >
-                  {isSyncExpanded ? '𓋼 Hide' : '𓌝 Open'}
-                </button>
-              </div>
 
-              <AnimatePresence>
-                {isSyncExpanded && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="overflow-hidden mt-3 pt-3 border-t border-[#d4af37]/15 space-y-2"
-                  >
-                    <p className="text-[11px] text-stone-400 leading-relaxed">
-                      {language === 'de' 
-                        ? 'Geben Sie eine Google Sheets-ID oder eine Freigabe-URL ein, um Ausflüge live aus der Tabelle zu importieren:' 
-                        : language === 'pl' 
-                        ? 'Wprowadź identyfikator arkusza Google Sheets lub link, aby zaimportować wycieczki bezpośrednio:' 
-                        : 'Enter a public Google Sheets ID or shared URL to synchronize tours directly into the Scribe Oracle context:'}
-                    </p>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={sheetUrlInput}
-                        onChange={(e) => setSheetUrlInput(e.target.value)}
-                        placeholder="e.g. 1uK9PzW6qH..."
-                        className="flex-1 bg-[#120e0a] border border-[#d4af37]/35 rounded-lg px-3 py-1.5 text-xs text-stone-200 placeholder-stone-600 focus:outline-none focus:ring-1 focus:ring-[#d4af37]/50"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleSyncFromSpreadsheet()}
-                        disabled={isSyncingSheet}
-                        className="bg-[#d4af37] hover:bg-[#c5a059] text-[#140f0a] px-3 py-1.5 rounded-lg text-xs font-serif font-bold transition-all disabled:opacity-50 flex items-center gap-1 cursor-pointer select-none"
-                      >
-                        {isSyncingSheet ? (
-                          <span className="animate-spin text-[10px]">𓋹</span>
-                        ) : (
-                          <span>𓎬 Sync</span>
-                        )}
-                      </button>
-                    </div>
-                    {sheetSyncError && (
-                      <p className="text-[10px] text-rose-400 font-mono italic">{sheetSyncError}</p>
-                    )}
-                    {sheetSyncSuccess && (
-                      <p className="text-[10px] text-emerald-400 font-mono italic">✓ Sync of sacred scrolls completed successfully!</p>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
 
             {/* Chat Messages area */}
             <div className="flex-1 overflow-y-auto bg-[#16120e] border border-[#d4af37]/20 rounded-2xl p-4 md:p-6 space-y-4 mb-4" id="scribe-chat-chamber">

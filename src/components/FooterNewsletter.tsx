@@ -144,7 +144,14 @@ export default function FooterNewsletter() {
   ];
 
   return (
-    <div className="w-full" id="imperial-newsletter-container">
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.6, ease: 'easeOut' }}
+      className="w-full"
+      id="imperial-newsletter-container"
+    >
       
       {/* 1. NEWSLETTER SIGNUP BANNER (FOOTER STYLE) */}
       <div className="bg-[#130f0a] border border-[#d4af37]/25 rounded-2xl p-6 md:p-8 max-w-4xl mx-auto shadow-xl relative overflow-hidden">
@@ -391,6 +398,6 @@ export default function FooterNewsletter() {
         )}
       </AnimatePresence>
 
-    </div>
+    </motion.div>
   );
 }

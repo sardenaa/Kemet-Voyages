@@ -3,6 +3,7 @@ import path from "path";
 import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
+import { processBookingEmailsAndSheet } from "./server/googleWorkspace";
 
 // ==========================================
 // SEED DATA DECLARATIONS
@@ -595,8 +596,8 @@ async function startServer() {
           location: sanitizeString(ex.location, 150) || "Red Sea, Egypt",
           image: sanitizeString(ex.image, 250) || "/src/assets/images/egypt_sea_diving_1784070366165.jpg",
           description: sanitizeString(ex.description, 1000) || "Explore the grand wonders of Kemet.",
-          inclusions: Array.isArray(ex.inclusions) ? ex.inclusions.map((i: any) => sanitizeString(i, 200)) : [],
-          highlights: Array.isArray(ex.highlights) ? ex.highlights.map((h: any) => sanitizeString(h, 200)) : [],
+          inclusions: Array.isArray(ex.inclusions) ? ex.inclusions.map((i: any) => sanitizeString(i, 200)) : (typeof ex.inclusions === 'string' ? ex.inclusions.split(',').map((s: string) => sanitizeString(s, 200)) : []),
+          highlights: Array.isArray(ex.highlights) ? ex.highlights.map((h: any) => sanitizeString(h, 200)) : (typeof ex.highlights === 'string' ? ex.highlights.split(',').map((s: string) => sanitizeString(s, 200)) : []),
           ancientLore: sanitizeString(ex.ancientLore, 1000) || "This ancient land holds great divine alignment."
         };
       }).filter(e => e.title);
@@ -611,6 +612,124 @@ async function startServer() {
     }
   });
 
+  // Direct Google Sheets API Integration Endpoint
+  app.post("/api/excursions/fetch-google-sheet", async (req, res) => {
+    try {
+      const rawInput = req.body.sheetUrl || req.body.spreadsheetId || "1Ms9LU8f20q3wX5fNaw8JqkIbB_QlDmeAN8ZEIdTFKKc";
+      const match = rawInput.match(/\/d\/([a-zA-Z0-9-_]+)/);
+      const spreadsheetId = match ? match[1] : rawInput;
+      let token = req.headers.authorization || (req.body.accessToken ? `Bearer ${req.body.accessToken}` : '');
+
+      let rows: any[][] = [];
+
+      // 1. Try Google Sheets API v4 if token is present
+      if (token) {
+        if (!token.startsWith('Bearer ')) token = `Bearer ${token}`;
+        try {
+          const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/A1:Z500`;
+          const sheetsResponse = await fetch(url, {
+            headers: { Authorization: token }
+          });
+
+          if (sheetsResponse.ok) {
+            const data = await sheetsResponse.json();
+            rows = data.values || [];
+          }
+        } catch (e) {
+          console.warn("Sheets API v4 request failed, trying CSV fallback:", e);
+        }
+      }
+
+      // 2. Fallback to gviz CSV export if rows still empty
+      if (!rows || rows.length === 0) {
+        try {
+          const csvUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv`;
+          const csvResponse = await fetch(csvUrl);
+          if (csvResponse.ok) {
+            const csvText = await csvResponse.text();
+            // Basic CSV parser for lines
+            const lines = csvText.split(/\r?\n/);
+            rows = lines.map(line => {
+              // Parse simple CSV values
+              const matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+              if (matches) {
+                return matches.map(m => m.replace(/^"|"$/g, '').trim());
+              }
+              return line.split(',').map(s => s.trim());
+            });
+          }
+        } catch (e) {
+          console.warn("CSV export fetch failed:", e);
+        }
+      }
+
+      if (!rows || rows.length < 2) {
+        return res.status(400).json({ 
+          error: "Could not read spreadsheet rows. Ensure OAuth token is provided or the Google Sheet is shared with View permissions." 
+        });
+      }
+
+      const headers = rows[0].map((h: any) => String(h || '').toLowerCase().trim());
+      const excursionsList: any[] = [];
+
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row || row.length === 0 || !row[0]) continue;
+
+        const getVal = (fieldNames: string[]) => {
+          for (const fn of fieldNames) {
+            const idx = headers.findIndex((h: string) => h.includes(fn));
+            if (idx !== -1 && row[idx]) return String(row[idx]).trim();
+          }
+          return '';
+        };
+
+        const title = getVal(['title', 'name', 'tour']);
+        if (!title) continue;
+
+        const tagline = getVal(['tagline', 'subtitle', 'motto']);
+        const category = getVal(['category', 'type']) || 'diving';
+        const duration = getVal(['duration', 'time', 'hours']) || 'Full Day';
+        const price = Number(getVal(['price', 'cost', 'rate'])) || 120;
+        const rating = Number(getVal(['rating', 'stars', 'score'])) || 4.9;
+        const location = getVal(['location', 'place', 'city']) || 'Red Sea, Egypt';
+        const image = getVal(['image', 'photo', 'url', 'picture']) || '/src/assets/images/egypt_sea_diving_1784070366165.jpg';
+        const description = getVal(['description', 'desc', 'details', 'about']);
+        const inclusionsRaw = getVal(['inclusions', 'includes', 'included']);
+        const highlightsRaw = getVal(['highlights', 'features', 'key']);
+        const ancientLore = getVal(['ancientlore', 'lore', 'history', 'story']);
+
+        excursionsList.push({
+          id: `sheet-item-${i}`,
+          title: sanitizeString(title, 100),
+          tagline: sanitizeString(tagline, 150) || "Sacred excursion through ancient Kemet",
+          category: sanitizeString(category, 50),
+          duration: sanitizeString(duration, 50),
+          price: Math.max(1, price),
+          rating: Math.min(5, Math.max(1, rating)),
+          location: sanitizeString(location, 150),
+          image: sanitizeString(image, 250),
+          description: sanitizeString(description, 1000) || "Experience the historic beauty of Egypt.",
+          inclusions: inclusionsRaw ? inclusionsRaw.split(/[;,\n]/).map((s: string) => sanitizeString(s.trim(), 200)).filter(Boolean) : [],
+          highlights: highlightsRaw ? highlightsRaw.split(/[;,\n]/).map((s: string) => sanitizeString(s.trim(), 200)).filter(Boolean) : [],
+          ancientLore: sanitizeString(ancientLore, 1000) || "Aligned under the sacred skies of Egypt."
+        });
+      }
+
+      if (excursionsList.length > 0) {
+        const db = loadDb();
+        db.excursions = excursionsList;
+        saveDb(db);
+        return res.json({ success: true, count: excursionsList.length, excursions: db.excursions });
+      } else {
+        return res.status(400).json({ error: "Could not parse valid excursion rows from spreadsheet." });
+      }
+    } catch (err: any) {
+      console.error("Error fetching Google Sheet:", err);
+      res.status(500).json({ error: err.message || "Failed to process spreadsheet." });
+    }
+  });
+
   // ==========================================
   // CARAVAN BOOKINGS ENDPOINTS
   // ==========================================
@@ -619,9 +738,10 @@ async function startServer() {
     res.json(db.bookings);
   });
 
-  app.post("/api/bookings", (req, res) => {
+  app.post("/api/bookings", async (req, res) => {
     try {
       const { excursionId, excursionTitle, travelerName, travelerEmail, date, numberOfGuests, totalCost, specialRequests } = req.body;
+      const accessToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '') || req.body.accessToken;
       const db = loadDb();
 
       // Simple secure inputs validation
@@ -649,7 +769,22 @@ async function startServer() {
 
       db.bookings.unshift(newBooking);
       saveDb(db);
-      res.json(newBooking);
+
+      // Async process Google Workspace integration (Kemet Bookings Sheet & Gmail alerts)
+      let workspaceSync = { sheetSynced: false, emailsSent: false };
+      if (accessToken) {
+        try {
+          workspaceSync = await processBookingEmailsAndSheet(accessToken, newBooking);
+        } catch (wsErr) {
+          console.error("Workspace integration error during booking creation:", wsErr);
+        }
+      }
+
+      res.json({
+        ...newBooking,
+        sheetSynced: workspaceSync.sheetSynced,
+        emailsSent: workspaceSync.emailsSent
+      });
     } catch (e: any) {
       res.status(500).json({ error: e.message });
     }
@@ -948,6 +1083,7 @@ Respond ONLY with valid JSON. Do not wrap in markdown blocks, do not write anyth
     try {
       const message = sanitizeString(req.body.message, 1000);
       const { chatHistory, excursions, bookings } = req.body;
+      const accessToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '') || req.body.accessToken;
       const ai = getAI();
 
       // Fetch latest server database state to enrich the Scribe's context
@@ -981,10 +1117,11 @@ ${contextString}
 Guidelines for your responses:
 1. Speak as a wise, poetic counselor. Under no circumstances should you break character.
 2. If the user asks for recommendations, refer to the available excursions listed above by name and customize your suggestions based on their interests. Mention the price or duration if relevant to help them plan.
-3. If the user asks about their bookings or status, consult the "CURRENT BOOKINGS" above. Acknowledge their traveler name, the date of their journey, and reassure them that the High Priests are aligning the stars for their adventure.
-4. If they ask about a packing list, look up what excursions they have booked or are interested in, and give them advice specifically tailored to those categories (e.g. reef-safe biodegradable sunscreen for diving, a shemagh/head scarf for desert safari, or modest clothes for temples).
-5. If the user asks to translate a name or word into hieroglyphs or to explain its meaning, do so beautifully and explain what ancient symbols represent it (e.g., Scarab for transformation, Ankh for life, Eye of Horus for protection).
-6. Keep your responses relatively concise (1-2 short paragraphs) but highly immersive, flavorful, and formatted using clean, readable markdown (bold key terms, bullet points for lists).`;
+3. If the user wants to book an excursion or provides booking details (e.g. tour name/ID, traveler name, traveler email, date, number of guests), confirm the reservation warmly in character.
+CRITICAL: Whenever you confirm or record a booking for the traveler, you MUST append this exact JSON trigger tag on a new line at the very end of your message:
+[[CREATE_BOOKING:{"excursionTitle":"<Tour Title>","travelerName":"<Full Name>","travelerEmail":"<Email>","date":"<YYYY-MM-DD or date string>","numberOfGuests":<Number>,"totalCost":<Calculated Price>,"specialRequests":"<Any special notes>"}]]
+4. If the user asks about their bookings or status, consult the "CURRENT BOOKINGS" above.
+5. Keep your responses relatively concise (1-2 short paragraphs) but highly immersive, flavorful, and formatted using clean markdown.`;
 
       let prompt = "";
       if (chatHistory && Array.isArray(chatHistory)) {
@@ -1008,24 +1145,79 @@ Guidelines for your responses:
         }
       });
 
+      let responseText = response.text || "";
+      let newBookingCreated: any = null;
+
+      // Detect [[CREATE_BOOKING:...]] trigger tag in AI output
+      const bookingMatch = responseText.match(/\[\[CREATE_BOOKING:(.*?)\]\]/s);
+      if (bookingMatch) {
+        try {
+          const bookingData = JSON.parse(bookingMatch[1].trim());
+          const matchingEx = (availableExcursions || []).find((e: any) => 
+            e.title.toLowerCase().includes((bookingData.excursionTitle || '').toLowerCase()) ||
+            (bookingData.excursionTitle || '').toLowerCase().includes(e.title.toLowerCase())
+          );
+
+          const guests = Math.max(1, Number(bookingData.numberOfGuests) || 1);
+          const pricePerGuest = matchingEx ? matchingEx.price : 120;
+          const calculatedCost = Number(bookingData.totalCost) || (pricePerGuest * guests);
+
+          newBookingCreated = {
+            id: `b-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            excursionId: matchingEx ? matchingEx.id : 'custom-excursion',
+            excursionTitle: bookingData.excursionTitle || (matchingEx ? matchingEx.title : 'Kemet Excursion'),
+            travelerName: sanitizeString(bookingData.travelerName || 'Noble Traveler', 100),
+            travelerEmail: sanitizeString(bookingData.travelerEmail || 'traveler@kemet.com', 100),
+            date: sanitizeString(bookingData.date || new Date().toISOString().split('T')[0], 30),
+            numberOfGuests: guests,
+            totalCost: calculatedCost,
+            specialRequests: sanitizeString(bookingData.specialRequests || 'Booked via Sennedjem AI Scribe', 500),
+            status: 'Confirmed by AI Scribe',
+            createdAt: new Date().toISOString()
+          };
+
+          const dbState = loadDb();
+          dbState.bookings.unshift(newBookingCreated);
+          saveDb(dbState);
+
+          // Strip the raw trigger tag from response text
+          responseText = responseText.replace(/\[\[CREATE_BOOKING:(.*?)\]\]/s, '').trim();
+
+          // Sync to Google Sheet 'Kemet Bookings' & Send emails via Gmail
+          if (accessToken) {
+            try {
+              const syncRes = await processBookingEmailsAndSheet(accessToken, newBookingCreated);
+              if (syncRes.sheetSynced) {
+                responseText += `\n\n📜 *Recorded in Google Sheet: **Kemet Bookings***\n✉️ *Confirmation emails dispatched to **${newBookingCreated.travelerEmail}** & **kemettoursagency@gmail.com***`;
+              }
+            } catch (wsErr) {
+              console.warn("Google Workspace sync error during Scribe booking:", wsErr);
+            }
+          } else {
+            responseText += `\n\n📜 *Booking Ref ID ${newBookingCreated.id} recorded in local ledger.*`;
+          }
+        } catch (parseErr) {
+          console.error("Error parsing AI Scribe booking JSON:", parseErr);
+        }
+      }
+
       // Save to Oracle chats log for administrative insight
       try {
         const dbState = loadDb();
         dbState.oracle_logs.unshift({
           id: `log-${Date.now()}`,
-          name: "Anonymous Traveler",
-          email: "Session Chat Guest",
+          name: newBookingCreated ? newBookingCreated.travelerName : "Anonymous Traveler",
+          email: newBookingCreated ? newBookingCreated.travelerEmail : "Session Chat Guest",
           query: message,
           time: new Date().toISOString().replace('T', ' ').substring(0, 16)
         });
-        // keep logs at max 50
         if (dbState.oracle_logs.length > 50) dbState.oracle_logs = dbState.oracle_logs.slice(0, 50);
         saveDb(dbState);
       } catch (logErr) {
         // ignore log error
       }
 
-      res.json({ response: response.text });
+      res.json({ response: responseText, bookingCreated: newBookingCreated });
     } catch (error: any) {
       console.error("Error in scribe chat:", error);
       res.status(500).json({ 

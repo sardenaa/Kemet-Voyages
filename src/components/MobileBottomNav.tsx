@@ -392,28 +392,7 @@ export default function MobileBottomNav({ scrollToSection, isAdminMode, setIsAdm
                 </motion.button>
               </div>
 
-              {/* Admin Portal Toggle (High Priest CRM console) */}
-              <div className="pt-2 border-t border-stone-800/85">
-                <motion.button
-                  whileHover="hover"
-                  whileTap="tap"
-                  onClick={handleAdminToggle}
-                  className="w-full py-3.5 px-4 rounded-xl border font-mono text-xs uppercase tracking-widest font-bold transition-all duration-300 cursor-pointer flex items-center justify-center gap-2 bg-[#d4af37]/10 text-[#e6c280] border-[#d4af37]/35 hover:bg-[#d4af37]/20"
-                >
-                  <motion.div
-                    variants={{
-                      hover: { scale: 1.3, rotate: 15 },
-                      tap: { scale: 0.85, rotate: -15 }
-                    }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-                  >
-                    <ShieldAlert className="w-4 h-4 text-[#d4af37]" />
-                  </motion.div>
-                  <span>
-                    {isAdminMode ? '𓀚 Exit Manager Mode' : '𓋹 Manager Console (CRM)'}
-                  </span>
-                </motion.button>
-              </div>
+
 
               {/* Small lore quote in drawer footer */}
               <div className="text-center pt-2">

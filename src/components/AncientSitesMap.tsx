@@ -395,7 +395,14 @@ export default function AncientSitesMap() {
   };
 
   return (
-    <div className="bg-[#14100c] border-2 border-[#d4af37]/30 rounded-3xl p-6 md:p-8 relative overflow-hidden shadow-2xl" id="ancient-sites-map-wrapper">
+    <motion.div
+      initial={{ opacity: 0, y: 35 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.6, ease: 'easeOut' }}
+      className="bg-[#14100c] border-2 border-[#d4af37]/30 rounded-3xl p-6 md:p-8 relative overflow-hidden shadow-2xl"
+      id="ancient-sites-map-wrapper"
+    >
       {/* Visual Background Grid & Ambient Glows */}
       <div className="absolute inset-0 bg-[radial-gradient(#d4af37_0.7px,transparent_0.7px)] [background-size:16px_16px] opacity-10 pointer-events-none" />
       <div className="absolute top-0 right-0 w-64 h-64 bg-[#d4af37]/5 rounded-full blur-3xl pointer-events-none" />
@@ -774,6 +781,6 @@ export default function AncientSitesMap() {
         </div>
 
       </div>
-    </div>
+    </motion.div>
   );
 }

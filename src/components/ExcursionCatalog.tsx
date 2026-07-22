@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Star, ShieldAlert, CheckCircle, Clock, MapPin, Sparkles, Filter, ChevronRight, X, User, Mail, Calendar, HelpCircle, MessageSquare, Send, ThumbsUp, PenTool } from 'lucide-react';
+import { Star, ShieldAlert, CheckCircle, Clock, MapPin, Sparkles, Filter, ChevronRight, X, User, Mail, Calendar, HelpCircle, MessageSquare, Send, ThumbsUp, PenTool, FileSpreadsheet, RefreshCw } from 'lucide-react';
 import { Excursion, Booking } from '../types';
 import { useLanguage } from './LanguageContext';
 import ReviewSystem from './ReviewSystem';
 import PromotionalBanner from './PromotionalBanner';
+import { getAccessToken, googleSignIn } from '../lib/firebaseAuth';
 
 // Let's use our exact generated image paths!
 export const EXCURSIONS_DATA: Excursion[] = [
@@ -512,6 +513,65 @@ export default function ExcursionCatalog({ onAddBooking, excursions }: CatalogPr
   const [isComparisonMode, setIsComparisonMode] = useState<boolean>(false);
   const [selectedCompareIds, setSelectedCompareIds] = useState<string[]>([]);
 
+  // Google Sheet Sync State
+  const [isSyncingSheet, setIsSyncingSheet] = useState<boolean>(false);
+  const [syncSheetMessage, setSyncSheetMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handleSyncGoogleSheet = async () => {
+    setIsSyncingSheet(true);
+    setSyncSheetMessage(null);
+    try {
+      let token = await getAccessToken();
+      if (!token) {
+        try {
+          const authRes = await googleSignIn();
+          if (authRes) {
+            token = authRes.accessToken;
+          }
+        } catch (authErr) {
+          console.warn("Google sign-in skipped or cancelled:", authErr);
+        }
+      }
+
+      const res = await fetch('/api/excursions/fetch-google-sheet', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          spreadsheetId: '1Ms9LU8f20q3wX5fNaw8JqkIbB_QlDmeAN8ZEIdTFKKc',
+          accessToken: token || ''
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSyncSheetMessage({
+          type: 'success',
+          text: language === 'de' ? `Erfolgreich ${data.count} Ausflüge aus Google Sheet synchronisiert!` :
+                language === 'pl' ? `Pomyślnie zsynchronizowano ${data.count} wycieczek z Arkusza Google!` :
+                `Successfully synced ${data.count} excursions from Google Sheet!`
+        });
+        localStorage.setItem('kemet_excursions', JSON.stringify(data.excursions));
+        window.dispatchEvent(new Event('kemet_excursions_updated'));
+      } else {
+        setSyncSheetMessage({
+          type: 'error',
+          text: data.error || (language === 'de' ? 'Synchronisierung fehlgeschlagen.' : 'Failed to sync with Google Sheet.')
+        });
+      }
+    } catch (err: any) {
+      setSyncSheetMessage({
+        type: 'error',
+        text: err.message || 'Error connecting to Google Sheets endpoint.'
+      });
+    } finally {
+      setIsSyncingSheet(false);
+      setTimeout(() => setSyncSheetMessage(null), 6000);
+    }
+  };
+
   const handleToggleCompare = (exId: string) => {
     setSelectedCompareIds(prev => {
       if (prev.includes(exId)) {
@@ -886,28 +946,72 @@ Please seal my booking with the High Priest approval!`;
           ))}
         </div>
 
-        <button
-          onClick={() => {
-            setIsComparisonMode(!isComparisonMode);
-            if (isComparisonMode) {
-              setSelectedCompareIds([]);
-            }
-          }}
-          className={`w-full lg:w-auto px-5 py-2.5 rounded-xl text-xs font-mono uppercase tracking-widest transition-all duration-300 cursor-pointer flex items-center justify-center gap-2 border ${
-            isComparisonMode
-              ? 'bg-[#d4af37] text-[#140f0a] border-[#d4af37] font-bold shadow-md shadow-[#d4af37]/15'
-              : 'bg-[#1c140d]/80 border-[#d4af37]/35 text-[#e6c280] hover:bg-[#261b11] hover:border-[#d4af37]/60'
-          }`}
-        >
-          <span>⚖</span>
-          <span>{language === 'de' ? 'Ausflüge vergleichen' : language === 'pl' ? 'Porównaj wycieczki' : 'Compare Excursions'}</span>
-          {isComparisonMode && (
-            <span className="bg-[#140f0a] text-[#d4af37] text-[10px] px-1.5 py-0.5 rounded-full font-bold ml-1">
-              {selectedCompareIds.length}/2
+        <div className="flex flex-col sm:flex-row gap-2.5 w-full lg:w-auto">
+          <button
+            onClick={handleSyncGoogleSheet}
+            disabled={isSyncingSheet}
+            className="px-4 py-2.5 rounded-xl text-xs font-mono uppercase tracking-widest transition-all duration-300 cursor-pointer flex items-center justify-center gap-2 border bg-[#1a140f] border-[#d4af37]/35 text-[#e6c280] hover:bg-[#281d13] hover:border-[#d4af37]/60 active:scale-95 disabled:opacity-50"
+            title="Sync live excursion data from linked Google Sheet"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+            <span>
+              {isSyncingSheet 
+                ? (language === 'de' ? 'Synchronisiere...' : language === 'pl' ? 'Synchronizacja...' : 'Syncing Sheet...') 
+                : (language === 'de' ? 'Google Sheet Abgleichen' : language === 'pl' ? 'Synchronizuj Arkusz' : 'Sync Google Sheet')}
             </span>
-          )}
-        </button>
+            <RefreshCw className={`w-3 h-3 text-[#d4af37] ${isSyncingSheet ? 'animate-spin' : ''}`} />
+          </button>
+
+          <button
+            onClick={() => {
+              setIsComparisonMode(!isComparisonMode);
+              if (isComparisonMode) {
+                setSelectedCompareIds([]);
+              }
+            }}
+            className={`px-5 py-2.5 rounded-xl text-xs font-mono uppercase tracking-widest transition-all duration-300 cursor-pointer flex items-center justify-center gap-2 border ${
+              isComparisonMode
+                ? 'bg-[#d4af37] text-[#140f0a] border-[#d4af37] font-bold shadow-md shadow-[#d4af37]/15'
+                : 'bg-[#1c140d]/80 border-[#d4af37]/35 text-[#e6c280] hover:bg-[#261b11] hover:border-[#d4af37]/60'
+            }`}
+          >
+            <span>⚖</span>
+            <span>{language === 'de' ? 'Ausflüge vergleichen' : language === 'pl' ? 'Porównaj wycieczki' : 'Compare Excursions'}</span>
+            {isComparisonMode && (
+              <span className="bg-[#140f0a] text-[#d4af37] text-[10px] px-1.5 py-0.5 rounded-full font-bold ml-1">
+                {selectedCompareIds.length}/2
+              </span>
+            )}
+          </button>
+        </div>
       </div>
+
+      {/* Sync Status Banner */}
+      <AnimatePresence>
+        {syncSheetMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className={`p-4 rounded-xl border text-xs font-mono flex items-center justify-between ${
+              syncSheetMessage.type === 'success'
+                ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300'
+                : 'bg-amber-950/40 border-amber-500/40 text-amber-300'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-[#d4af37]" />
+              <span>{syncSheetMessage.text}</span>
+            </div>
+            <button 
+              onClick={() => setSyncSheetMessage(null)}
+              className="text-stone-400 hover:text-white p-1"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Comparison Board Panel */}
       <AnimatePresence>
@@ -1211,8 +1315,12 @@ Please seal my booking with the High Priest approval!`;
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredExcursions.map((ex, index) => (
-            <div
+            <motion.div
               key={ex.id}
+              initial={{ opacity: 0, y: 35 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.5, delay: (index % 3) * 0.08, ease: 'easeOut' }}
               className="bg-[#1a140f] border border-[#d4af37]/25 rounded-2xl overflow-hidden shadow-xl flex flex-col group hover:border-[#d4af37]/85 hover:shadow-[0_0_22px_rgba(212,175,55,0.22)] transition-all duration-300 hover:-translate-y-1.5"
               id={`excursion-card-${ex.id}`}
             >
@@ -1507,7 +1615,7 @@ Please seal my booking with the High Priest approval!`;
                   </AnimatePresence>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       )}
