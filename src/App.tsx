@@ -366,7 +366,16 @@ export default function App() {
     } else if (id === 'ledger-section') {
       setActivePage('bookings');
     }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Scroll with motion animation & smooth alignment
+    setTimeout(() => {
+      const targetEl = document.getElementById(id) || document.getElementById('main-content-section');
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        window.scrollTo({ top: 400, behavior: 'smooth' });
+      }
+    }, 60);
   };
 
   return (
@@ -767,7 +776,7 @@ export default function App() {
         </nav>
 
         {/* MAIN BODY CONTENTS */}
-        <main className="max-w-7xl mx-auto px-4 md:px-6 py-12 relative">
+        <main className="max-w-7xl mx-auto px-4 md:px-6 py-12 relative" id="main-content-section">
           
           {isAdminMode ? (
             !isAdminVerified ? (
@@ -863,7 +872,7 @@ export default function App() {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="space-y-6 scroll-mt-24"
+                className="space-y-6 scroll-mt-28"
                 id="admin-dashboard-section"
               >
                 <div className="flex flex-col sm:flex-row gap-3 justify-between items-center bg-[#15110d] border border-[#d4af37]/35 rounded-2xl p-4 mb-2">
@@ -908,11 +917,12 @@ export default function App() {
               {activePage === 'tours' && (
                 <motion.div
                   key="tours"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.4 }}
-                  className="space-y-8"
+                  id="excursions-section"
+                  initial={{ opacity: 0, y: 30, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.98 }}
+                  transition={{ duration: 0.45, ease: 'easeOut' }}
+                  className="space-y-8 scroll-mt-28"
                 >
                   <ExcursionCatalog onAddBooking={handleAddBooking} excursions={excursions} />
                 </motion.div>
@@ -921,11 +931,12 @@ export default function App() {
               {activePage === 'map' && (
                 <motion.div
                   key="map"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.4 }}
-                  className="space-y-8"
+                  id="map-section"
+                  initial={{ opacity: 0, y: 30, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.98 }}
+                  transition={{ duration: 0.45, ease: 'easeOut' }}
+                  className="space-y-8 scroll-mt-28"
                 >
                   <AncientSitesMap />
                 </motion.div>
@@ -934,11 +945,12 @@ export default function App() {
               {activePage === 'scribe' && (
                 <motion.div
                   key="scribe"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.4 }}
-                  className="space-y-8"
+                  id="scribe-section"
+                  initial={{ opacity: 0, y: 30, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.98 }}
+                  transition={{ duration: 0.45, ease: 'easeOut' }}
+                  className="space-y-8 scroll-mt-28"
                 >
                   <div className="text-center">
                     <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">{language === 'de' ? 'Künstliche Intelligenz' : language === 'pl' ? 'Sztuczna inteligencja' : language === 'cs' ? 'Umělá inteligence' : 'Artificial Intelligence'}</span>
@@ -956,11 +968,12 @@ export default function App() {
               {activePage === 'gallery' && (
                 <motion.div
                   key="gallery"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.4 }}
-                  className="space-y-8"
+                  id="gallery-section"
+                  initial={{ opacity: 0, y: 30, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.98 }}
+                  transition={{ duration: 0.45, ease: 'easeOut' }}
+                  className="space-y-8 scroll-mt-28"
                 >
                   <EgyptologyGallery />
                 </motion.div>
@@ -969,11 +982,12 @@ export default function App() {
               {activePage === 'cartouche' && (
                 <motion.div
                   key="cartouche"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.4 }}
-                  className="space-y-8"
+                  id="cartouche-section"
+                  initial={{ opacity: 0, y: 30, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.98 }}
+                  transition={{ duration: 0.45, ease: 'easeOut' }}
+                  className="space-y-8 scroll-mt-28"
                 >
                   <div className="text-center">
                     <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">{language === 'de' ? 'Ägyptische Kartusche' : language === 'pl' ? 'Egipska kartusza' : language === 'cs' ? 'Egyptská kartuše' : 'Egyptian Cartouche'}</span>
@@ -991,11 +1005,12 @@ export default function App() {
               {activePage === 'faq' && (
                 <motion.div
                   key="faq"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.4 }}
-                  className="space-y-12"
+                  id="faq-section"
+                  initial={{ opacity: 0, y: 30, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.98 }}
+                  transition={{ duration: 0.45, ease: 'easeOut' }}
+                  className="space-y-12 scroll-mt-28"
                 >
                   {/* Subheader */}
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#140f0c]/60 border border-[#d4af37]/20 p-6 rounded-2xl relative overflow-hidden backdrop-blur-md">
@@ -1063,11 +1078,12 @@ export default function App() {
               {activePage === 'bookings' && (
                 <motion.div
                   key="bookings"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.4 }}
-                  className="space-y-8"
+                  id="ledger-section"
+                  initial={{ opacity: 0, y: 30, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.98 }}
+                  transition={{ duration: 0.45, ease: 'easeOut' }}
+                  className="space-y-8 scroll-mt-28"
                 >
                   <div className="text-center">
                     <span className="text-xs font-mono text-[#d4af37] uppercase tracking-[0.25em]">{language === 'de' ? 'Meine Buchungen' : language === 'pl' ? 'Moje rezerwacje' : language === 'cs' ? 'Moje rezervace' : 'My Bookings'}</span>
