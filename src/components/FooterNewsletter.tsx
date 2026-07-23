@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Mail, Sparkles, X, ShieldCheck, Ticket, HelpCircle, Gift, Compass, ChevronRight, Check } from 'lucide-react';
+import { Mail, Sparkles, X, Ticket, Compass, ChevronRight, Check, AlertCircle, Send } from 'lucide-react';
 import { useLanguage } from './LanguageContext';
+import { getAccessToken } from '../lib/firebaseAuth';
 
 interface Subscriber {
   id: string;
   email: string;
   interests: string[];
-  tier: string;
   signupDate: string;
   promoCode: string;
 }
@@ -15,12 +15,18 @@ interface Subscriber {
 export default function FooterNewsletter() {
   const { language } = useLanguage();
   const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [isTouched, setIsTouched] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-  const [explorerTier, setExplorerTier] = useState('scribe');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSubscribed, setHasSubscribed] = useState(false);
   const [assignedPromo, setAssignedPromo] = useState('');
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [welcomeSent, setWelcomeSent] = useState(false);
+  const [copiedPromo, setCopiedPromo] = useState(false);
+
+  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   // Check if already subscribed previously
   useEffect(() => {
@@ -37,10 +43,117 @@ export default function FooterNewsletter() {
     }
   }, []);
 
+  // Real-time email validation
+  const validateEmailFormat = (val: string): boolean => {
+    const trimmed = val.trim();
+    if (!trimmed) {
+      setEmailError(
+        language === 'de' ? 'E-Mail-Adresse ist erforderlich' :
+        language === 'pl' ? 'Adres e-mail jest wymagany' :
+        'Email address is required'
+      );
+      return false;
+    }
+    if (!EMAIL_REGEX.test(trimmed)) {
+      setEmailError(
+        language === 'de' ? 'Ungültiges E-Mail-Format (z. B. name@beispiel.com)' :
+        language === 'pl' ? 'Nieprawidłowy format e-mail (np. name@beispiel.com)' :
+        'Invalid email format (e.g. traveler@domain.com)'
+      );
+      return false;
+    }
+    setEmailError(null);
+    return true;
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setEmail(val);
+    setApiError(null);
+    if (!isTouched) setIsTouched(true);
+    validateEmailFormat(val);
+  };
+
+  const executeSubscription = async (targetInterests: string[]) => {
+    setIsSubmitting(true);
+    setApiError(null);
+
+    const trimmedEmail = email.trim().toLowerCase();
+
+    try {
+      const accessToken = await getAccessToken();
+      const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: trimmedEmail,
+          interests: targetInterests.length > 0 ? targetInterests : ['all'],
+          accessToken: accessToken || undefined
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setApiError(data.error || 'Subscription failed. Please verify your email.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      const promo = data.promoCode || `RAMSES-${Math.floor(1000 + Math.random() * 9000)}-30`;
+      const subscriberData: Subscriber = {
+        id: data.signup?.id || `sub-${Date.now()}`,
+        email: trimmedEmail,
+        interests: targetInterests.length > 0 ? targetInterests : ['all'],
+        signupDate: new Date().toISOString().split('T')[0],
+        promoCode: promo
+      };
+
+      // Save locally
+      const existingSignups = localStorage.getItem('kemet_newsletter_signups');
+      let signupsList = [];
+      if (existingSignups) {
+        try {
+          signupsList = JSON.parse(existingSignups);
+        } catch (e) {
+          signupsList = [];
+        }
+      }
+      signupsList = signupsList.filter((s: any) => s.email.toLowerCase() !== trimmedEmail);
+      signupsList.unshift(subscriberData);
+      localStorage.setItem('kemet_newsletter_signups', JSON.stringify(signupsList));
+      localStorage.setItem('kemet_current_subscriber', JSON.stringify(subscriberData));
+
+      // Dispatch real-time update event so Admin Dashboard updates instantly
+      window.dispatchEvent(new Event('kemet_subscribers_updated'));
+
+      setAssignedPromo(promo);
+      setWelcomeSent(data.welcomeEmailSent || false);
+      setHasSubscribed(true);
+      setIsSubmitting(false);
+      setIsModalOpen(false);
+    } catch (err: any) {
+      console.error("Newsletter submission error:", err);
+      setApiError(err.message || 'Server connection error. Please try again.');
+      setIsSubmitting(false);
+    }
+  };
+
   const handleInitialSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !email.includes('@')) return;
+    setIsTouched(true);
+    if (!validateEmailFormat(email)) return;
+
+    // Direct submission or optional interest modal
     setIsModalOpen(true);
+  };
+
+  const handleDirectSubscribe = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsTouched(true);
+    if (!validateEmailFormat(email)) return;
+
+    executeSubscription(selectedInterests);
   };
 
   const toggleInterest = (interest: string) => {
@@ -53,52 +166,7 @@ export default function FooterNewsletter() {
 
   const handleFinalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-
-    // Generate unique promo code based on selected interests or tier
-    let prefix = 'ROYAL';
-    if (selectedInterests.includes('diving')) prefix = 'NEPTUNE';
-    if (selectedInterests.includes('safari')) prefix = 'ANUBIS';
-    if (selectedInterests.includes('speedboat')) prefix = 'HORUS';
-    if (selectedInterests.includes('history')) prefix = 'RAMSES';
-    
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const promoCode = `${prefix}-${randomSuffix}-30`;
-
-    setTimeout(() => {
-      const subscriberData: Subscriber = {
-        id: `sub-${Date.now()}`,
-        email: email,
-        interests: selectedInterests.length > 0 ? selectedInterests : ['all'],
-        tier: explorerTier,
-        signupDate: new Date().toISOString().split('T')[0],
-        promoCode: promoCode
-      };
-
-      // Save to global list of signups for CRM
-      const existingSignups = localStorage.getItem('kemet_newsletter_signups');
-      let signupsList = [];
-      if (existingSignups) {
-        try {
-          signupsList = JSON.parse(existingSignups);
-        } catch (e) {
-          signupsList = [];
-        }
-      }
-      signupsList.unshift(subscriberData);
-      localStorage.setItem('kemet_newsletter_signups', JSON.stringify(signupsList));
-
-      // Save current subscriber state
-      localStorage.setItem('kemet_current_subscriber', JSON.stringify(subscriberData));
-
-      // Dispatch event to update Admin CRM or other components immediately
-      window.dispatchEvent(new Event('kemet_subscribers_updated'));
-
-      setAssignedPromo(promoCode);
-      setIsSubmitting(false);
-      setHasSubscribed(true);
-      setIsModalOpen(false);
-    }, 1500);
+    executeSubscription(selectedInterests);
   };
 
   const handleResetSubscription = () => {
@@ -107,6 +175,17 @@ export default function FooterNewsletter() {
     setAssignedPromo('');
     setEmail('');
     setSelectedInterests([]);
+    setEmailError(null);
+    setApiError(null);
+    setIsTouched(false);
+  };
+
+  const copyPromoCode = () => {
+    if (assignedPromo) {
+      navigator.clipboard.writeText(assignedPromo);
+      setCopiedPromo(true);
+      setTimeout(() => setCopiedPromo(false), 2500);
+    }
   };
 
   const INTEREST_OPTIONS = language === 'de' ? [
@@ -127,20 +206,6 @@ export default function FooterNewsletter() {
     { value: 'speedboat', label: '𓊡 Speedboat Excursions', desc: 'High-speed island hopping tours' },
     { value: 'safari', label: '𓅓 Desert Safaris', desc: 'Quad bike racing and stargazing' },
     { value: 'history', label: '𓉐 Historical Luxor', desc: 'Ancient temples and tomb tours' }
-  ];
-
-  const TIER_OPTIONS = language === 'de' ? [
-    { value: 'citizen', name: 'Standard-Reisender', discount: '15% Rabatt', icon: '𓀚' },
-    { value: 'scribe', name: 'Begeisterter Entdecker', discount: '20% Rabatt', icon: '𓁟' },
-    { value: 'pharaoh', name: 'VIP-Abenteurer', discount: '30% Rabatt', icon: '𓁠' }
-  ] : language === 'pl' ? [
-    { value: 'citizen', name: 'Standardowy podróżnik', discount: '15% zniżki', icon: '𓀚' },
-    { value: 'scribe', name: 'Zapalony odkrywca', discount: '20% zniżki', icon: '𓁟' },
-    { value: 'pharaoh', name: 'Poszukiwacz przygód VIP', discount: '30% zniżki', icon: '𓁠' }
-  ] : [
-    { value: 'citizen', name: 'Standard Traveler', discount: '15% Off', icon: '𓀚' },
-    { value: 'scribe', name: 'Avid Explorer', discount: '20% Off', icon: '𓁟' },
-    { value: 'pharaoh', name: 'VIP Adventurer', discount: '30% Off', icon: '𓁠' }
   ];
 
   return (
@@ -174,11 +239,11 @@ export default function FooterNewsletter() {
             </h3>
             <p className="text-stone-400 text-xs leading-relaxed max-w-md">
               {language === 'de' ? (
-                <>Geben Sie unten Ihre E-Mail-Adresse ein, um den Newsletter zu abonnieren und saisonale Rabatte von bis zu <span className="text-[#d4af37] font-semibold">30% Rabatt</span> auf Tauchausflüge, Wüstensafaris und Nil-Tagestouren freizuschalten.</>
+                <>Geben Sie unten Ihre E-Mail-Adresse ein, um den Newsletter zu abonnieren und einen <span className="text-[#d4af37] font-semibold">30% Rabattcode</span> sowie ein Begrüßungstemplate zu erhalten.</>
               ) : language === 'pl' ? (
-                <>Wpisz swój adres e-mail poniżej, aby zapisać się i odblokować sezonowe rabaty do <span className="text-[#d4af37] font-semibold">30% taniej</span> na wycieczki nurkowe, pustynne safari i jednodniowe wycieczki nad Nil.</>
+                <>Wpisz swój adres e-mail poniżej, aby zapisać się i otrzymać <span className="text-[#d4af37] font-semibold">kod rabatowy 30%</span> oraz powitalną wiadomość.</>
               ) : (
-                <>Enter your email below to subscribe and unlock seasonal discounts up to <span className="text-[#d4af37] font-semibold">30% Off</span> on diving trips, desert safaris, and Nile day tours.</>
+                <>Enter your email below to subscribe, receive a welcome email template, and unlock <span className="text-[#d4af37] font-semibold">30% Off</span> travel discount promo codes stored in your admin portal.</>
               )}
             </p>
           </div>
@@ -186,51 +251,112 @@ export default function FooterNewsletter() {
           {/* Action Input / Status */}
           <div className="md:col-span-5 w-full">
             {!hasSubscribed ? (
-              <form onSubmit={handleInitialSubmit} className="flex flex-col sm:flex-row gap-2">
-                <div className="relative flex-1">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 w-4 h-4" />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder={language === 'de' ? "Geben Sie Ihre E-Mail-Adresse ein..." : language === 'pl' ? "Wpisz swój adres e-mail..." : "Enter your email address..."}
-                    className="w-full bg-[#1c1611] border border-[#d4af37]/30 rounded-xl py-2.5 pl-10 pr-3 text-stone-200 text-xs focus:outline-none focus:ring-1 focus:ring-[#d4af37] placeholder:text-stone-600"
-                  />
+              <form onSubmit={handleInitialSubmit} className="flex flex-col gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="relative flex-1">
+                    <Mail className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${
+                      emailError && isTouched ? 'text-amber-400' : 'text-stone-500'
+                    }`} />
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={handleEmailChange}
+                      onBlur={() => {
+                        setIsTouched(true);
+                        validateEmailFormat(email);
+                      }}
+                      placeholder={language === 'de' ? "Geben Sie Ihre E-Mail-Adresse ein..." : language === 'pl' ? "Wpisz swój adres e-mail..." : "Enter your email address..."}
+                      className={`w-full bg-[#1c1611] border rounded-xl py-2.5 pl-10 pr-3 text-stone-200 text-xs focus:outline-none transition-all placeholder:text-stone-600 ${
+                        emailError && isTouched 
+                          ? 'border-amber-500/70 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50' 
+                          : 'border-[#d4af37]/30 focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]'
+                      }`}
+                    />
+                  </div>
+                  
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="bg-gradient-to-r from-[#d4af37] to-[#bca03b] hover:from-[#e2be4c] hover:to-[#cca73d] text-stone-950 font-mono text-[10px] uppercase font-bold tracking-widest px-4 py-2.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap active:scale-95 disabled:opacity-50"
+                  >
+                    {isSubmitting ? (
+                      <span className="w-3.5 h-3.5 border-2 border-stone-950 border-t-transparent rounded-full animate-spin"></span>
+                    ) : (
+                      <>
+                        {language === 'de' ? 'Abonnieren' : language === 'pl' ? 'Zapisz się' : 'Subscribe'} 
+                        <ChevronRight className="w-3 h-3 stroke-[3px]" />
+                      </>
+                    )}
+                  </button>
                 </div>
-                <button
-                  type="submit"
-                  className="bg-gradient-to-r from-[#d4af37] to-[#bca03b] hover:from-[#e2be4c] hover:to-[#cca73d] text-stone-950 font-mono text-[10px] uppercase font-bold tracking-widest px-5 py-2.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap active:scale-95"
-                >
-                  {language === 'de' ? 'Abonnieren' : language === 'pl' ? 'Zapisz się' : 'Subscribe'} <ChevronRight className="w-3 h-3 stroke-[3px]" />
-                </button>
+
+                {/* Real-time Validation Error Display */}
+                {emailError && isTouched && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-1.5 text-amber-400 text-[11px] font-mono pl-1"
+                  >
+                    <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                    <span>{emailError}</span>
+                  </motion.div>
+                )}
+
+                {/* Server API Error Display */}
+                {apiError && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-1.5 text-red-400 text-[11px] font-mono pl-1 bg-red-950/40 p-2 rounded-lg border border-red-800/40"
+                  >
+                    <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 text-red-400" />
+                    <span>{apiError}</span>
+                  </motion.div>
+                )}
               </form>
             ) : (
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-[#211a13]/80 border border-[#d4af37]/40 rounded-xl p-4 text-center sm:text-left space-y-2 relative"
+                className="bg-[#211a13]/90 border border-[#d4af37]/40 rounded-xl p-4 text-center sm:text-left space-y-2 relative shadow-lg"
               >
                 <div className="flex items-center gap-2 justify-center sm:justify-start">
-                  <div className="w-5 h-5 bg-[#d4af37]/10 rounded-full border border-[#d4af37]/30 flex items-center justify-center text-[10px] text-[#d4af37]">
+                  <div className="w-5 h-5 bg-emerald-500/20 rounded-full border border-emerald-500/40 flex items-center justify-center text-[11px] text-emerald-400 font-bold">
                     ✓
                   </div>
                   <span className="font-serif text-[#e6c280] font-bold text-xs uppercase tracking-wider">
-                    {language === 'de' ? 'Abonnement bestätigt' : language === 'pl' ? 'Subskrypcja potwierdzona' : 'Subscription Confirmed'}
+                    {language === 'de' ? 'Abonnement Bestätigt!' : language === 'pl' ? 'Subskrypcja Potwierdzona!' : 'Subscription Confirmed!'}
                   </span>
                 </div>
-                <p className="text-[11px] text-stone-400">
-                  {language === 'de' ? 'Willkommen bei unserem Newsletter! Ihr aktiver Rabattcode lautet:' : language === 'pl' ? 'Witamy w naszym newsletterze! Twój aktywny kod rabatowy to:' : 'Welcome to our newsletter! Your active discount code is:'}
+
+                <p className="text-[11px] text-stone-300 leading-normal">
+                  {welcomeSent ? (
+                    <span className="text-emerald-400 font-mono text-[10px] block mb-1 flex items-center gap-1">
+                      <Send className="w-3 h-3" /> Welcome email template dispatched to <strong className="text-stone-200">{email}</strong>!
+                    </span>
+                  ) : (
+                    <span>Your email <strong className="text-stone-200">{email}</strong> has been registered into the admin dashboard ledger!</span>
+                  )}
+                  {language === 'de' ? 'Ihr aktiver 30% Rabattcode lautet:' : language === 'pl' ? 'Twój aktywny kod rabatowy 30% to:' : 'Your active 30% discount promo code:'}
                 </p>
-                <div className="flex items-center justify-between bg-black/50 border border-stone-800 rounded-lg p-2 font-mono text-xs text-[#d4af37] select-all">
+
+                <div className="flex items-center justify-between bg-black/60 border border-[#d4af37]/40 rounded-lg p-2 font-mono text-xs text-[#d4af37] select-all">
                   <span className="font-bold tracking-widest">{assignedPromo}</span>
-                  <Ticket className="w-3.5 h-3.5 text-stone-600" />
+                  <button 
+                    onClick={copyPromoCode}
+                    className="text-[10px] bg-[#2a1f15] hover:bg-[#3d2e1f] text-[#e6c280] px-2 py-1 rounded border border-[#d4af37]/30 transition-all flex items-center gap-1 cursor-pointer"
+                  >
+                    <Ticket className="w-3 h-3 text-[#d4af37]" />
+                    <span>{copiedPromo ? (language === 'de' ? 'Kopiert!' : language === 'pl' ? 'Skopiowano!' : 'Copied!') : (language === 'de' ? 'Kopieren' : language === 'pl' ? 'Kopiuj' : 'Copy')}</span>
+                  </button>
                 </div>
+
                 <button 
                   onClick={handleResetSubscription}
-                  className="text-[9px] font-mono text-stone-600 hover:text-stone-400 uppercase tracking-widest block mx-auto sm:ml-0 underline cursor-pointer"
+                  className="text-[9px] font-mono text-stone-500 hover:text-stone-300 uppercase tracking-widest block mx-auto sm:ml-0 underline cursor-pointer transition-colors"
                 >
-                  {language === 'de' ? 'Abbestellen / E-Mail-Adresse ändern' : language === 'pl' ? 'Anuluj subskrypcję / Zmień adres e-mail' : 'Unsubscribe / Change Email Address'}
+                  {language === 'de' ? 'E-Mail-Adresse ändern / Erneut abonnieren' : language === 'pl' ? 'Zmień adres e-mail / Zapisz się ponownie' : 'Change Email / Subscribe Another Address'}
                 </button>
               </motion.div>
             )}
@@ -239,7 +365,7 @@ export default function FooterNewsletter() {
         </div>
       </div>
 
-      {/* 2. IMPERIAL PREFERENCE CAPTURE MODAL DIALOG */}
+      {/* 2. PREFERENCE SELECTION MODAL DIALOG (WITHOUT ACCOUNT TYPE / TIER SELECTION) */}
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -259,37 +385,37 @@ export default function FooterNewsletter() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 180 }}
-              className="bg-[#16110c] border-2 border-[#d4af37] rounded-3xl w-full max-w-xl overflow-hidden relative shadow-2xl z-10"
+              className="bg-[#16110c] border-2 border-[#d4af37] rounded-3xl w-full max-w-lg overflow-hidden relative shadow-2xl z-10"
             >
               
               {/* Pharaonic Header Banner */}
               <div className="bg-gradient-to-b from-[#1c150e] to-[#120e0a] border-b border-[#d4af37]/20 p-5 text-center relative">
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="absolute right-4 top-4 text-stone-500 hover:text-stone-300 transition-colors"
+                  className="absolute right-4 top-4 text-stone-500 hover:text-stone-300 transition-colors cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
                 <div className="text-2xl mb-1 text-[#d4af37]">𓂀</div>
                 <h3 className="font-serif text-lg md:text-xl font-extrabold text-[#e6c280] uppercase tracking-widest">
-                  {language === 'de' ? 'Reiseinteressen anpassen' : language === 'pl' ? 'Dostosuj swoje zainteresowania' : 'Customize Your Travel Interests'}
+                  {language === 'de' ? 'Reiseinteressen anpassen' : language === 'pl' ? 'Dostosuj swoje zainteresowania' : 'Customize Travel Interests'}
                 </h3>
                 <p className="text-stone-400 text-xs mt-1 font-mono">
-                  {language === 'de' ? 'Einstellungen auswählen für:' : language === 'pl' ? 'Wybierz preferencje dla:' : 'Select preferences for:'} <span className="text-[#d4af37]">{email}</span>
+                  {language === 'de' ? 'Anmeldung für:' : language === 'pl' ? 'Subskrypcja dla:' : 'Subscribing:'} <span className="text-[#d4af37] font-semibold">{email}</span>
                 </p>
               </div>
 
-              {/* Scrollable preference questionnaire */}
-              <form onSubmit={handleFinalSubmit} className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+              {/* Questionnaire (NO ACCOUNT TYPE OR TIER SELECTION) */}
+              <form onSubmit={handleFinalSubmit} className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
                 
-                {/* 1. Category checkmarks */}
+                {/* Category checkmarks */}
                 <div className="space-y-3">
                   <div>
-                    <label className="text-[10px] font-mono text-[#d4af37] uppercase tracking-wider block">
-                      {language === 'de' ? 'Schritt 1: Wählen Sie Ihre Lieblingsaktivitäten' : language === 'pl' ? 'Krok 1: Wybierz swoje ulubione zajęcia' : 'Step 1: Select Your Favorite Activities'}
+                    <label className="text-[10px] font-mono text-[#d4af37] uppercase tracking-wider block font-bold">
+                      {language === 'de' ? 'Wählen Sie Ihre bevorzugten Aktivitäten' : language === 'pl' ? 'Wybierz swoje ulubione zajęcia' : 'Select Your Preferred Travel Interests'}
                     </label>
                     <p className="text-stone-400 text-[11px] leading-relaxed">
-                      {language === 'de' ? 'An welchen Arten von Reisen und Ausflügen sind Sie interessiert?' : language === 'pl' ? 'Jakimi rodzajami podróży i wycieczek się interesujesz?' : 'Which types of travel and excursions are you interested in?'}
+                      {language === 'de' ? 'An welchen Arten von Ausflügen sind Sie interessiert?' : language === 'pl' ? 'Jakimi rodzajami wycieczek się interesujesz?' : 'Which types of excursions are you interested in receiving discounts for?'}
                     </p>
                   </div>
 
@@ -326,70 +452,43 @@ export default function FooterNewsletter() {
                   </div>
                 </div>
 
-                {/* 2. Interactive Profile Level */}
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-[10px] font-mono text-[#d4af37] uppercase tracking-wider block">
-                      {language === 'de' ? 'Schritt 2: Wählen Sie Ihre Profilebene' : language === 'pl' ? 'Krok 2: Wybierz poziom profilu' : 'Step 2: Choose Your Profile Level'}
-                    </label>
-                    <p className="text-stone-400 text-[11px] leading-relaxed">
-                      {language === 'de' ? 'Wählen Sie die Art von Reiseangeboten und Neuigkeiten, die Sie interessieren.' : language === 'pl' ? 'Wybierz rodzaj ofert turystycznych i wiadomości, które Cię interesują.' : 'Choose the type of travel offers and news you are interested in.'}
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-3">
-                    {TIER_OPTIONS.map((tier) => {
-                      const isSelected = explorerTier === tier.value;
-                      return (
-                        <button
-                          key={tier.value}
-                          type="button"
-                          onClick={() => setExplorerTier(tier.value)}
-                          className={`flex flex-col items-center justify-center text-center p-3.5 rounded-xl border transition-all cursor-pointer ${
-                            isSelected
-                              ? 'bg-[#d4af37]/15 border-[#d4af37] text-[#e6c280]'
-                              : 'bg-[#1a1410] border-stone-800/80 text-stone-400 hover:border-stone-700'
-                          }`}
-                        >
-                          <span className="text-xl mb-1 select-none">{tier.icon}</span>
-                          <span className="text-[10px] font-serif font-bold block leading-tight">
-                            {tier.name}
-                          </span>
-                          <span className="text-[10px] font-mono text-[#d4af37] mt-1 bg-[#d4af37]/10 px-1.5 py-0.5 rounded-md">
-                            {tier.discount}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* VIP Perks Note */}
-                <div className="bg-[#1d1611] border border-[#d4af37]/15 rounded-xl p-3 flex gap-3 items-start">
+                {/* Privacy Note */}
+                <div className="bg-[#1d1611] border border-[#d4af37]/15 rounded-xl p-3 flex gap-3 items-center">
                   <div className="text-lg text-[#d4af37] select-none">𓋹</div>
                   <p className="text-[10px] text-stone-400 leading-relaxed">
-                    {language === 'de' ? 'Wir schätzen Ihre Privatsphäre. Wir werden Ihre E-Mail-Adresse niemals weitergeben oder Spam senden. Sie erhalten nur maßgeschneiderte Rabattcodes und saisonale Reiseangebote.' : language === 'pl' ? 'Cenimy Twoją prywatność. Nigdy nie udostępnimy Twojego adresu e-mail ani nie będziemy wysyłać spamu. Otrzymasz tylko spersonalizowane kody rabatowe i sezonowe oferty.' : 'We value your privacy. We will never share your email address or send spam. You will only receive custom discount codes and seasonal travel deals.'}
+                    {language === 'de' ? 'Ihre E-Mail-Adresse wird sicher im Admin-Dashboard gespeichert. Sie erhalten das Willkommens-Template und exklusive 30%-Gutscheincodes.' : language === 'pl' ? 'Twój adres e-mail zostanie bezpiecznie zapisany w panelu administracyjnym. Otrzymasz powitalny szablon i ekskluzywne kody rabatowe 30%.' : 'Your email will be securely stored inside the Admin Dashboard. You will receive the welcome email template and exclusive 30% discount promo codes.'}
                   </p>
                 </div>
 
                 {/* Submission CTA */}
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-[#d4af37] to-[#b29330] hover:from-[#e2be4c] hover:to-[#c3a133] text-stone-950 font-mono text-xs uppercase font-bold tracking-widest py-3 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <span className="w-4 h-4 border-2 border-stone-950 border-t-transparent rounded-full animate-spin"></span>
-                      {language === 'de' ? 'Einstellungen werden gespeichert...' : language === 'pl' ? 'Zapisywanie preferencji...' : 'Saving Preferences...'}
-                    </>
-                  ) : (
-                    <>
-                      <Compass className="w-4 h-4 animate-spin-slow" />
-                      {language === 'de' ? 'Reiseeinstellungen speichern' : language === 'pl' ? 'Zapisz preferencje podróży' : 'Save Travel Preferences'}
-                    </>
-                  )}
-                </button>
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={handleDirectSubscribe}
+                    disabled={isSubmitting}
+                    className="flex-1 bg-[#241a11] hover:bg-[#38281a] text-[#e6c280] font-mono text-xs uppercase font-bold tracking-wider py-3 rounded-xl border border-[#d4af37]/30 transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    {language === 'de' ? 'Direkt Abonnieren' : language === 'pl' ? 'Zapisz się od razu' : 'Skip & Subscribe'}
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="flex-1 bg-gradient-to-r from-[#d4af37] to-[#b29330] hover:from-[#e2be4c] hover:to-[#c3a133] text-stone-950 font-mono text-xs uppercase font-bold tracking-widest py-3 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <span className="w-4 h-4 border-2 border-stone-950 border-t-transparent rounded-full animate-spin"></span>
+                        {language === 'de' ? 'Wird gespeichert...' : language === 'pl' ? 'Zapisywanie...' : 'Subscribing...'}
+                      </>
+                    ) : (
+                      <>
+                        <Compass className="w-4 h-4 animate-spin-slow" />
+                        {language === 'de' ? 'Abonnement Bestätigen' : language === 'pl' ? 'Potwierdź subskrypcję' : 'Confirm Subscription'}
+                      </>
+                    )}
+                  </button>
+                </div>
 
               </form>
 

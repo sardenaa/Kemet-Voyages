@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
-import { processBookingEmailsAndSheet } from "./server/googleWorkspace";
+import { processBookingEmailsAndSheet, sendNewsletterWelcomeEmail } from "./server/googleWorkspace";
 
 // ==========================================
 // SEED DATA DECLARATIONS
@@ -924,24 +924,25 @@ async function startServer() {
     res.json(db.newsletter_signups);
   });
 
-  app.post("/api/newsletter", (req, res) => {
+  app.post("/api/newsletter", async (req, res) => {
     try {
-      const { email, interests, tier } = req.body;
+      const { email, interests, tier, accessToken } = req.body;
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!email || !emailRegex.test(email)) {
-        return res.status(400).json({ error: "Please offer a valid email to receive the Scribe's scrolls." });
+      if (!email || !emailRegex.test(String(email).trim())) {
+        return res.status(400).json({ error: "Please offer a valid email address (e.g. traveler@example.com)." });
       }
 
+      const trimmedEmail = String(email).toLowerCase().trim();
       const db = loadDb();
-      if (db.newsletter_signups.some(sub => sub.email.toLowerCase() === email.toLowerCase())) {
-        return res.status(400).json({ error: "Your email is already registered inside our sacred newsletter scrolls!" });
+      if (db.newsletter_signups.some(sub => sub.email.toLowerCase() === trimmedEmail)) {
+        return res.status(400).json({ error: "Your email is already registered inside our newsletter scrolls!" });
       }
 
       const promoCode = `RAMSES-${Math.floor(Math.random() * 9000) + 1000}-30`;
       const newSignup = {
         id: `sub-${Date.now()}`,
-        email: email.toLowerCase().trim(),
-        interests: Array.isArray(interests) ? interests.map(i => sanitizeString(i, 30)) : [],
+        email: trimmedEmail,
+        interests: Array.isArray(interests) ? interests.map(i => sanitizeString(i, 30)) : ['all'],
         tier: sanitizeString(tier, 30) || 'scribe',
         signupDate: new Date().toISOString().split('T')[0],
         promoCode
@@ -949,7 +950,22 @@ async function startServer() {
 
       db.newsletter_signups.unshift(newSignup);
       saveDb(db);
-      res.json(newSignup);
+
+      // Trigger sending welcome email template
+      let welcomeEmailSent = false;
+      try {
+        const emailResult = await sendNewsletterWelcomeEmail(accessToken, trimmedEmail, promoCode, newSignup.interests);
+        welcomeEmailSent = emailResult.emailSent;
+      } catch (wsErr) {
+        console.error("Welcome email dispatch warning:", wsErr);
+      }
+
+      res.json({
+        success: true,
+        signup: newSignup,
+        promoCode,
+        welcomeEmailSent
+      });
     } catch (e: any) {
       res.status(500).json({ error: e.message });
     }

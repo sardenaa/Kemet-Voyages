@@ -589,23 +589,56 @@ export default function AdminDashboard({
     return INITIAL_SUBS;
   });
 
-  // Synchronize subscribers from local storage
-  useEffect(() => {
-    const syncSubs = () => {
-      const saved = localStorage.getItem('kemet_newsletter_signups');
-      if (saved) {
-        try {
-          setSubscribers(JSON.parse(saved));
-        } catch (e) {
-          // ignore
+  // Synchronize subscribers from server API & local storage
+  const fetchServerSubscribers = React.useCallback(async () => {
+    const saved = localStorage.getItem('kemet_newsletter_signups');
+    let localList: any[] = [];
+    if (saved) {
+      try {
+        localList = JSON.parse(saved);
+      } catch (e) {
+        localList = [];
+      }
+    }
+
+    try {
+      const passcode = localStorage.getItem('kemet_admin_passcode') || 'pharaoh';
+      const res = await fetch('/api/newsletter', {
+        headers: { 'x-admin-passcode': passcode }
+      });
+      if (res.ok) {
+        const serverSubs = await res.json();
+        if (Array.isArray(serverSubs)) {
+          // Merge server signups with any local signups by email key
+          const subMap = new Map<string, any>();
+          serverSubs.forEach(s => subMap.set(s.email.toLowerCase(), s));
+          localList.forEach(l => {
+            if (!subMap.has(l.email.toLowerCase())) {
+              subMap.set(l.email.toLowerCase(), l);
+            }
+          });
+          const merged = Array.from(subMap.values());
+          setSubscribers(merged);
+          localStorage.setItem('kemet_newsletter_signups', JSON.stringify(merged));
+          return;
         }
       }
-    };
-    window.addEventListener('kemet_subscribers_updated', syncSubs);
-    return () => {
-      window.removeEventListener('kemet_subscribers_updated', syncSubs);
-    };
+    } catch (e) {
+      console.warn("Could not fetch server newsletter subscribers:", e);
+    }
+
+    if (localList.length > 0) {
+      setSubscribers(localList);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchServerSubscribers();
+    window.addEventListener('kemet_subscribers_updated', fetchServerSubscribers);
+    return () => {
+      window.removeEventListener('kemet_subscribers_updated', fetchServerSubscribers);
+    };
+  }, [fetchServerSubscribers]);
 
   // Core CRM States backed by localStorage
   const [excursions, setExcursions] = useState<Excursion[]>(() => {

@@ -197,6 +197,72 @@ export async function sendGmailMessage(
   return true;
 }
 
+// 3b. Send Newsletter Welcome Email Template
+export async function sendNewsletterWelcomeEmail(
+  accessToken: string | undefined,
+  subscriberEmail: string,
+  promoCode: string,
+  interests: string[] = []
+): Promise<{ emailSent: boolean; error?: string }> {
+  const subject = `𓋹 Sacred Scroll Invitation: Welcome to Kemet Royal Excursions! (Your 30% Promo Code Inside)`;
+  const htmlBody = `
+    <div style="font-family: 'Georgia', serif; background-color: #120e0a; color: #e6c280; padding: 32px; border-radius: 16px; border: 2px solid #d4af37; max-width: 620px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="font-size: 36px; color: #d4af37;">𓋹 𓂀 𓇛</span>
+        <h1 style="color: #d4af37; text-transform: uppercase; letter-spacing: 3px; font-size: 22px; margin: 10px 0 4px 0;">Kemet Royal Excursions</h1>
+        <p style="color: #a89270; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin: 0;">Sacred Scrolls & Royal Expedition Digest</p>
+      </div>
+
+      <p style="font-size: 15px; line-height: 1.7; color: #f0e2cc;">
+        Greetings, Noble Explorer,
+      </p>
+      <p style="font-size: 14px; line-height: 1.7; color: #d1c2a5;">
+        The Royal Scribe Sennedjem has inscribed your name into the sacred scrolls of Kemet. You are now officially part of our inner circle of travelers, granting you priority access to seasonal voyages, private yacht charters, and deep desert safaris.
+      </p>
+
+      <!-- PROMO CODE BOX -->
+      <div style="background: linear-gradient(135deg, #1f1710 0%, #2a1f15 100%); padding: 20px; border-radius: 12px; border: 1px solid #d4af37; text-align: center; margin: 24px 0;">
+        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #a89270; display: block; margin-bottom: 6px;">Your Royal 30% Discount Code</span>
+        <div style="font-family: monospace; font-size: 22px; font-weight: bold; color: #ffd700; letter-spacing: 3px; background-color: #120e0a; padding: 10px 16px; border-radius: 8px; border: 1px dashed #d4af37; display: inline-block;">
+          ${promoCode}
+        </div>
+        <p style="font-size: 11px; color: #a89270; margin-top: 8px; margin-bottom: 0;">Apply this promo code during excursion reservation to claim your 30% offering discount.</p>
+      </div>
+
+      <!-- FEATURED VOYAGES -->
+      <h3 style="color: #d4af37; font-size: 14px; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 1px solid #3d2f21; padding-bottom: 8px; margin-top: 28px;">
+        𓊟 Curated Royal Voyages
+      </h3>
+      <ul style="font-size: 13px; color: #c9b89c; line-height: 1.8; padding-left: 20px;">
+        <li><strong style="color: #e6c280;">Ras Mohammed Royal Coral Diving:</strong> Scuba dive in Nun's deep turquoise waters alongside submerged Pharaonic statues.</li>
+        <li><strong style="color: #e6c280;">Set's Golden Deshret Safari:</strong> Quad bike racing over red dunes, camel treks, and telescope stargazing in Bedouin oases.</li>
+        <li><strong style="color: #e6c280;">Pharaoh's Pilgrimage to Waset (Luxor):</strong> VIP entry into the Valley of the Kings, Karnak Temple, and private Nile feluccas.</li>
+      </ul>
+
+      <p style="color: #d4af37; font-style: italic; text-align: center; margin-top: 28px; font-size: 13px;">
+        "May Ra guide your steps, and may the waters of the Nile bring eternal peace to your journeys."
+      </p>
+
+      <hr style="border: 0; border-top: 1px solid #332414; margin-top: 28px; margin-bottom: 16px;" />
+      <p style="font-size: 10px; color: #7a6854; text-align: center; text-transform: uppercase; letter-spacing: 1px; margin: 0;">
+        Kemet Excursions • Red Sea Coast & Ancient Monuments • Egypt
+      </p>
+    </div>
+  `;
+
+  if (accessToken) {
+    try {
+      await sendGmailMessage(accessToken, subscriberEmail, subject, htmlBody);
+      return { emailSent: true };
+    } catch (err: any) {
+      console.warn("Could not send welcome email via Gmail API:", err.message);
+      return { emailSent: false, error: err.message };
+    }
+  }
+
+  return { emailSent: false, error: "Saved to database ledger." };
+}
+
 // 4. Helper to send both Customer Confirmation and Agency Notification
 export async function processBookingEmailsAndSheet(
   accessToken: string | undefined,
