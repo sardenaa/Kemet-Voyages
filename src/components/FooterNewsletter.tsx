@@ -50,6 +50,7 @@ export default function FooterNewsletter() {
       setEmailError(
         language === 'de' ? 'E-Mail-Adresse ist erforderlich' :
         language === 'pl' ? 'Adres e-mail jest wymagany' :
+        language === 'ar' ? 'البريد الإلكتروني مطلوب' :
         'Email address is required'
       );
       return false;
@@ -58,6 +59,7 @@ export default function FooterNewsletter() {
       setEmailError(
         language === 'de' ? 'Ungültiges E-Mail-Format (z. B. name@beispiel.com)' :
         language === 'pl' ? 'Nieprawidłowy format e-mail (np. name@beispiel.com)' :
+        language === 'ar' ? 'صيغة البريد الإلكتروني غير صالحة (مثال: traveler@domain.com)' :
         'Invalid email format (e.g. traveler@domain.com)'
       );
       return false;
@@ -200,6 +202,12 @@ export default function FooterNewsletter() {
     { value: 'speedboat', label: '𓊡 Wycieczki motorówką', desc: 'Szybkie przemieszczanie się między wyspami' },
     { value: 'safari', label: '𓅓 Pustynne safari', desc: 'Wyścigi quadów i obserwacja gwiazd' },
     { value: 'history', label: '𓉐 Historyczny Luksor', desc: 'Starożytne świątynie i zwiedzanie grobowców' }
+  ] : language === 'ar' ? [
+    { value: 'diving', label: '𓆛 غوص السكوبا', desc: 'الشعاب المرجانية والمحميات البحرية' },
+    { value: 'boat', label: '𓊟 رحلات اليخوت والقوارب', desc: 'رحلات الجزر الفاخرة والسنوركلينج' },
+    { value: 'speedboat', label: '𓊡 رحلات القوارب السريعة', desc: 'تنقل بين الجزر بسرعة فائقة' },
+    { value: 'safari', label: '𓅓 سفاري الصحراء', desc: 'سباق الدراجات الرباعية ومراقبة النجوم' },
+    { value: 'history', label: '𓉐 الأقصر التاريخية', desc: 'جولات المعابد والمقابر القديمة' }
   ] : [
     { value: 'diving', label: '𓆛 Scuba Diving', desc: 'Coral reefs and marine reserves' },
     { value: 'boat', label: '𓊟 Yacht & Boat Trips', desc: 'Island luxury cruises and snorkeling' },
@@ -232,16 +240,18 @@ export default function FooterNewsletter() {
           <div className="md:col-span-7 space-y-2 text-center md:text-left">
             <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-[0.25em] flex items-center gap-1.5 justify-center md:justify-start">
               <Sparkles className="w-3 h-3 text-[#d4af37] animate-pulse" />
-              {language === 'de' ? 'Sonderangebote & Reisedeals' : language === 'pl' ? 'Oferty specjalne i promocje' : 'Special Offers & Travel Deals'}
+              {language === 'de' ? 'Sonderangebote & Reisedeals' : language === 'pl' ? 'Oferty specjalne i promocje' : language === 'ar' ? 'العروض الخاصة وعروض السفر' : 'Special Offers & Travel Deals'}
             </span>
             <h3 className="font-serif text-xl md:text-2xl font-black text-[#e6c280] uppercase tracking-wide">
-              {language === 'de' ? 'Reiserabatte & Neuigkeiten' : language === 'pl' ? 'Zniżki podróżnicze i aktualności' : 'Travel Discount & Updates'}
+              {language === 'de' ? 'Reiserabatte & Neuigkeiten' : language === 'pl' ? 'Zniżki podróżnicze i aktualności' : language === 'ar' ? 'خصومات السفر والتحديثات' : 'Travel Discount & Updates'}
             </h3>
             <p className="text-stone-400 text-xs leading-relaxed max-w-md">
               {language === 'de' ? (
                 <>Geben Sie unten Ihre E-Mail-Adresse ein, um den Newsletter zu abonnieren und einen <span className="text-[#d4af37] font-semibold">30% Rabattcode</span> sowie ein Begrüßungstemplate zu erhalten.</>
               ) : language === 'pl' ? (
                 <>Wpisz swój adres e-mail poniżej, aby zapisać się i otrzymać <span className="text-[#d4af37] font-semibold">kod rabatowy 30%</span> oraz powitalną wiadomość.</>
+              ) : language === 'ar' ? (
+                <>أدخل بريدك الإلكتروني أدناه للاشتراك والحصول على رسالة الترحيب ورابط <span className="text-[#d4af37] font-semibold">خصم 30%</span> للاستخدام في رحلتك القادمة.</>
               ) : (
                 <>Enter your email below to subscribe, receive a welcome email template, and unlock <span className="text-[#d4af37] font-semibold">30% Off</span> travel discount promo codes stored in your admin portal.</>
               )}
@@ -266,7 +276,7 @@ export default function FooterNewsletter() {
                         setIsTouched(true);
                         validateEmailFormat(email);
                       }}
-                      placeholder={language === 'de' ? "Geben Sie Ihre E-Mail-Adresse ein..." : language === 'pl' ? "Wpisz swój adres e-mail..." : "Enter your email address..."}
+                      placeholder={language === 'de' ? "Geben Sie Ihre E-Mail-Adresse ein..." : language === 'pl' ? "Wpisz swój adres e-mail..." : language === 'ar' ? "أدخل بريدك الإلكتروني..." : "Enter your email address..."}
                       className={`w-full bg-[#1c1611] border rounded-xl py-2.5 pl-10 pr-3 text-stone-200 text-xs focus:outline-none transition-all placeholder:text-stone-600 ${
                         emailError && isTouched 
                           ? 'border-amber-500/70 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50' 
@@ -284,7 +294,7 @@ export default function FooterNewsletter() {
                       <span className="w-3.5 h-3.5 border-2 border-stone-950 border-t-transparent rounded-full animate-spin"></span>
                     ) : (
                       <>
-                        {language === 'de' ? 'Abonnieren' : language === 'pl' ? 'Zapisz się' : 'Subscribe'} 
+                        {language === 'de' ? 'Abonnieren' : language === 'pl' ? 'Zapisz się' : language === 'ar' ? 'اشترك الآن' : 'Subscribe'} 
                         <ChevronRight className="w-3 h-3 stroke-[3px]" />
                       </>
                     )}
@@ -326,19 +336,19 @@ export default function FooterNewsletter() {
                     ✓
                   </div>
                   <span className="font-serif text-[#e6c280] font-bold text-xs uppercase tracking-wider">
-                    {language === 'de' ? 'Abonnement Bestätigt!' : language === 'pl' ? 'Subskrypcja Potwierdzona!' : 'Subscription Confirmed!'}
+                    {language === 'de' ? 'Abonnement Bestätigt!' : language === 'pl' ? 'Subskrypcja Potwierdzona!' : language === 'ar' ? 'تم تأكيد الاشتراك!' : 'Subscription Confirmed!'}
                   </span>
                 </div>
 
                 <p className="text-[11px] text-stone-300 leading-normal">
                   {welcomeSent ? (
                     <span className="text-emerald-400 font-mono text-[10px] block mb-1 flex items-center gap-1">
-                      <Send className="w-3 h-3" /> Welcome email template dispatched to <strong className="text-stone-200">{email}</strong>!
+                      <Send className="w-3 h-3" /> {language === 'ar' ? 'تم إرسال قالب البريد الإلكتروني الترحيبي إلى ' : 'Welcome email template dispatched to '} <strong className="text-stone-200">{email}</strong>!
                     </span>
                   ) : (
-                    <span>Your email <strong className="text-stone-200">{email}</strong> has been registered into the admin dashboard ledger!</span>
+                    <span>{language === 'ar' ? 'تم تسجيل بريدك الإلكتروني ' : 'Your email '}<strong className="text-stone-200">{email}</strong>{language === 'ar' ? ' في سجل لوحة الإدارة!' : ' has been registered into the admin dashboard ledger!'}</span>
                   )}
-                  {language === 'de' ? 'Ihr aktiver 30% Rabattcode lautet:' : language === 'pl' ? 'Twój aktywny kod rabatowy 30% to:' : 'Your active 30% discount promo code:'}
+                  {language === 'de' ? 'Ihr aktiver 30% Rabattcode lautet:' : language === 'pl' ? 'Twój aktywny kod rabatowy 30% to:' : language === 'ar' ? 'رمز الخصم 30% الخاص بك هو:' : 'Your active 30% discount promo code:'}
                 </p>
 
                 <div className="flex items-center justify-between bg-black/60 border border-[#d4af37]/40 rounded-lg p-2 font-mono text-xs text-[#d4af37] select-all">
@@ -356,7 +366,7 @@ export default function FooterNewsletter() {
                   onClick={handleResetSubscription}
                   className="text-[9px] font-mono text-stone-500 hover:text-stone-300 uppercase tracking-widest block mx-auto sm:ml-0 underline cursor-pointer transition-colors"
                 >
-                  {language === 'de' ? 'E-Mail-Adresse ändern / Erneut abonnieren' : language === 'pl' ? 'Zmień adres e-mail / Zapisz się ponownie' : 'Change Email / Subscribe Another Address'}
+                  {language === 'de' ? 'E-Mail-Adresse ändern / Erneut abonnieren' : language === 'pl' ? 'Zmień adres e-mail / Zapisz się ponownie' : language === 'ar' ? 'تغيير البريد الإلكتروني / الاشتراك ببريد آخر' : 'Change Email / Subscribe Another Address'}
                 </button>
               </motion.div>
             )}
@@ -398,10 +408,10 @@ export default function FooterNewsletter() {
                 </button>
                 <div className="text-2xl mb-1 text-[#d4af37]">𓂀</div>
                 <h3 className="font-serif text-lg md:text-xl font-extrabold text-[#e6c280] uppercase tracking-widest">
-                  {language === 'de' ? 'Reiseinteressen anpassen' : language === 'pl' ? 'Dostosuj swoje zainteresowania' : 'Customize Travel Interests'}
+                  {language === 'de' ? 'Reiseinteressen anpassen' : language === 'pl' ? 'Dostosuj swoje zainteresowania' : language === 'ar' ? 'تخصيص اهتمامات السفر' : 'Customize Travel Interests'}
                 </h3>
                 <p className="text-stone-400 text-xs mt-1 font-mono">
-                  {language === 'de' ? 'Anmeldung für:' : language === 'pl' ? 'Subskrypcja dla:' : 'Subscribing:'} <span className="text-[#d4af37] font-semibold">{email}</span>
+                  {language === 'de' ? 'Anmeldung für:' : language === 'pl' ? 'Subskrypcja dla:' : language === 'ar' ? 'الاشتراك بـ:' : 'Subscribing:'} <span className="text-[#d4af37] font-semibold">{email}</span>
                 </p>
               </div>
 
@@ -412,10 +422,10 @@ export default function FooterNewsletter() {
                 <div className="space-y-3">
                   <div>
                     <label className="text-[10px] font-mono text-[#d4af37] uppercase tracking-wider block font-bold">
-                      {language === 'de' ? 'Wählen Sie Ihre bevorzugten Aktivitäten' : language === 'pl' ? 'Wybierz swoje ulubione zajęcia' : 'Select Your Preferred Travel Interests'}
+                      {language === 'de' ? 'Wählen Sie Ihre bevorzugten Aktivitäten' : language === 'pl' ? 'Wybierz swoje ulubione zajęcia' : language === 'ar' ? 'اختر أنشطتك المفضلة' : 'Select Your Preferred Travel Interests'}
                     </label>
                     <p className="text-stone-400 text-[11px] leading-relaxed">
-                      {language === 'de' ? 'An welchen Arten von Ausflügen sind Sie interessiert?' : language === 'pl' ? 'Jakimi rodzajami wycieczek się interesujesz?' : 'Which types of excursions are you interested in receiving discounts for?'}
+                      {language === 'de' ? 'An welchen Arten von Ausflügen sind Sie interessiert?' : language === 'pl' ? 'Jakimi rodzajami wycieczek się interesujesz?' : language === 'ar' ? 'ما هي أنواع الرحلات التي تهتم بالحصول على خصومات عليها؟' : 'Which types of excursions are you interested in receiving discounts for?'}
                     </p>
                   </div>
 
@@ -456,7 +466,7 @@ export default function FooterNewsletter() {
                 <div className="bg-[#1d1611] border border-[#d4af37]/15 rounded-xl p-3 flex gap-3 items-center">
                   <div className="text-lg text-[#d4af37] select-none">𓋹</div>
                   <p className="text-[10px] text-stone-400 leading-relaxed">
-                    {language === 'de' ? 'Ihre E-Mail-Adresse wird sicher im Admin-Dashboard gespeichert. Sie erhalten das Willkommens-Template und exklusive 30%-Gutscheincodes.' : language === 'pl' ? 'Twój adres e-mail zostanie bezpiecznie zapisany w panelu administracyjnym. Otrzymasz powitalny szablon i ekskluzywne kody rabatowe 30%.' : 'Your email will be securely stored inside the Admin Dashboard. You will receive the welcome email template and exclusive 30% discount promo codes.'}
+                    {language === 'de' ? 'Ihre E-Mail-Adresse wird sicher im Admin-Dashboard gespeichert. Sie erhalten das Willkommens-Template und exklusive 30%-Gutscheincodes.' : language === 'pl' ? 'Twój adres e-mail zostanie bezpiecznie zapisany w panelu administracyjnym. Otrzymasz powitalny szablon i ekskluzywne kody rabatowe 30%.' : language === 'ar' ? 'سيتم حفظ بريدك الإلكتروني بأمان في لوحة التحكم. ستتلقى قالب البريد الترحيبي ورموز الخصم الحصرية بنسبة 30%.' : 'Your email will be securely stored inside the Admin Dashboard. You will receive the welcome email template and exclusive 30% discount promo codes.'}
                   </p>
                 </div>
 
@@ -468,7 +478,7 @@ export default function FooterNewsletter() {
                     disabled={isSubmitting}
                     className="flex-1 bg-[#241a11] hover:bg-[#38281a] text-[#e6c280] font-mono text-xs uppercase font-bold tracking-wider py-3 rounded-xl border border-[#d4af37]/30 transition-all cursor-pointer disabled:opacity-50"
                   >
-                    {language === 'de' ? 'Direkt Abonnieren' : language === 'pl' ? 'Zapisz się od razu' : 'Skip & Subscribe'}
+                    {language === 'de' ? 'Direkt Abonnieren' : language === 'pl' ? 'Zapisz się od razu' : language === 'ar' ? 'تخطي واشترك' : 'Skip & Subscribe'}
                   </button>
 
                   <button
@@ -479,12 +489,12 @@ export default function FooterNewsletter() {
                     {isSubmitting ? (
                       <>
                         <span className="w-4 h-4 border-2 border-stone-950 border-t-transparent rounded-full animate-spin"></span>
-                        {language === 'de' ? 'Wird gespeichert...' : language === 'pl' ? 'Zapisywanie...' : 'Subscribing...'}
+                        {language === 'de' ? 'Wird gespeichert...' : language === 'pl' ? 'Zapisywanie...' : language === 'ar' ? 'جاري الاشتراك...' : 'Subscribing...'}
                       </>
                     ) : (
                       <>
                         <Compass className="w-4 h-4 animate-spin-slow" />
-                        {language === 'de' ? 'Abonnement Bestätigen' : language === 'pl' ? 'Potwierdź subskrypcję' : 'Confirm Subscription'}
+                        {language === 'de' ? 'Abonnement Bestätigen' : language === 'pl' ? 'Potwierdź subskrypcję' : language === 'ar' ? 'تأكيد الاشتراك' : 'Confirm Subscription'}
                       </>
                     )}
                   </button>

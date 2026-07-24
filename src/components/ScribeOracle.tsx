@@ -783,7 +783,15 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking, bookings =
     {
       id: 'welcome',
       role: 'assistant',
-      text: "Hello and welcome! I am your AI Travel Assistant. I can help you plan your journey, answer questions about ancient Egyptian history, or explain the meanings behind hieroglyphic symbols. How can I assist you with your travel plans today?",
+      text: language === 'de'
+        ? "Hallo und willkommen! Ich bin Ihr KI-Reiseassistent. Ich kann Ihnen bei der Planung Ihrer Reise helfen, Fragen zur altägyptischen Geschichte beantworten oder die Bedeutungen hinter den Hieroglyphensymbolen erklären. Wie kann ich Ihnen heute bei Ihren Reiseplänen helfen?"
+        : language === 'pl'
+        ? "Witaj! Jestem Twoim Asystentem Podróży AI. Mogę pomóc Ci w zaplanowaniu podróży, odpowiedzieć na pytania dotyczące historii starożytnego Egiptu lub wyjaśnić znaczenie symboli hieroglificznych. Jak mogę Ci dzisiaj pomóc w planach podróży?"
+        : language === 'cs'
+        ? "Dobrý den a vítáme vás! Jsem váš cestovní asistent AI. Mohu vám pomoci naplánovat vaši cestu, odpovědět na otázky o starověké egyptské historii nebo vysvětlit význam hieroglyfických symbolů. Jak vám mohu dnes pomoci s vašimi cestovními plány?"
+        : language === 'ar'
+        ? "أهلاً بك! أنا مساعد السفر الذكي الخاص بك. يمكنني مساعدتك في تخطيط رحلتك، والإجابة عن أسئلتك حول تاريخ مصر القديمة، أو شرح معاني الرموز الهيروغليفية. كيف يمكنني مساعدتك اليوم؟"
+        : "Hello and welcome! I am your AI Travel Assistant. I can help you plan your journey, answer questions about ancient Egyptian history, or explain the meanings behind hieroglyphic symbols. How can I assist you with your travel plans today?",
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ]);
@@ -806,6 +814,11 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking, bookings =
     "Hlubinný mořský život a potápění",
     "Adrenalinové pouštní safari a jízda na velbloudu",
     "Faraonské chrámy a starověká egyptologie (výlety do Luxoru)"
+  ] : language === 'ar' ? [
+    "استكشاف متوازن (شعاب مرجانية، صحراء، تاريخ)",
+    "الحياة البحرية والأعماق والغوص",
+    "رحلات السفاري الصحراوية وركوب الجمال",
+    "المعابد الفرعونية وعلم المصريات (جولات الأقصر)"
   ] : [
     "Balanced Exploration (Corals, Desert, History)",
     "Deep-Sea Marine Life & Diving",
@@ -825,6 +838,10 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking, bookings =
     "Pohodové (pomalé tempo, plavby při západu slunce a lehké procházky po útesech)",
     "Vyvážené (aktivní poznávání + odpočinek v chrámech)",
     "Intensivní (ranní jízda v dunách, hluboké potápění, celodenní pěší túry po památkách)"
+  ] : language === 'ar' ? [
+    "هادئ (إبحار عند غروب الشمس، وجولات خفيفة)",
+    "متوازن (استكشاف نشط + استرخاء في المعابد)",
+    "مكثف (بيتش باجي عند الشروق، غوص عميق، جولات كاملة للمقابر)"
   ] : [
     "Leisurely (Slower-paced, sunset sails & light reef walks)",
     "Balanced (Active exploration + temple relaxation)",
@@ -844,8 +861,13 @@ export default function ScribeOracle({ onScribeSuccess, onAddBooking, bookings =
   ] : language === 'cs' ? [
     "Sólo dobrodruh",
     "Pár / partneři",
-    "Královská rodina (včetně dětí)",
+    "Královská rozina (včetně dětí)",
     "Skupina objevitelů (přátelé/skupina)"
+  ] : language === 'ar' ? [
+    "مسافر بمفرده",
+    "زوجان / شريكان",
+    "عائلة ملكية (شاملة الأطفال)",
+    "مجموعة من المستكشفين (أصدقاء)"
   ] : [
     "Solo Adventurer",
     "Couple / Partners",
@@ -2610,6 +2632,7 @@ function generateFallbackItinerary(days: number, focus: string, pace: string, la
   const isDe = language === 'de';
   const isPl = language === 'pl';
   const isCs = language === 'cs';
+  const isAr = language === 'ar';
 
   if (lowercaseFocus.includes("diving") || lowercaseFocus.includes("corals") || lowercaseFocus.includes("tauch") || lowercaseFocus.includes("nurkow") || lowercaseFocus.includes("potápě")) {
     daysArray = [
@@ -2928,12 +2951,14 @@ function generateFallbackItinerary(days: number, focus: string, pace: string, la
           : isPl
           ? "Pustynne powietrze jest czyste i niesie oddech Szu. W ciszy wydm usłyszysz bicie serca Ziemi. Słuchaj uważnie i znajdź swój wewnętrzny spokój."
           : isCs
-          ? "Pouštní vzduch je čistý a nese dech boha Šu. V tichu dun můžete slyšet tlukot srdce samotné Země. Naslouchejte pozorně a najděte svůj vnitřní klid."
+          ? "Pouštní vzduch je čistý a nese dech boha Šu. V tichu dun můžete slyšet tlukot srdce samotné Země. Naslouchejte pozorně a najdete svůj vnitřní klid."
+          : isAr
+          ? "هواء الصحراء نقي يحمل أنفاس الإله شو. في صمت الكثبان يمكن أن تسمع نبضات قلب الأرض. استمع بتركيز واعتبر روحك."
           : "The desert air is pure, carrying the breath of Shu. In the silence of the dunes, you can hear the heartbeat of the Earth. Listen closely and find your inner peace."
       },
       {
         dayNumber: 3,
-        theme: isDe ? "Wallfahrt nach Karnak" : isPl ? "Pielgrzymka do Karnaku" : isCs ? "Pouť do Karnaku" : "Pilgrimage to Karnak",
+        theme: isDe ? "Wallfahrt nach Karnak" : isPl ? "Pielgrzymka do Karnaku" : isCs ? "Pouť do Karnaku" : isAr ? "رحلة الحج إلى الكرنك" : "Pilgrimage to Karnak",
         activities: isDe ? [
           "Ganztägiger Ausflug über die Wüste nach Luxor, der antiken Stadt Waset",
           "Erkunden Sie die Säulenhalle des Karnak-Tempels und wandern Sie zwischen 134 riesigen Sandsteinsäulen",
@@ -2946,6 +2971,10 @@ function generateFallbackItinerary(days: number, focus: string, pace: string, la
           "Celodenní výlet přes poušť do Luxoru, starověkého města Vesetu",
           "Průzkum Velkého sloupového sálu v chrámu v Karnaku a procházka mezi 134 masivními pískovcovými sloupy",
           "Magická plavba lodí Felucca při západu slunce po posvátné řece Nil, s ochutnávkou místního kořeněného masa a sladkých datlí"
+        ] : isAr ? [
+          "رحلة ليوم كامل عبر الصحراء إلى الأقصر، مدينة طيبة العريقة",
+          "استكشاف صالة الأعمدة الكبرى بجمع معابد الكرنك، والتجول بين 134 عموداً ضخماً من الحجر الرملي",
+          "رحلة ساحرة بالفلوكة عند غروب الشمس على النيل الخالد وتناول وجبة العشاء المشوية مع التمور الحلوة"
         ] : [
           "Full day excursion crossing the desert to Luxor, the ancient city of Waset",
           "Explore the Hypostyle Hall of Karnak Temple, wandering through 134 massive sandstones pillars",
@@ -2957,6 +2986,8 @@ function generateFallbackItinerary(days: number, focus: string, pace: string, la
           ? "Nil jest źródłem życia Egiptu. Gdy słońce zachodzi nad Zachodnim Brzegiem, jesteś świadkiem cyklu odrodzenia, który inspirował królów i królowe przez trzy tysiące lat."
           : isCs
           ? "Nil je životodárnou tepnou Egypta. Když slunce zapadá nad západním břehem, stáváte se svědky cyklu znovuzrození, který po tři tisíce let inspiroval krále a královny."
+          : isAr
+          ? "نهر النيل هو شريان الحياة في مصر. عندما تغرب الشمس فوق البر الغربي، تشهد دورة التجدد البعث التي ألهمت الملوك والملكات لآلاف السنين."
           : "The Nile is the lifespring of Egypt. As the sun sets over the West Bank, you witness the cycle of rebirth that inspired three thousand years of kings and queens."
       }
     ];
@@ -2968,19 +2999,23 @@ function generateFallbackItinerary(days: number, focus: string, pace: string, la
       if (d === 4) {
         daysArray.push({
           dayNumber: 4,
-          theme: isDe ? "El Gouna Lagunen-Navigation" : isPl ? "Nawigacja po Lagunie El Gouna" : isCs ? "Plavba v lagunách El Gouna" : "El Gouna Lagoon Navigation",
+          theme: isDe ? "El Gouna Lagunen-Navigation" : isPl ? "Nawigacja po Lagunie El Gouna" : isCs ? "Plavba v lagunách El Gouna" : isAr ? "استكشاف بحيرات الجونة" : "El Gouna Lagoon Navigation",
           activities: isDe ? [
             "Ein entspannter Tag beim Segeln durch die ruhigen türkisfarbenen Lagunen von El Gouna in einem traditionellen Boot",
             "Schnorchelsafari am Riff 'Dolphin House', Schwimmen mit wilden Großen Tümmlern",
             "Cocktailempfang bei Sonnenuntergang auf einer eleganten Hafenterrasse mit Harfenmusik"
           ] : isPl ? [
             "Relaksujący dzień pływania po cichych turkusowych lagunach El Gouny na tradycyjnej łodzi",
-            "Snurkowanie w rezerwacie 'Dolphin House', pływanie u boku dzikich delfinów butlonosych",
+            "Snurkowanie w rezerwacie 'Dolphin House', pływanie u boku dzikich delfinów buttonosych",
             "Wieczorne przyjęcie koktajlowe na eleganckim tarasie w marinie z muzyką na harfie na żywo"
           ] : isCs ? [
             "Relaxační den strávený plavbou po klidných tyrkysových lagunách El Gouna na tradiční lodi",
             "Šnorchlovací safari v zátoce 'Dolphin House' a plavání po boku divokých delfínů",
             "Koktejlová recepce při západu slunce na elegantní terase v přístavu za doprovodu živé hudby"
+          ] : isAr ? [
+            "يوم ممتع وهادئ للإبحار في البحيرات الفيروزية الصافية بالجونة على قارب تقليدي",
+            "رحلة سفاري لممارسة السنوركلينج في منطقة بيت الدلافين والسباحة مع الدلافين البرية",
+            "حفل كوكتيل عند غروب الشمس على شرفة مرسى الجونة الراقي مع ألحان الهارب"
           ] : [
             "A relaxing day sailing through the quiet turquoise lagoons of El Gouna in a traditional boat",
             "Snorkeling safari at the 'Dolphin House' reef, swimming alongside wild bottle-nose dolphins",
@@ -2991,13 +3026,15 @@ function generateFallbackItinerary(days: number, focus: string, pace: string, la
             : isPl
             ? "Delfiny to mądre stworzenia, przyjaciele morskich strażników. Traktuj je z głębokim szacunkiem, nigdy ich nie pospieszaj, pozwalając im pływać obok w spokoju."
             : isCs
-            ? "Delfíni jsou moudrá stvoření, přátelé mořských strážců. Zacházejte s nimi s hlubokou úctou, nikdy na ně nespěchejte a nechte je plavat po vašem boku v klidu."
+            ? "Delfíni jsou moudrá stvoření, přátelé mořskich strážců. Zacházejte s nimi s hlubokou úctou, nikdy na ně nespěchejte a nechte je plavat po vašem boku v klidu."
+            : isAr
+            ? "الدلافين كائنات حكيمة وصديقة للبحارة. عاملها باحترام عميق ولا تستعجلها لكي تسبح بجانبك بسلام."
             : "Dolphins are wise creatures, friends of seafaring guardians. Treat them with deep respect, never rushing them, allowing them to swim alongside in peace."
         });
       } else if (d === 5) {
         daysArray.push({
           dayNumber: 5,
-          theme: isDe ? "Die Klöster der Wüstenväter" : isPl ? "Klasztory Ojców Pustyni" : isCs ? "Kláštery pouštních otců" : "The Monasteries of the Desert Fathers",
+          theme: isDe ? "Die Klöster der Wüstenväter" : isPl ? "Klasztory Ojców Pustyni" : isCs ? "Kláštery pouštních otců" : isAr ? "أديرة آباء الصحراء" : "The Monasteries of the Desert Fathers",
           activities: isDe ? [
             "Morgendliche Reise in die rauen Hügel des Roten Meeres, um das St.-Antonius-Kloster zu besuchen, das älteste aktive Kloster der Welt",
             "Wanderung zur Berghöhle des Heiligen Antonius mit spektakulärem Panoramablick auf die Wüstenwildnis",
@@ -3010,6 +3047,10 @@ function generateFallbackItinerary(days: number, focus: string, pace: string, la
             "Ranní cesta do drsných hor u Rudého moře a návštěva kláštera sv. Antonína, nejstaršího aktivního kláštera na světě",
             "Výšlap k jeskyni sv. Antonína v horách, odkud se otevírá nádherný panoramatický výhled na pustou poušť",
             "Vydatný oběd s místními olivami, teplým chlebem a čerstvým kozím sýrem"
+          ] : isAr ? [
+            "رحلة صباحية إلى جبال البحر الأحمر لزيارة دير الأنبا أنطونيوس، أقدم دير مأهول في العالم",
+            "الصعود إلى مغارة الأنبا أنطونيوس في الجبل والاستمتاع بإطلالة بانورامية ساحرة على الصحراء",
+            "وجبة غداء شهية تضم الزيتون المحلي، الخبز الساخن والجبن الطازج"
           ] : [
             "Morning journey into the rugged Red Sea hills to visit St. Anthony, the oldest active monastery in the world",
             "Hike the mountain cave of St. Anthony, gazing at spectacular panoramic desert wilderness views",
@@ -3021,12 +3062,14 @@ function generateFallbackItinerary(days: number, focus: string, pace: string, la
             ? "W tych górach od IV wieku żyli duchowi pustelnicy. Cisza wzgórz działa jak oczyszczający balsam dla aktywnego umysłu."
             : isCs
             ? "V těchto horách žili duchovní poustevníci již od 4. století. Ticho zdejších kopců působí jako očistný balzám pro neklidnou mysl."
+            : isAr
+            ? "استضافت هذه الجبال النساك الروحانيين منذ القرن الرابع. تعمل سكينة التلال كبلسم مطهر للعقل المجهد."
             : "These mountains have hosted spiritual hermits since the 4th century. The quietness of the hills acts as a purifying tonic for the active mind."
         });
       } else if (d === 6) {
         daysArray.push({
           dayNumber: 6,
-          theme: isDe ? "Königliches Spa & Horus-Bad" : isPl ? "Królewskie Spa i Kąpiel Horusa" : isCs ? "Královské lázně a Horova koupel" : "Sovereign Spa & Horus Bath",
+          theme: isDe ? "Königliches Spa & Horus-Bad" : isPl ? "Królewskie Spa i Kąpiel Horusa" : isCs ? "Královské lázně a Horova koupel" : isAr ? "المنتجع الملكي وحمام حورس" : "Sovereign Spa & Horus Bath",
           activities: isDe ? [
             "Gönnen Sie sich ein exquises ägyptisches Spa-Ritual mit Meersalzpeelings, warmem Sesamöl und süßer Weihrauchmassage",
             "Abendlicher Spaziergang durch die historische Altstadt von Hurghada (El Dahar), Mangosäfte probieren und Gewürzmärkte besuchen",
@@ -3039,6 +3082,10 @@ function generateFallbackItinerary(days: number, focus: string, pace: string, la
             "Dopřejte si jedinečný lázeňský rituál s peelingem z mořské soli, teplým sezamovým olejem a jemnou masáží s kadidlem",
             "Večerní procházka historickým starým městem Hurghady (El Dahar), ochutnávka čerstvého mangového džusu a návštěva bazarů s kořením",
             "Tradiční egyptská večeře s národním jídlem Košari (legendární pokrm z čočky, rýže, těstovin a pikantní omáčky)"
+          ] : isAr ? [
+            "استمتع بجلسة سبا فريدة على الطراز المصري باستخدام تقشير الملح البحري وزيت السمسم الدافئ والتدليك بالبخور",
+            "جولة مسائية في الدهار (البلدة القديمة بالغردقة)، وتذوق عصير المانجو الطازج وزيارة أسواق التوابل",
+            "عشاء مصري تقليدي يتضمن طبق الكشري الشهير"
           ] : [
             "Indulge in a signature Egyptian spa ritual utilizing sea salt scrubs, warm sesame oil, and sweet frankincense massage",
             "An evening stroll through Hurghada's historic Old Town (El Dahar), sampling local mango juices and visiting the spice bazaars",
@@ -3049,13 +3096,15 @@ function generateFallbackItinerary(days: number, focus: string, pace: string, la
             : isPl
             ? "Starożytne królowe, takie jak Kleopatra, kąpały się w mleku i miodzie, aby zachować swój blask. Kadzidło było warte więcej niż złoto, używane do oczyszczania ciał fizycznych i duchowych."
             : isCs
-            ? "Starověké královny jako Kleopatra se koupaly v mléce a medu, aby si uchovaly svůj půvab. Kadidlo mělo větší hodnotu než zlato a používalo se k očištění těla i ducha."
+            ? "Starověké královny jako Kleopatra se koupaly v mléce a medu, aby si uchovaly svůj půvab. Kadidlo mělo větší hodnotu než złato a používalo se k očištění těla i ducha."
+            : isAr
+            ? "استحمت الملكات القدامى مثل كليوباترا في الحليب والعسل للحفاظ على نضارتهن. كان البخور أغلى من الذهب لتطهير الروح والجسد."
             : "Ancient queens like Cleopatra bathed in milk and honey to preserve their glow. Frankincense was worth more than gold, used to cleanse both physical and spiritual bodies."
         });
       } else if (d === 7) {
         daysArray.push({
           dayNumber: 7,
-          theme: isDe ? "Der Segen von Ra (Abreise)" : isPl ? "Błogosławieństwo Ra (Wyjazd)" : isCs ? "Požehnání boha Ra (Odjezd)" : "The Blessing of Ra (Departure)",
+          theme: isDe ? "Der Segen von Ra (Abreise)" : isPl ? "Błogosławieństwo Ra (Wyjazd)" : isCs ? "Požehnání boha Ra (Odjezd)" : isAr ? "بركة الإله راع (المغادرة)" : "The Blessing of Ra (Departure)",
           activities: isDe ? [
             "Eine abschließende Meditation bei Sonnenaufgang am Strand zur Begrüßung des aufsteigenden Sonnengottes Khepri",
             "Letzte Souvenirkäufe im Jachthafen, Erwerb von lokalen Papyrusrollen und Statuen aus reinem Alabaster",
@@ -3068,6 +3117,10 @@ function generateFallbackItinerary(days: number, focus: string, pace: string, la
             "Závěrečná meditace při východu slunce na pláži a pozdrav vycházejícímu bohu slunce Cheperovi",
             "Nákupy suvenýrů v přístavu na poslední chvíli, nákup originálních papyrusů a sošek z čistého alabastru",
             "Soukromý transfer luxusním vozem zpět na letiště a odlet domů"
+          ] : isAr ? [
+            "تأمل أخير عند شروق الشمس على الشاطئ لتحية إله الشمس خبري",
+            "تسوق هدايا تذكارية في اللحظة الأخيرة من المرسى، وشراء برديات محلية وتماثيل من الألباستر الخالص",
+            "توصيل خاص إلى المطار للعودة إلى الوطن"
           ] : [
             "A final sunrise meditation on the beach, saluting the rising sun god Khepri",
             "Last-minute souvenir shopping in the marina, acquiring local papyrus scrolls and pure alabaster statues",
@@ -3079,6 +3132,8 @@ function generateFallbackItinerary(days: number, focus: string, pace: string, la
             ? "Każde odejście jest tylko cyklem powrotu. Niech Ra rozświetli swoje oblicze nad Twoimi podróżami, a Twoje serce niech pozostanie lekkie jak piórko na szali sprawiedliwości Maat."
             : isCs
             ? "Každý odjezd je pouze začátkem dalšího návratu. Nechť bůh Ra rozjasní svou tvář nad vašimi cestami a vaše srdce zůstane lehké jako pírko na váze spravedlnosti bohyně Maat."
+            : isAr
+            ? "كل مغادرة هي مجرد بداية لرحلة عودة. ليجعل الرب را وجهه يشرق على أسفارك، وليبقَ قلبك خفيفاً كالعصفور."
             : "Every departure is merely a cycle of return. May Ra make his face shine upon your travels, and may your heart remain light as a feather on Ma'at's scale of justice."
         });
       }
@@ -3092,6 +3147,8 @@ function generateFallbackItinerary(days: number, focus: string, pace: string, la
       ? "Witaj, odkrywco! Z przyjemnością pomożemy Ci zaplanować podróż. Oto Twój spersonalizowany plan:"
       : isCs
       ? "Vítejte, objeviteli! Rádi vám pomůžeme naplánovat vaši cestu. Zde je váš spersonalizovaný itinerář:"
+      : isAr
+      ? "مرحباً بك أيتها المستكشف! يسعدنا مساعدتك في تخطيط رحلتك القادمة. إليك برنامج رحلة مخصص بناءً على تفضيلاتك:"
       : "Welcome, explorer! We are excited to help you plan your upcoming journey. Here is a custom itinerary designed for your preferences:",
     title: isDe
       ? `${days}-Tage Individueller Reiseplan`
@@ -3099,6 +3156,8 @@ function generateFallbackItinerary(days: number, focus: string, pace: string, la
       ? `Spersonalizowany plan podróży na ${days} dni`
       : isCs
       ? `${days}denní spersonalizovaný plán cesty`
+      : isAr
+      ? `برنامج رحلة مخصص لمدة ${days} أيام`
       : `${days}-Day Customized Travel Itinerary`,
     days: daysArray,
     blessing: isDe
@@ -3106,7 +3165,9 @@ function generateFallbackItinerary(days: number, focus: string, pace: string, la
       : isPl
       ? "Mamy nadzieję, że ten plan zainspiruje Cię do kolejnej przygody. Bezpiecznej podróży i wspaniałego wyjazdu!"
       : isCs
-      ? "Doufáme, že vás tento itinerář inspiruje k dalšímu dobrodružství. Šťastnou cestu a úžasný pobyt!"
+      ? "Doufáme, że vás tento itinerář inspiruje k dalšímu dobrodružství. Šťastnou cestu a úžasný pobyt!"
+      : isAr
+      ? "نتمنى أن يلهمك برنامج الرحلة هذا لمغامرتك القادمة. رحلة سعيدة وأوقات رائعة!"
       : "We hope this travel itinerary inspires your next adventure. Safe travels and have an amazing trip!"
   };
 }
@@ -3118,44 +3179,53 @@ function getOfflineScribeResponse(query: string, language?: string): string {
   const isDe = language === 'de';
   const isPl = language === 'pl';
   const isCs = language === 'cs';
+  const isAr = language === 'ar';
 
-  if (text.includes("name") || text.includes("hieroglyph") || text.includes("translate") || text.includes("übersetz") || text.includes("tłumacz") || text.includes("překlad") || text.includes("jméno")) {
+  if (text.includes("name") || text.includes("hieroglyph") || text.includes("translate") || text.includes("übersetz") || text.includes("tłumacz") || text.includes("překlad") || text.includes("jméno") || text.includes("اسم") || text.includes("ترجم")) {
     return isDe
       ? "Um Ihren Namen in altägyptischen Hieroglyphen zu sehen, nutzen Sie unser Namensübersetzer-Tool oben! Geben Sie einfach Ihren Namen ein, und wir übersetzen jeden Buchstaben in das entsprechende Hieroglyphen-Symbol."
       : isPl
       ? "Aby zobaczyć swoje imię zapisane starożytnymi egipskimi hieroglifami, skorzystaj z naszego Tłumacza Imion powyżej! Po prostu wpisz swoje imię, a my przetłumaczymy każdą literę na odpowiadający jej symbol hieroglificzny."
       : isCs
       ? "Chcete-li vidět své jméno napsané ve starověkých egyptských hieroglyfech, podívejte se na náš Překladač jmen výše! Stačí zadat své jméno a my přeložíme každé písmeno do odpovídajícího hieroglyfického symbolu."
+      : isAr
+      ? "لرؤية اسمك مكتوباً بالهيروغليفية المصرية القديمة، استخدم أداة مترجم الأسماء أعلاه! فقط اكتب اسمك وسنترجم كل حرف إلى الرمز الهيروغليفي المقابل."
       : "To see your name written in ancient Egyptian hieroglyphs, check out our Name Translator tool above! Just type in your name, and we will translate each letter into its matching hieroglyphic symbol.";
   }
   
-  if (text.includes("dive") || text.includes("coral") || text.includes("reef") || text.includes("sea") || text.includes("tauch") || text.includes("meer") || text.includes("nurkow") || text.includes("rafa") || text.includes("potápě") || text.includes("moř") || text.includes("korál")) {
+  if (text.includes("dive") || text.includes("coral") || text.includes("reef") || text.includes("sea") || text.includes("tauch") || text.includes("meer") || text.includes("nurkow") || text.includes("rafa") || text.includes("potápě") || text.includes("moř") || text.includes("korál") || text.includes("غوص") || text.includes("بحر") || text.includes("شعاب")) {
     return isDe
       ? "Das Rote Meer ist weltweit bekannt für sein kristallklares Wasser und seine lebendige Unterwasserwelt. Beim Tauchen an Orten wie Ras Mohammed können Sie spektakuläre Korallengärten, historische Schiffswracks und Hunderte von Fischarten erkunden."
       : isPl
       ? "Morze Czerwone słynie na całym świecie z krystalicznie czystej wody i tętniącego życiem życia morskiego. Podczas nurkowania w miejscach takich jak Ras Mohammed możesz odkrywać spektakularne ogrody koralowe, historyczne wraki statków i setki gatunków ryb."
       : isCs
       ? "Rudé moře je světově proslulé svou křišťálově čistou vodou a živým mořským životem. Při potápění v lokalitách jako Ras Mohammed můžete objevovat spektakulární korálové zahrady, historické vraky lodí a stovky druhů ryb."
+      : isAr
+      ? "يشتهر البحر الأحمر عالمياً بمياهه النقية وحياته البحرية النابضة بالحياة. عند الغوص في مواقع مثل رأس محمد، يمكنك استكشاف حدائق الشعاب المرجانية، وحطام السفن التاريخية، ومئات الأنواع من الأسماك."
       : "The Red Sea is world-famous for its crystal-clear waters and vibrant marine life. When diving at sites like Ras Mohammed, you can explore spectacular coral gardens, historic shipwrecks, and hundreds of species of fish.";
   }
 
-  if (text.includes("safari") || text.includes("desert") || text.includes("camel") || text.includes("quad") || text.includes("wüste") || text.includes("pustyn") || text.includes("velbloud") || text.includes("poušť") || text.includes("čtyřkol")) {
+  if (text.includes("safari") || text.includes("desert") || text.includes("camel") || text.includes("quad") || text.includes("wüste") || text.includes("pustyn") || text.includes("velbloud") || text.includes("poušť") || text.includes("čtyřkol") || text.includes("صحراء") || text.includes("سفاري") || text.includes("جمل") || text.includes("جمال")) {
     return isDe
       ? "Unsere Wüstensafaris bieten eine perfekte Mischung aus Abenteuer und Kultur. Sie können mit dem Quad über die Dünen rasen, einen ruhigen Kamelritt bei Sonnenuntergang genießen und ein Beduinenlager besuchen, um traditionelle Gastfreundschaft und Tee zu erleben."
       : isPl
       ? "Nasze pustynne safari oferują idealne połączenie przygody i kultury. Możesz pędzić po wydmach na quadzie, cieszyć się spokojną przejażdżką na wielbłądzie o zachodzie słońca i odwiedzić obóz Beduinów, aby doświadczyć tradycyjnej gościnności i herbaty."
       : isCs
       ? "Naše pouštní safari nabízí dokonalou kombinaci dobrodružství a kultury. Můžete se prohánět po dunách na čtyřkolce, užít si klidnou projížďku na velbloudu při západu slunce a navštívit beduínský tábor, abyste zažili tradiční pohostinnost a čaj."
+      : isAr
+      ? "تقدم رحلات السفاري الصحراوية لدينا مزيجاً مثالياً من المغامرة والثقافة. يمكنك ركوب البيتش باجي فوق الكثبان الرملية، والاستمتاع بركوب الجمال عند الغروب، وزيارة مخيم بدوي لتجربة الضيافة والشاي الأصيل."
       : "Our desert safaris offer a perfect blend of adventure and culture. You can race over the dunes on a quad bike, enjoy a quiet camel trek at sunset, and visit a Bedouin camp to experience traditional hospitality and tea.";
   }
 
-  if (text.includes("luxor") || text.includes("temple") || text.includes("king") || text.includes("ruin") || text.includes("history") || text.includes("geschicht") || text.includes("histor") || text.includes("ruine") || text.includes("zabyt") || text.includes("pamat") || text.includes("chrám")) {
+  if (text.includes("luxor") || text.includes("temple") || text.includes("king") || text.includes("ruin") || text.includes("history") || text.includes("geschicht") || text.includes("histor") || text.includes("ruine") || text.includes("zabyt") || text.includes("pamat") || text.includes("chrám") || text.includes("الأقصر") || text.includes("معبد") || text.includes("تاريخ")) {
     return isDe
       ? "Luxor beheimatet einige der unglaublichsten historischen Stätten der Welt. Am Ostufer des Nils können Sie die riesigen Tempelanlagen von Karnak und Luxor besichtigen. Am Westufer können Sie in die wunderschön bemälten Gräber im Tal der Könige hinabsteigen."
       : isPl
       ? "Luksor jest domem dla niektórych z najwspanialszych zabytków historycznych na świecie. Na wschodnim brzegu Nilu można odwiedzić ogromne kompleksy świątynne Karnak i Luksor. Na zachodnim brzegu można zejść do pięknie pomalowanych grobowców w Dolinie Królów."
       : isCs
       ? "Luxor je domovem některých z nejúžasnějších historických památek na světě. Na východním břehu Nilu můžete navštívit masivní chrámy v Karnaku a Luxoru. Na západním břehu můžete sestoupit do nádherně zdobených hrobek v Údolí králů."
+      : isAr
+      ? "تضم الأقصر بعضاً من أروع المواقع التاريخية في العالم. في البر الشرقي للنيل، يمكنك زيارة معابدهم الهائلة في الكرنك والأقصر. وفي البر الغربي، يمكنك النزول إلى المقابر الملونة الرائعة في وادي الملوك."
       : "Luxor is home to some of the world's most incredible historical sites. On the East Bank of the Nile, you can visit the massive Karnak and Luxor temples. On the West Bank, you can descend into the beautifully painted tombs of the Valley of the Kings.";
   }
 
@@ -3164,6 +3234,8 @@ function getOfflineScribeResponse(query: string, language?: string): string {
     : isPl
     ? "Dziękuję za pytanie! Mogę pomóc Ci we wszystkim, co dotyczy raf koralowych Morza Czerwonego, pustynnego safari lub wycieczek historycznych do Luksoru. O czym chcesz dowiedzieć się więcej?"
     : isCs
-    ? "Děkuji za vaši otázku! Mohu vám pomoci s čímkoli, co se týká korálových útesů Rudého moře, pouštního safari nebo historických výletů do Luxoru. O čem byste se chtěli dozvědět více?"
+    ? "Děkuji za vaši otázku! Mohu vám pomoci s čímkoli, co se týká korálových útesów Rudého moře, pouštního safari nebo historických výletů do Luxoru. O čem byste se chtěli dozvědět více?"
+    : isAr
+    ? "شكراً لسؤالك! يمكنني مساعدتك في كل ما يتعلق بالشعاب المرجانية في البحر الأحمر، رحلات السفاري الصحراوية، أو الجولات التاريخية للأقصر. ماذا تحب أن تعرف أكثر؟"
     : "Thank you for your question! I can help you with anything related to the Red Sea coral reefs, desert safaris, or historical tours to Luxor. What would you like to know more about?";
 }

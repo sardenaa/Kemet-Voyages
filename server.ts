@@ -1055,7 +1055,9 @@ User preferences:
 - Focus: ${interest || 'Balanced Exploration (Corals, Desert, History)'}
 - Pace/Intensity: ${intensity || 'Leisurely'}
 - Companions: ${companion || 'Solo traveler'}
-- Special Requests: ${customPreferences || 'None'}
+- Special Requests / Input Language: ${customPreferences || 'None'}
+
+CRITICAL LANGUAGE RULE: Detect the language of the user's inputs/preferences or special requests (e.g. Arabic, German, Polish, Czech, English, Spanish, French, Italian, etc.) and write the entire itinerary (greeting, title, themes, activities, wisdom, and blessing) in that exact language!
 
 Incorporate these elements:
 1. A poetic Pharaonic introduction greeting the traveler as a visiting noble or dignitary.
@@ -1117,14 +1119,14 @@ Respond ONLY with valid JSON. Do not wrap in markdown blocks, do not write anyth
       if (availableExcursions && availableExcursions.length > 0) {
         contextString += "\nAVAILABLE EXCURSIONS IN OUR CATALOG:\n";
         availableExcursions.forEach((ex: any) => {
-          contextString += `- ID: "${ex.id}"\n  Title: "${ex.title}"\n  Category: "${ex.category}"\n  Price: $${ex.price}\n  Duration: "${ex.duration}"\n  Highlights: ${ex.highlights?.join(', ') || ''}\n  Ancient Lore: "${ex.ancientLore || ''}"\n`;
+          contextString += `- ID: "${ex.id}"\n  Title: "${ex.title}"\n  Category: "${ex.category}"\n  Price: ${ex.price}\n  Duration: "${ex.duration}"\n  Highlights: ${ex.highlights?.join(', ') || ''}\n  Ancient Lore: "${ex.ancientLore || ''}"\n`;
         });
       }
 
       if (userBookings && userBookings.length > 0) {
         contextString += "\nTHE USER'S CURRENT BOOKINGS (CARAVAN LEDGER):\n";
         userBookings.forEach((b: any) => {
-          contextString += `- Booking ID: "${b.id}"\n  Excursion Title: "${b.excursionTitle}" (ID: "${b.excursionId}")\n  Traveler Name: "${b.travelerName}"\n  Traveler Email: "${b.travelerEmail}"\n  Scheduled Date: "${b.date}"\n  Guests: ${b.numberOfGuests}\n  Total Cost: $${b.totalCost}\n  Status: "${b.status}"\n  Special Requests: "${b.specialRequests || 'None'}"\n`;
+          contextString += `- Booking ID: "${b.id}"\n  Excursion Title: "${b.excursionTitle}" (ID: "${b.excursionId}")\n  Traveler Name: "${b.travelerName}"\n  Traveler Email: "${b.travelerEmail}"\n  Scheduled Date: "${b.date}"\n  Guests: ${b.numberOfGuests}\n  Total Cost: ${b.totalCost}\n  Status: "${b.status}"\n  Special Requests: "${b.specialRequests || 'None'}"\n`;
         });
       } else {
         contextString += "\nThe traveler currently has no active bookings in our ledger.\n";
@@ -1138,12 +1140,13 @@ ${contextString}
 
 Guidelines for your responses:
 1. Speak as a wise, poetic counselor. Under no circumstances should you break character.
-2. If the user asks for recommendations, refer to the available excursions listed above by name and customize your suggestions based on their interests. Mention the price or duration if relevant to help them plan.
-3. If the user wants to book an excursion or provides booking details (e.g. tour name/ID, traveler name, traveler email, date, number of guests), confirm the reservation warmly in character.
+2. CRITICAL MULTILINGUAL AUTOMATIC DETECT RULE: Automatically detect the language of the traveler's message or chat history (e.g., Arabic, German, Polish, Czech, English, Spanish, French, Italian, Russian, Chinese, Japanese, Dutch, etc.) and respond fluently, accurately, and naturally in that EXACT SAME LANGUAGE while retaining your atmospheric, polite Pharaonic Scribe persona and tone.
+3. If the user asks for recommendations, refer to the available excursions listed above by name and customize your suggestions based on their interests. Mention the price or duration if relevant to help them plan.
+4. If the user wants to book an excursion or provides booking details (e.g. tour name/ID, traveler name, traveler email, date, number of guests), confirm the reservation warmly in character in their language.
 CRITICAL: Whenever you confirm or record a booking for the traveler, you MUST append this exact JSON trigger tag on a new line at the very end of your message:
 [[CREATE_BOOKING:{"excursionTitle":"<Tour Title>","travelerName":"<Full Name>","travelerEmail":"<Email>","date":"<YYYY-MM-DD or date string>","numberOfGuests":<Number>,"totalCost":<Calculated Price>,"specialRequests":"<Any special notes>"}]]
-4. If the user asks about their bookings or status, consult the "CURRENT BOOKINGS" above.
-5. Keep your responses relatively concise (1-2 short paragraphs) but highly immersive, flavorful, and formatted using clean markdown.`;
+5. If the user asks about their bookings or status, consult the "CURRENT BOOKINGS" above.
+6. Keep your responses relatively concise (1-2 short paragraphs) but highly immersive, flavorful, and formatted using clean markdown.`;
 
       let prompt = "";
       if (chatHistory && Array.isArray(chatHistory)) {

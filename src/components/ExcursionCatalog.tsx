@@ -254,6 +254,129 @@ export const EXCURSIONS_DATA_DE: Excursion[] = [
   }
 ];
 
+export const EXCURSIONS_DATA_AR: Excursion[] = [
+  {
+    id: 'diving-1',
+    title: "الغوص الملكي بين الشعاب المرجانية في رأس محمد",
+    tagline: "استكشف التماثيل الغارقة لإله البحر نون",
+    category: 'diving',
+    duration: "يوم كامل (8 ساعات)",
+    price: 120,
+    rating: 4.9,
+    location: "البحر الأحمر، مصر (محمية رأس محمد الوطنية)",
+    image: "/src/assets/images/egypt_sea_diving_1784070366165.jpg",
+    description: "انغمس في أعماق مملكة نون الفيروزية، المياه الأزلية في الأساطير المصرية القديمة. تأخذك هذه الرحلة الاحترافية للغوص بجوار الجدران المرجانية العمودية، ومحميات قرش المطرقة، وحقل مذهل من التماثيل الحجرية الفرعونية المنحوتة يدوياً والمستقرة في قاع البحر.",
+    inclusions: [
+      "جميع معدات الغوص عالية الجودة (أسطوانات غوص، بدلات، أجهزة تنظيم تنفس)",
+      "غطستان عميقتان برفقة غواصين مصريين معتمدين ومتخصصين في علم المصريات",
+      "غداء طازج على متن يخت تقليدي مطبوخ بأيدي البدو البحرية",
+      "خدمة التوصيل من وإلى الفندق في الغردقة أو شرم الشيخ"
+    ],
+    highlights: [
+      "السباحة بجانب أسماك النابليون العملاقة والسلاحف البحرية",
+      "كشف النقاب عن الملاذ الحجري الغارق لأنوبيس ورعمسيس",
+      "حزمة تصوير وفيديو احترافية تحت الماء مجاناً"
+    ],
+    ancientLore: "كتب كاهن البحر الأحمر القدماء عن 'نون' - أصل كل حياة. كانوا يعتقدون أن التماثيل الحجرية المغمورة تهدئ أرواح المحيط، مما يضمن مجرى آمناً للقوافل التجارية للملكة حتشبسوت في طريقها إلى بلاد بونت الأسطورية."
+  },
+  {
+    id: 'safari-1',
+    title: "سفاري دشرت الذهبية الخاصة بسيت",
+    tagline: "تسابق بالدراجات الرباعية واركب الجمال عبر الكثبان الحمراء",
+    category: 'safari',
+    duration: "نصف يوم (6 ساعات)",
+    price: 75,
+    rating: 4.8,
+    location: "صحراء سيناء، مصر (ضواحي الغردقة)",
+    image: "/src/assets/images/egypt_desert_safari_1784070379685.jpg",
+    description: "انطلق بسرعة بالدراجات الرباعية (البيتش باجي) فوق تموجات الرمال الذهبية قبل الانتقال إلى الإيقاع المهيب لقافلة الجمال التقليدية. اختتم رحلتك في واحة بدوية معزولة ومضاءة بالمشاعل، واستمتع بشرب شاي الكركديه، وقصص الأساطير حول النار، ومراقبة النجوم بالتلسكوب تحت سماء نوت الفلكية.",
+    inclusions: [
+      "دراجة رباعية ممتازة (ATV) مع خوذة ومعدات الأمان",
+      "جولة تقليدية على ظهر الجمال لمدة 30 دقيقة عند الشروق/الغروب",
+      "وليمة بدوية في مخيم معزول مع ورشة عمل لخبز العيش البديوي",
+      "جلسة رصد النجوم بالتلسكوب وشرح الأبراج الفلكية مع عالم مصريات"
+    ],
+    highlights: [
+      "تحدي أمواج الرمال العالية بسرعة 50 كم/ساعة على البيتش باجي",
+      "الاستماع إلى ألحان الربابة البدوية حول نيران الحطب الشجرية",
+      "تتبع كوكبة الجبار (ساه) تحت إشراف علمائنا الفلكيين"
+    ],
+    ancientLore: "كان الفراعنة يطلقون على الصحراء الحمراء اسم 'دشرت'، وكان يحكمها سيت إله العواصف. تعبر القوافل والمعدنون هذه الكثبان تحت حراسة رماة الملك لتأمين النحاس والفيروز من سيناء، مع تعليم الصخور بالخرطوش الضامن لعودتهم سالمين."
+  },
+  {
+    id: 'history-1',
+    title: "رحلة الفراعنة الأسطورية إلى واسط (الأقصر)",
+    tagline: "اكتشف أسرار المقابر الفرعونية في وادي الملوك والكرنك",
+    category: 'history',
+    duration: "يوم كامل (14 ساعة)",
+    price: 180,
+    rating: 4.95,
+    location: "الأقصر (واسط القديمة)، مصر",
+    image: "/src/assets/images/egypt_luxor_temple_1784070393047.jpg",
+    description: "سافر عبر سلاسل جبال سيناء والصحراء نحو وادي النيل الخصيب. صل إلى واسط (الأقصر) عاصمة الدولة الحديثة، حيث تتجول في صالات الأعمدة الضخمة بمعبد الكرنك، وتنزل إلى المقابر الملكية المزخرفة في وادي الملوك وتتأمل تمثالي ممنون الشهيرين.",
+    inclusions: [
+      "تنقلات خاصة بحافلة مرسيدس فاخرة ومكيفة من ساحل البحر الأحمر",
+      "تذاكر VIP لدخول 3 مقابر ملكية في وادي الملوك",
+      "جولة إرشادية في معبد الكرنك ومعبد حتشبسوت بالدير البحري",
+      "غداء مصري تقليدي على جزيرة خاصة في نهر النيل"
+    ],
+    highlights: [
+      "لمس الهيروغليفية في صالة الأعمدة الكبرى بـ الكرنك",
+      "الدخول إلى حجرة دفن الملك توت عنخ آمون",
+      "جولة نهرية ساحرة بالفلوكة عند غروب الشمس في نهر النيل"
+    ],
+    ancientLore: "إن العبور من الضفة الشرقية إلى الضفة الغربية للأقصر يعني عبور الحجاب بين عالم الأحياء وعالم الأموات. نحت الفراعنة مقابرهم عميقاً في شقوق الجبال لتتماشى مع غروب الشمس 'رع'، ضماناً للبعث في حقول يارو الأبدية."
+  },
+  {
+    id: 'boat-1',
+    title: "رحلة سوبك الملكية على يخت الملكة نفرتاري",
+    tagline: "أبحر حول جزيرة جفتون على متن يختنا الذهبي الفاخر",
+    category: 'boat',
+    duration: "يوم كامل (7 ساعات)",
+    price: 95,
+    rating: 4.85,
+    location: "الغردقة، البحر الأحمر، مصر",
+    image: "/src/assets/images/egypt_boat_trip_1784071711626.jpg",
+    description: "أبحر بفخامة مطلقة فوق إمبراطورية سوبك الفيروزية المتلألئة. استرخِ على أسرة الشمس المزدوجة بـ يختنا الخشبي الملكي بينما نتجه نحو جزيرة جفتون. استمتع ببوفيه مأكولات بحرية طازجة أعده طهاتنا الخصوصيون، واسبح في الممر الزجاجي والمياه الكريستالية.",
+    inclusions: [
+      "معدات سنوركلينج عالية الجودة وسترات نجاة",
+      "بوفيه فاخر للمأكولات البحرية والمقبلات الباردة والساخنة أعدت طازجة",
+      "عصائر طازجة لا محدودة، قهوة مصرية وشاي بالنعناع البدوي",
+      "تنقلات VIP بكبائن مكيفة من وإلى الفندق"
+    ],
+    highlights: [
+      "ممارسة السنوركلينج في مياه أورانج باي وجزيرة جفتون البكر",
+      "الاستجمام تحت الشمس على أسرة جلدية مذهبة ومريحة",
+      "مشاهدة الدلافين البرية وهي تقفز أمام مقدمة اليخت"
+    ],
+    ancientLore: "كان نهر النيل والبحار يحرسها سوبك، حامي المياه والخصوبة. أطلق الملوك المصريون القدماء قوارب خشبية مذهبة لتكريم أرواح المياه، معتقدين أن الرحلة البحرية المبهجة تضمن حصاداً وفيراً وبركة من أوزوريس."
+  },
+  {
+    id: 'speedboat-1',
+    title: "جولة حورس باللانش السريع إلى الجزر السرية",
+    tagline: "عش مغامرة السرعة والإثارة إلى أنقى جزر البحر الأحمر",
+    category: 'speedboat',
+    duration: "نصف يوم (4 ساعات)",
+    price: 150,
+    rating: 4.9,
+    location: "الجونة وجزر البحر الأحمر، مصر",
+    image: "/src/assets/images/egypt_speedboat_1784071721552.jpg",
+    description: "حلق فوق أمواج البحر الأحمر تماماً كـ صقر السماء حورس. بهذه الرحلة باللانش السريع الخاص تتجاوز اليخوت البطيئة لتبحر مباشرة نحو أنقى الشعاب المرجانية وأكثرها عزلة. صمم خط سيرك الخاص، وتوقف عند الجزر الرملية غير المأهولة وعش متعة الانطلاق السريع.",
+    inclusions: [
+      "لانش سريع فاخر وخاص مع كابتن محترف",
+      "معدات غوص ونظارات سناكرز وكاميرات تصوير تحت الماء",
+      "مشروبات منعشة وإكسير الكركديه المبرد بالثلج",
+      "توصيل سيارة ليموزين خاصة ومكيفة من الفندق"
+    ],
+    highlights: [
+      "الانطلاق بسرعة مذهلة فوق المياه الفيروزية الساحرة",
+      "توقفات خاصة عند شواطئ رملية معزولة للسباحة الخاصة",
+      "استكشاف حدائق مرجانية مخفية بعيداً عن الرحلات العامة"
+    ],
+    ancientLore: "حورس، سيد السماء برأس الصقر، كان مشهوراً بسرعته ورؤيته الثاقبة. كان الكشافة المصريون القدماء يستغلون الزوارق السريعة لدورية الشواطئ بسرعة الصقر وإرسال إشارات إلى المعابد الملكية عبر انعكاسات الضوء."
+  }
+];
+
 export const EXCURSIONS_DATA_PL: Excursion[] = [
   {
     id: 'diving-1',
@@ -575,31 +698,36 @@ export default function ExcursionCatalog({ onAddBooking, excursions }: CatalogPr
         en: { difficulty: "Moderate / Challenging", gear: "Scuba Tanks, Regulator, Wetsuit, Fins, Mask" },
         de: { difficulty: "Mittel / Anspruchsvoll", gear: "Sauerstoffflaschen, Atemregler, Neoprenanzug, Flossen, Maske" },
         pl: { difficulty: "Średni / Wyzywający", gear: "Butle tlenowe, regulator, pianka, płetwy, maska" },
-        cs: { difficulty: "Střední / Náročné", gear: "Kyslíkové láhve, regulátor, neopren, ploutve, maska" }
+        cs: { difficulty: "Střední / Náročné", gear: "Kyslíkové láhve, regulátor, neopren, ploutve, maska" },
+        ar: { difficulty: "متوسط / متقدم", gear: "أسطوانات غوص، منظم تنفس، بدلة غوص، زعانف، نظارة غوص" }
       },
       'safari-1': {
         en: { difficulty: "Moderate (Active)", gear: "ATV Quad Bike, Helmet, Safety Goggles, Desert Scarf" },
         de: { difficulty: "Mittel (Aktiv)", gear: "ATV-Quad, Helm, Schutzbrille, Wüstenschal" },
         pl: { difficulty: "Średni (Aktywny)", gear: "Quad ATV, kask, gogle ochronne, chusta pustynna" },
-        cs: { difficulty: "Střední (Aktivní)", gear: "Čtyřkolka, helma, ochranné brýle, pouštní šátek" }
+        cs: { difficulty: "Střední (Aktivní)", gear: "Čtyřkolka, helma, ochranné brýle, pouštní šátek" },
+        ar: { difficulty: "متوسط (نشط)", gear: "بيتش باجي رباعي، خوذة، نظارات واقية، شال صحراوي" }
       },
       'history-1': {
         en: { difficulty: "Easy / Moderate (Walking)", gear: "Lux Mercedes Coach, VIP Tomb Passes, Cold Mineral Water" },
         de: { difficulty: "Leicht / Mittel (Gehen)", gear: "Luxus-Mercedes-Kutsche, VIP-Grabpässe, kaltes Mineralwasser" },
         pl: { difficulty: "Łatwy / Średni (Chodzenie)", gear: "Luksusowy autokar Mercedes, bilety VIP do grobowców, zimna woda mineralna" },
-        cs: { difficulty: "Snadné / Střední (Chůze)", gear: "Luxusní autobus Mercedes, VIP vstupenky do hrobek, studená minerální voda" }
+        cs: { difficulty: "Snadné / Střední (Chůze)", gear: "Luxusní autobus Mercedes, VIP vstupenky do hrobek, studená minerální voda" },
+        ar: { difficulty: "سهل / متوسط (مشي)", gear: "حافلة مرسيدس فاخرة، تصاريح VIP للمقابر، مياه معدنية باردة" }
       },
       'boat-1': {
         en: { difficulty: "Easy (Leisurely)", gear: "High-Quality Snorkeling Kit, Fins, Life Vest, Towel" },
         de: { difficulty: "Leicht (Gemütlich)", gear: "Hochwertiges Schnorchelset, Flossen, Schwimmweste, Handtuch" },
         pl: { difficulty: "Łatwy (Rekreacyjny)", gear: "Wysokiej jakości zestaw do snorkelingu, płetwy, kamizelka, ręcznik" },
-        cs: { difficulty: "Snadné (Pohodové)", gear: "Kvalitní šnorchlovací sada, ploutve, záchranná vesta, ručník" }
+        cs: { difficulty: "Snadné (Pohodové)", gear: "Kvalitní šnorchlovací sada, ploutve, záchranná vesta, ručník" },
+        ar: { difficulty: "سهل (استجمام)", gear: "معدات سنوركلينج ممتازة، زعانف، سترة نجاة، منشفة" }
       },
       'speedboat-1': {
         en: { difficulty: "Moderate (Adrenaline)", gear: "Snorkeling Kits, Underwater Action Camera, Premium Life Vest" },
         de: { difficulty: "Mittel (Adrenalin)", gear: "Schnorchelsets, Unterwasser-Actionkamera, Premium-Schwimmweste" },
         pl: { difficulty: "Średni (Adrenalina)", gear: "Zestaw do snorkelingu, podwodna kamera sportowa, kamizelka premium" },
-        cs: { difficulty: "Střední (Adrenalin)", gear: "Šnorchlovací sada, podvodní akční kamera, prémiová vesta" }
+        cs: { difficulty: "Střední (Adrenalin)", gear: "Šnorchlovací sada, podvodní akční kamera, prémiová vesta" },
+        ar: { difficulty: "متوسط (إثارة وشغف)", gear: "معدات سنوركلينج، كاميرة تصوير تحت الماء، سترة نجاة فاخرة" }
       }
     };
     
@@ -821,6 +949,24 @@ export default function ExcursionCatalog({ onAddBooking, excursions }: CatalogPr
             inclusions: plEx.inclusions,
             highlights: plEx.highlights,
             ancientLore: plEx.ancientLore
+          };
+        }
+        return ex;
+      });
+    } else if (language === 'ar') {
+      return rawCatalog.map(ex => {
+        const arEx = EXCURSIONS_DATA_AR.find(item => item.id === ex.id);
+        if (arEx) {
+          return {
+            ...ex,
+            title: arEx.title,
+            tagline: arEx.tagline,
+            duration: arEx.duration,
+            location: arEx.location,
+            description: arEx.description,
+            inclusions: arEx.inclusions,
+            highlights: arEx.highlights,
+            ancientLore: arEx.ancientLore
           };
         }
         return ex;

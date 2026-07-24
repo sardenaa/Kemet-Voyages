@@ -707,7 +707,8 @@ export default function App() {
                           { code: 'en', label: 'EN', fullName: 'English', glyph: '𓎛' },
                           { code: 'de', label: 'DE', fullName: 'Deutsch', glyph: '𓐠' },
                           { code: 'pl', label: 'PL', fullName: 'Polski', glyph: '𓃮' },
-                          { code: 'cs', label: 'CS', fullName: 'Čeština', glyph: '𓅱' }
+                          { code: 'cs', label: 'CS', fullName: 'Čeština', glyph: '𓅱' },
+                          { code: 'ar', label: 'AR', fullName: 'العربية', glyph: '𓋹' }
                         ].map((item) => (
                           <button
                             key={item.code}
